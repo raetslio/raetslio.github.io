@@ -1945,7 +1945,7 @@
             </div>
           </div>
 
-          <div class="field-group">
+          <div class="field-group" id="solution-option-group">
             <span class="field-label">Lösungsoption (Blatt 2 / Überdruck)</span>
             <div class="radio-card-list" role="radiogroup" aria-label="Lösungsmodus wählen">
               <label class="radio-card" id="opt-card-standard" data-selected="true" onclick="setSolutionMode('standard')">
@@ -3685,7 +3685,23 @@
       renderPrintPreview();
     }
 
+    /* Labyrinth: keine Überdruck-Lösung (bei allen anderen Rätseln bleibt sie) */
+    function applyOverprintAvailability() {
+      var noOvp = appState.mode === 'labyrinth';
+      if (noOvp) {
+        if (appState.print.solutionMode === 'overprint') appState.print.solutionMode = 'standard';
+        if (appState.print.previewSheet === 'overprint') appState.print.previewSheet = 'sheet2';
+        var cS = document.getElementById('opt-card-standard'), cO = document.getElementById('opt-card-overprint');
+        if (cS) cS.setAttribute('data-selected', 'true');
+        if (cO) cO.setAttribute('data-selected', 'false');
+        document.querySelectorAll('input[name="solutionMode"]').forEach(function (r) { r.checked = r.value === 'standard'; });
+      }
+      var sel = ['#solution-option-group', '#opt-card-overprint', '#overprint-guide-box', '#prev-btn-overprint', '.overprint-action-row'];
+      sel.forEach(function (q) { document.querySelectorAll(q).forEach(function (el) { el.style.display = noOvp ? 'none' : ''; }); });
+    }
+
     function updatePreviewToolbarUI() {
+      applyOverprintAvailability();
       var cur = appState.print.previewSheet;
       var b1 = document.getElementById('prev-btn-sheet1');
       var b2 = document.getElementById('prev-btn-sheet2');
@@ -4087,6 +4103,7 @@
     }
 
     function executePdfPrint(mode) {
+      if (mode === 'overprint' && appState.mode === 'labyrinth') return;
       var container = document.getElementById('print-output-container');
       if (!container) return;
       container.innerHTML = '';
@@ -4116,6 +4133,7 @@
     }
 
     function downloadSheetPng(sheetType) {
+      if (sheetType === 'overprint' && appState.mode === 'labyrinth') return;
       /* Render crisp 300-DPI-proportion A4 PNG (1654 x 2339 px) */
       var w = 1654;
       var h = 2339;
@@ -5916,7 +5934,7 @@
         var multi = it.print.multiPrint > 1 ? ' · ' + it.print.multiPrint + ' pro Blatt' : '';
         var b = function (a, l, cls) { return '<button type="button" class="btn btn-sm' + (cls ? ' ' + cls : '') + '" data-id="' + esc(it.id) + '" data-a="' + a + '">' + l + '</button>'; };
         return '<div class="hv-item"><div><strong>' + TYPE_LABEL[it.type] + ' ' + it.size + '×' + it.size + '</strong> · ' + DIFFS[it.diff] + multi + '<br><span class="label">' + dt + ' Uhr' + (it.print.name ? ' · ' + esc(it.print.name) : '') + (it.prints > 1 ? ' · ' + it.prints + '× gedruckt' : '') + '</span></div><div class="hv-act">' +
-          b('sol', 'Lösung drucken', 'btn-primary') + b('ovp', 'Überdruck') + b('ab', 'Arbeitsblatt erneut') + b('png', 'Lösung als PNG') + b('del', 'Entfernen') + '</div></div>';
+          b('sol', 'Lösung drucken', 'btn-primary') + (it.type === 'maze' ? '' : b('ovp', 'Überdruck')) + b('ab', 'Arbeitsblatt erneut') + b('png', 'Lösung als PNG') + b('del', 'Entfernen') + '</div></div>';
       }).join('') : '<div class="bk-empty">Noch nichts im Verlauf. Sobald du ein Arbeitsblatt über „Druckfenster &amp; Export“ druckst oder als PNG speicherst, erscheint es hier.</div>';
     }
     function hvInit() {
@@ -5927,7 +5945,7 @@
         var a = btn.dataset.a;
         try {
           if (a === 'sol') { printSvgs([hvSheet(it, 'sheet2')]); hvMsg('Druckdialog für das Lösungsblatt geöffnet.', 'info'); }
-          else if (a === 'ovp') { printSvgs([hvSheet(it, 'overprint')]); hvMsg('Überdruck: im Druckdialog bitte „Tatsächliche Größe“ (100 %) wählen und das bedruckte Blatt passgenau einlegen.', 'info'); }
+          else if (a === 'ovp' && it.type !== 'maze') { printSvgs([hvSheet(it, 'overprint')]); hvMsg('Überdruck: im Druckdialog bitte „Tatsächliche Größe“ (100 %) wählen und das bedruckte Blatt passgenau einlegen.', 'info'); }
           else if (a === 'ab') { printSvgs([hvSheet(it, 'sheet1')]); hvMsg('Druckdialog für das Arbeitsblatt geöffnet.', 'info'); }
           else if (a === 'png') hvPng(it, 'sheet2');
           else if (a === 'del') { d.items = d.items.filter(function (x) { return x.id !== it.id; }); d.del[it.id] = Date.now(); hvSave(d); hvRender(); }
@@ -6188,6 +6206,38 @@
 
     var BK_IDX = 'raetsel_hefte_v2', BK_PRE = 'raetsel_heft_v2_';
     var HK = 'rs_sync_hash';
+    /* Getrennte Datenbereiche: Abgemeldet = eigener Bereich pro Gerät ('guest'), angemeldet = Bereich des Kontos.
+       Jeder Bereich sieht und bearbeitet nur seine eigenen Daten. */
+    var OWNER_KEY = 'rs_owner', NS_PRE = 'rs_ns_';
+    var lsSetRaw = Storage.prototype.setItem, lsRemoveRaw = Storage.prototype.removeItem;
+    var switching = false;
+    function isAcctKey(k) { return typeof k === 'string' && (k.indexOf('raetsel_heft') === 0 || k === 'raetsel_hefte_v2' || k === 'rs_appstate_cache'); }
+    var discardOwner = null;
+    function switchNs(from, to) {
+      var snap = {}, keys = [];
+      for (var i = 0; i < localStorage.length; i++) { var k = localStorage.key(i); if (isAcctKey(k)) keys.push(k); }
+      keys.forEach(function (k) { snap[k] = localStorage.getItem(k); });
+      if (discardOwner !== from) { lsSetRaw.call(localStorage, NS_PRE + from, JSON.stringify(snap)); }
+      else lsRemoveRaw.call(localStorage, NS_PRE + from);
+      keys.forEach(function (k) { lsRemoveRaw.call(localStorage, k); });
+      var tgt = null; try { tgt = JSON.parse(localStorage.getItem(NS_PRE + to) || 'null'); } catch (e) {}
+      if (tgt) Object.keys(tgt).forEach(function (k) { if (isAcctKey(k) && typeof tgt[k] === 'string') lsSetRaw.call(localStorage, k, tgt[k]); });
+      lsRemoveRaw.call(localStorage, NS_PRE + to);
+      lsSetRaw.call(localStorage, OWNER_KEY, to);
+      discardOwner = null;
+    }
+    /* true = Bereich wurde gewechselt, Seite lädt neu */
+    function ensureNamespace() {
+      try {
+        var target = user ? user.id : 'guest', owner = localStorage.getItem(OWNER_KEY);
+        if (owner === null) { lsSetRaw.call(localStorage, OWNER_KEY, target); return false; }
+        if (owner === target) return false;
+        switching = true;
+        switchNs(owner, target);
+        location.reload();
+        return true;
+      } catch (e) { switching = false; return false; }
+    }
     var SP = { verlauf: { ls: 'raetsel_heft_verlauf', mod: 'HV' }, spiele: { ls: 'raetsel_heft_spiele', mod: 'GV' } };
     var $ = function (id) { return document.getElementById(id); };
     var sb = null, user = null, pushTimer = null, syncing = false, lastMsg = '', view = 'login';
@@ -6277,7 +6327,7 @@
           '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
           (hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '') +
           '<div class="panel-subblock"><button type="button" class="btn" onclick="RSAUTH.logout()">Abmelden</button></div>' +
-          '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig. Daten auf diesem Gerät bleiben erhalten.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
+          '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig. Die Kopie dieser Daten auf diesem Gerät wird ebenfalls entfernt. Die Daten, die du ohne Anmeldung auf diesem Gerät hast, bleiben erhalten.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
         return;
       }
       if (view === 'forgot') {
@@ -6322,7 +6372,7 @@
     }
 
     async function sync() {
-      if (!sb || !user || syncing) return;
+      if (!sb || !user || syncing || switching) return;
       syncing = true; setStatus('Synchronisiere …');
       var needReload = false;
       try {
@@ -6386,6 +6436,7 @@
     }
     function schedulePush() {
       if (!user) return;
+      if (switching) return;
       clearTimeout(pushTimer); pushTimer = setTimeout(function () { sync(); }, 1800);
     }
 
@@ -6394,9 +6445,9 @@
       var sp = window.schedulePersist;
       if (typeof sp === 'function') window.schedulePersist = function () { sp.apply(this, arguments); schedulePush(); };
       var os = Storage.prototype.setItem;
-      Storage.prototype.setItem = function (k) { os.apply(this, arguments); try { if (this === window.localStorage && typeof k === 'string' && k.indexOf('raetsel_heft') === 0) schedulePush(); } catch (e) {} };
+      Storage.prototype.setItem = function (k) { if (switching && this === window.localStorage && isAcctKey(k)) return; os.apply(this, arguments); try { if (this === window.localStorage && typeof k === 'string' && k.indexOf('raetsel_heft') === 0) schedulePush(); } catch (e) {} };
       var orm = Storage.prototype.removeItem;
-      Storage.prototype.removeItem = function (k) { orm.apply(this, arguments); try { if (this === window.localStorage && typeof k === 'string' && k.indexOf(BK_PRE) === 0) schedulePush(); } catch (e) {} };
+      Storage.prototype.removeItem = function (k) { if (switching && this === window.localStorage && isAcctKey(k)) return; orm.apply(this, arguments); try { if (this === window.localStorage && typeof k === 'string' && k.indexOf(BK_PRE) === 0) schedulePush(); } catch (e) {} };
       function pull() {
         if (!user || document.visibilityState !== 'visible') return;
         var pm = $('print-modal'); if (pm && pm.getAttribute('data-open') === 'true') return;
@@ -6412,6 +6463,7 @@
 
     function loggedIn(session) {
       user = session ? session.user : null;
+      if (ensureNamespace()) return;
       consumeFresh();
       /* Lokaler Spielstand bleibt auch ohne Anmeldung erhalten */
       try { if (user) localStorage.setItem('rs_cloud_on', '1'); else localStorage.removeItem('rs_cloud_on'); } catch (e) {}
@@ -6461,7 +6513,7 @@
       logout: async function () {
         clearTimeout(pushTimer); if (user) await sync();
         try { if (user) localStorage.removeItem(HK + '_' + user.id); } catch (e) {}
-        await sb.auth.signOut(); loggedIn(null); view = 'login'; render(); msg('Abgemeldet. Deine Daten auf diesem Gerät bleiben erhalten.', 'info');
+        await sb.auth.signOut(); loggedIn(null); view = 'login'; render(); msg('Abgemeldet. Du siehst jetzt nur die Daten dieses Geräts.', 'info');
       },
       deleteAccount: async function () {
         if (val('acct-del').trim().toUpperCase() !== 'LÖSCHEN') { msg('Bitte gib zur Bestätigung LÖSCHEN ein.', 'warning'); return; }
@@ -6469,6 +6521,7 @@
         var r = await sb.rpc('delete_my_account');
         if (r.error) { msg('Konto konnte nicht gelöscht werden: ' + err(r.error), 'error'); return; }
         try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf(HK) === 0) localStorage.removeItem(k); }); } catch (e) {}
+        discardOwner = user ? user.id : null;
         await sb.auth.signOut().catch(function () {}); loggedIn(null); view = 'login'; render(); msg('Dein Konto und alle Cloud-Daten wurden gelöscht.', 'success');
       },
       google: async function () {
