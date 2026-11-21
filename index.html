@@ -5,6 +5,10 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="artifact-type" content="tool">
   <meta name="design-style" content="haven">
+  <script>
+  /* Darstellung früh setzen (verhindert Aufblitzen): gespeicherte Wahl oder Geräteeinstellung */
+  (function () { try { var m = localStorage.getItem('rs_theme') || 'system'; var d = m === 'dark' || (m !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); if (d) document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {} })();
+  </script>
   <title>Rätslio? — Sudoku, Suchsel, Binoxxo, Labyrinth &amp; Rätselheft</title>
   <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
   <style>
@@ -1327,10 +1331,11 @@
           Druckfenster &amp; Export
         </button>
 
-        <button type="button" id="btn-theme-toggle" class="btn" aria-pressed="false" onclick="toggleTheme()" title="Hell- oder Dunkelmodus umschalten">
+        <button type="button" id="btn-theme-toggle" class="btn" aria-pressed="false" onclick="toggleTheme()" title="Darstellung wechseln: System, Hell, Dunkel">
+          <svg id="icon-theme-system" class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
           <svg id="icon-theme-sun" class="icon-svg hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
-          <svg id="icon-theme-moon" class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
-          <span id="theme-label">Dunkel</span>
+          <svg id="icon-theme-moon" class="icon-svg hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <span id="theme-label">System</span>
         </button>
 
         <button type="button" id="btn-account" class="btn" onclick="RSAUTH.open()" title="Optional anmelden, um alles geräteübergreifend zu speichern">
@@ -2021,7 +2026,7 @@
 
     var appState = {
       mode: 'sudoku',
-      theme: 'light',
+      theme: 'system',
       sudoku: {
         size: 9,
         subR: 3,
@@ -2106,7 +2111,8 @@
             foundIds: appState.ws.foundIds,
             revealed: appState.ws.revealed
           },
-          print: appState.print
+          print: appState.print,
+          ext: (typeof window.extGetState === 'function') ? window.extGetState() : null
         });
       } catch (e) {
         /* Safe fallback if storage unavailable */
@@ -2125,27 +2131,48 @@
     /* ======================================================================
        THEME & MODE SWITCHING
        ====================================================================== */
+    function systemPrefersDark() {
+      return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    }
+
     function applyTheme(themeName) {
-      appState.theme = themeName === 'dark' ? 'dark' : 'light';
+      var mode = (themeName === 'dark' || themeName === 'light') ? themeName : 'system';
+      appState.theme = mode;
+      var effective = mode === 'system' ? (systemPrefersDark() ? 'dark' : 'light') : mode;
       var root = document.documentElement;
-      if (appState.theme === 'dark') {
+      if (effective === 'dark') {
         root.setAttribute('data-theme', 'dark');
       } else {
         root.removeAttribute('data-theme');
       }
+      try { localStorage.setItem('rs_theme', mode); } catch (e) {}
+      var names = { system: 'System', light: 'Hell', dark: 'Dunkel' };
       var btn = document.getElementById('btn-theme-toggle');
       var sun = document.getElementById('icon-theme-sun');
       var moon = document.getElementById('icon-theme-moon');
+      var sys = document.getElementById('icon-theme-system');
       var label = document.getElementById('theme-label');
-      if (btn) btn.setAttribute('aria-pressed', appState.theme === 'dark' ? 'true' : 'false');
-      if (sun) sun.classList.toggle('hidden', appState.theme !== 'dark');
-      if (moon) moon.classList.toggle('hidden', appState.theme === 'dark');
-      if (label) label.textContent = appState.theme === 'dark' ? 'Hell' : 'Dunkel';
+      if (btn) {
+        btn.setAttribute('aria-pressed', mode === 'dark' ? 'true' : 'false');
+        btn.title = 'Darstellung: ' + names[mode] + (mode === 'system' ? ' (folgt dem Gerät)' : '') + ' – klicken zum Wechseln';
+      }
+      if (sun) sun.classList.toggle('hidden', mode !== 'light');
+      if (moon) moon.classList.toggle('hidden', mode !== 'dark');
+      if (sys) sys.classList.toggle('hidden', mode !== 'system');
+      if (label) label.textContent = names[mode];
     }
 
     function toggleTheme() {
-      applyTheme(appState.theme === 'dark' ? 'light' : 'dark');
+      var order = ['system', 'light', 'dark'];
+      applyTheme(order[(order.indexOf(appState.theme) + 1) % order.length]);
       schedulePersist();
+    }
+
+    if (window.matchMedia) {
+      var rsMq = window.matchMedia('(prefers-color-scheme: dark)');
+      var rsMqHandler = function () { if (appState.theme === 'system') applyTheme('system'); };
+      if (rsMq.addEventListener) rsMq.addEventListener('change', rsMqHandler);
+      else if (rsMq.addListener) rsMq.addListener(rsMqHandler);
     }
 
     function switchMode(newMode) {
@@ -4078,6 +4105,9 @@
        INITIALIZATION & STATE RESTORE
        ====================================================================== */
     async function initApp() {
+      var cachedTheme = null;
+      try { cachedTheme = localStorage.getItem('rs_theme'); } catch (e) {}
+      applyTheme(cachedTheme || 'system');
       var saved = await loadStateFromHost();
 
       if (saved && typeof saved === 'object') {
@@ -4160,8 +4190,9 @@
         }
 
         switchMode(saved.mode || 'sudoku');
+        window.__rsSaved = saved;
+        if (typeof window.extRestore === 'function') { try { window.extRestore(saved); } catch (e) {} }
       } else {
-        applyTheme('light');
         var taDef = document.getElementById('ws-words-input');
         if (taDef) taDef.value = appState.ws.wordsRaw;
         requestSudokuGeneration();
@@ -4170,6 +4201,7 @@
       }
 
       startSudokuTimer();
+      window.__rsInit = true;
 
       if (window.notebookAppApi && typeof window.notebookAppApi.notifyAppReady === 'function') {
         window.notebookAppApi.notifyAppReady();
@@ -4456,6 +4488,7 @@
         }
         g.innerHTML = h;
         $('bx-badge').textContent = n + '×' + n + ' · ' + DIFFS[bx.diff];
+        if (window.__rsInit && window.schedulePersist) window.schedulePersist();
         document.querySelectorAll('#bx-sizes .chip-btn').forEach(function (b) { b.setAttribute('aria-pressed', +b.dataset.v === n ? 'true' : 'false'); });
         document.querySelectorAll('#bx-diffs .seg-btn').forEach(function (b) { b.setAttribute('aria-pressed', +b.dataset.v === bx.diff ? 'true' : 'false'); });
       },
@@ -4534,8 +4567,8 @@
       setSize: function (s) { mz.n = s; MZ.newPuzzle(); },
       setHard: function (h) { mz.hard = h; MZ.newPuzzle(); },
       newPuzzle: function () { mz.extras = []; mz.data = mazeCreate(mz.n); MZ.restart(); },
-      restart: function () {
-        MZ.stopWalk(); mz.pos = 0; mz.trail = [0]; mz.steps = 0; mz.won = false; mz.sol = false; banner($('mz-feedback'), '');
+      restart: function (keep) {
+        MZ.stopWalk(); if (!keep) { mz.pos = 0; mz.trail = [0]; mz.steps = 0; mz.won = false; mz.sol = false; } banner($('mz-feedback'), '');
         var n = mz.n, W = n * CS, svg = '<svg viewBox="' + (-MG) + ' ' + (-MG) + ' ' + (W + 2 * MG) + ' ' + (W + 2 * MG) + '" role="img" aria-label="Labyrinth">' +
           '<rect x="0" y="0" width="' + W + '" height="' + W + '" fill="none"/>' +
           '<polyline id="mz-sol" points="" fill="none" stroke="var(--secondary)" stroke-opacity=".6" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>' +
@@ -4558,6 +4591,7 @@
         $('mz-trail').setAttribute('points', mazePathPts({ n: n }, 0, 0, CS, mz.trail).split(' ').slice(1, mz.trail.length + 1).join(' '));
         $('mz-sol').setAttribute('points', mz.sol ? mazePathPts(mz.data, 0, 0, CS, mz.data.path) : '');
         $('mz-stats').textContent = 'Schritte: ' + mz.steps + ' · Kürzester Weg: ' + (mz.data.path.length - 1);
+        if (window.__rsInit && window.schedulePersist) window.schedulePersist();
       },
       move: function (d) {
         if (mz.won) return;
@@ -5581,9 +5615,9 @@
           var r = s.selected.r, c = s.selected.c; ensure();
           if (s.entries[r][c] > 0) { window.showSudokuFeedback('Dieses Feld hat schon eine Zahl. Leere es zuerst, um Notizen zu machen.', 'info'); return; }
           if (val === 0) s.notes[r][c] = []; else { var i = s.notes[r][c].indexOf(val); if (i >= 0) s.notes[r][c].splice(i, 1); else { s.notes[r][c].push(val); s.notes[r][c].sort(function (a, b) { return a - b; }); } }
-          window.renderSudokuGrid(); return;
+          window.renderSudokuGrid(); window.schedulePersist(); return;
         }
-        oEnter(val);
+        oEnter(val); window.schedulePersist();
         if (s.selected && s.notes && s.notesFor === s.solution) {
           var rr = s.selected.r, cc = s.selected.c;
           if (val === 0) s.notes[rr][cc] = []; else if (s.entries[rr][cc] === val) { s.notes[rr][cc] = []; dropPeers(rr, cc, val); window.renderSudokuGrid(); }
@@ -5610,7 +5644,7 @@
       document.addEventListener('keydown', function (e) { if (window.appState.mode === 'sudoku' && (e.key === 'n' || e.key === 'N') && !/INPUT|TEXTAREA|SELECT/.test(e.target.tagName) && !e.ctrlKey && !e.metaKey) { SN.toggle(); } });
       return {
         toggle: function () { on = !on; ui(); },
-        clearAll: function () { S().notes = null; window.renderSudokuGrid(); }
+        clearAll: function () { S().notes = null; window.renderSudokuGrid(); window.schedulePersist(); }
       };
     })();
 
@@ -5733,7 +5767,46 @@
       if (m === 'heft') refreshUI();
     };
     BX.init(); BX.bind(); MZ.init(); BK.init();
-    if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchMode(window.appState.mode);
+    /* Gespeicherten Zusatzzustand (Binoxxo, Labyrinth, Notizen, Modus) wiederherstellen */
+    window.extGetState = function () {
+      var s = window.appState.sudoku;
+      return {
+        v: 1,
+        notes: (s.notes && s.notesFor === s.solution) ? s.notes : null,
+        extraPuzzles: s.extraPuzzles || [],
+        bx: bx.data ? { n: bx.n, diff: bx.diff, data: bx.data, entries: bx.entries, revealed: bx.revealed, wrong: bx.wrong || {}, extras: bx.extras || [] } : null,
+        mz: mz.data ? { n: mz.n, hard: mz.hard || 0, data: mz.data, pos: mz.pos, trail: mz.trail, steps: mz.steps, won: mz.won, sol: mz.sol, extras: mz.extras || [] } : null,
+        mzAuto: MZ.auto
+      };
+    };
+    window.extRestore = function (saved) {
+      if (!saved || window.__rsExtDone) return;
+      window.__rsExtDone = true;
+      var e = saved.ext;
+      try {
+        if (e) {
+          var s = window.appState.sudoku;
+          if (Array.isArray(e.extraPuzzles)) s.extraPuzzles = e.extraPuzzles;
+          if (Array.isArray(e.notes) && e.notes.length === s.size) { s.notes = e.notes; s.notesFor = s.solution; }
+          if (e.bx && e.bx.data && Array.isArray(e.bx.entries)) {
+            bx.n = e.bx.n; bx.diff = e.bx.diff; bx.data = e.bx.data; bx.entries = e.bx.entries;
+            bx.revealed = !!e.bx.revealed; bx.wrong = e.bx.wrong || {}; bx.extras = e.bx.extras || [];
+            BX.render();
+          }
+          if (e.mz && e.mz.data && Array.isArray(e.mz.data.open)) {
+            mz.n = e.mz.n; mz.hard = e.mz.hard || 0; mz.data = e.mz.data; mz.extras = e.mz.extras || [];
+            mz.pos = e.mz.pos || 0; mz.trail = Array.isArray(e.mz.trail) && e.mz.trail.length ? e.mz.trail : [0];
+            mz.steps = e.mz.steps || 0; mz.won = !!e.mz.won; mz.sol = !!e.mz.sol;
+            MZ.restart(true);
+          }
+          if (typeof e.mzAuto === 'boolean') { MZ.auto = e.mzAuto; var ma = $('mz-auto'); if (ma) ma.checked = e.mzAuto; }
+        }
+      } catch (err) {}
+      try { window.renderSudokuGrid(); } catch (err) {}
+      if (saved.mode && NEW_MODES[saved.mode]) window.switchMode(saved.mode);
+    };
+    if (window.__rsSaved) window.extRestore(window.__rsSaved);
+    else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchMode(window.appState.mode);
   })();
   </script>
   <!-- KONTO / LOGIN (optional) -->
@@ -5783,6 +5856,7 @@
         [/Password should be at least/i, 'Das Passwort ist zu kurz (mindestens 8 Zeichen).'],
         [/rate limit|too many/i, 'Zu viele Versuche. Bitte warte kurz und versuche es erneut.'],
         [/same password/i, 'Das neue Passwort muss sich vom alten unterscheiden.'],
+        [/permission denied|row-level security|violates row/i, 'Datenbank-Berechtigung fehlt. Bitte einmal das Skript supabase-setup.sql im Supabase SQL Editor ausführen.'],
         [/Failed to fetch|NetworkError/i, 'Keine Verbindung zum Server.']
       ];
       for (var i = 0; i < map.length; i++) if (map[i][0].test(m)) return map[i][1];
@@ -5874,7 +5948,9 @@
       try {
         var res = await sb.from('user_data').select('k,v,updated_at'); if (res.error) throw res.error;
         var remote = {}; res.data.forEach(function (r) { remote[r.k] = r.v; });
-        var local = localHefts(), app = await localApp(); if (app) local.appstate = app;
+        var local = localHefts(), app = await localApp();
+        if (!app && typeof window.saveStateToHost === 'function') { try { await window.saveStateToHost(); app = await localApp(); } catch (e) {} }
+        if (app) local.appstate = app;
         var H = getH(), toPush = {}, toDel = [];
         var remoteHeft = Object.keys(remote).some(function (k) { return k.indexOf('heft:') === 0; });
         var keys = {}; Object.keys(local).concat(Object.keys(remote)).forEach(function (k) { keys[k] = 1; });
@@ -5907,7 +5983,13 @@
         setH(H);
         var wasHeft = needReload; if (wasHeft) rebuildIdx();
         setStatus('Synchronisiert um ' + new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit' }) + ' Uhr.');
-        if (needReload) { syncing = false; location.reload(); return; }
+        if (needReload) {
+          var lastRl = 0; try { lastRl = +sessionStorage.getItem('rs_last_reload') || 0; } catch (e) {}
+          if (Date.now() - lastRl > 20000) {
+            try { sessionStorage.setItem('rs_last_reload', String(Date.now())); } catch (e) {}
+            syncing = false; location.reload(); return;
+          }
+        }
       } catch (e) { setStatus('Synchronisierung fehlgeschlagen: ' + err(e)); }
       syncing = false;
     }
@@ -5924,7 +6006,17 @@
       Storage.prototype.setItem = function (k) { os.apply(this, arguments); try { if (this === window.localStorage && typeof k === 'string' && k.indexOf('raetsel_heft') === 0) schedulePush(); } catch (e) {} };
       var orm = Storage.prototype.removeItem;
       Storage.prototype.removeItem = function (k) { orm.apply(this, arguments); try { if (this === window.localStorage && typeof k === 'string' && k.indexOf(BK_PRE) === 0) schedulePush(); } catch (e) {} };
-      document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'hidden' && user) { clearTimeout(pushTimer); sync(); } });
+      function pull() {
+        if (!user || document.visibilityState !== 'visible') return;
+        var pm = $('print-modal'); if (pm && pm.getAttribute('data-open') === 'true') return;
+        sync();
+      }
+      document.addEventListener('visibilitychange', function () {
+        if (!user) return;
+        if (document.visibilityState === 'hidden') { clearTimeout(pushTimer); sync(); } else pull();
+      });
+      window.addEventListener('focus', pull);
+      setInterval(pull, 60000);
     })();
 
     function loggedIn(session) {
