@@ -1,7 +1,7 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im selben Ordner wie index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v1';
+const VERSION = 'raetslio-v2';
 const SHELL = [self.registration.scope, new URL('index.html', self.registration.scope).href];
 
 self.addEventListener('install', (event) => {
