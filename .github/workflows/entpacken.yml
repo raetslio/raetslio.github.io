@@ -1,0 +1,59 @@
+# Entpackt eine hochgeladene Datei "raetslio.zip" automatisch in den Hauptordner des Repos.
+# Ablauf: ZIP im Hauptordner hochladen -> Workflow startet -> Dateien werden ersetzt -> ZIP wird gelöscht.
+# Diese Datei einmalig als  .github/workflows/entpacken.yml  ins Repo legen.
+name: ZIP entpacken
+
+on:
+  push:
+    branches: [main, master]
+    paths: ['raetslio.zip']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: entpacken
+  cancel-in-progress: false
+
+jobs:
+  entpacken:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ZIP prüfen
+        id: pruefen
+        run: |
+          if [ ! -f raetslio.zip ]; then
+            echo "Keine raetslio.zip vorhanden – nichts zu tun."
+            echo "vorhanden=nein" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          unzip -tq raetslio.zip
+          if ! unzip -Z1 raetslio.zip | grep -qx 'index.html'; then
+            echo "::error::index.html fehlt auf oberster Ebene im ZIP. Bitte die Dateien direkt (ohne extra Ordner) packen."
+            exit 1
+          fi
+          echo "vorhanden=ja" >> "$GITHUB_OUTPUT"
+
+      - name: Alte App-Dateien entfernen und ZIP entpacken
+        if: steps.pruefen.outputs.vorhanden == 'ja'
+        run: |
+          rm -rf css js icons
+          rm -f index.html sw.js manifest.webmanifest README.md logo.svg logo-icon.svg
+          unzip -oq raetslio.zip
+          rm raetslio.zip
+
+      - name: Änderungen speichern
+        if: steps.pruefen.outputs.vorhanden == 'ja'
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          if git diff --cached --quiet; then
+            echo "Keine Änderungen gegenüber dem Stand im Repo."
+          else
+            git commit -m "App aktualisiert (aus raetslio.zip)"
+            git push
+          fi
