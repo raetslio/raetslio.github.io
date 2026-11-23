@@ -1,12 +1,31 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
-   Diese Datei muss im selben Ordner wie index.html liegen und "sw.js" heißen.
+   Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v2';
-const SHELL = [self.registration.scope, new URL('index.html', self.registration.scope).href];
+const VERSION = 'raetslio-v3';
+
+/* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
+const APP_FILES = [
+  './',
+  'index.html',
+  'manifest.webmanifest',
+  'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
+  'css/tokens.css', 'css/base.css', 'css/components.css', 'css/board.css', 'css/modals.css', 'css/extensions.css',
+  'js/host-fallback.js',
+  'js/core/constants.js', 'js/core/persistence.js', 'js/core/theme-mode.js', 'js/core/instructions.js',
+  'js/puzzles/sudoku.js', 'js/puzzles/wortsuche.js', 'js/print/print-modal.js', 'js/core/init.js',
+  'js/common.js',
+  'js/puzzles/binoxxo-logic.js', 'js/puzzles/labyrinth-logic.js', 'js/puzzles/binoxxo-online.js', 'js/puzzles/labyrinth-online.js',
+  'js/heft/heft-data.js', 'js/heft/heft-texts.js', 'js/heft/svg-helpers.js', 'js/heft/heft-build.js', 'js/heft/heft-ui.js',
+  'js/print/print-extra.js', 'js/puzzles/sudoku-notes.js', 'js/print/pdf-export.js',
+  'js/history/print-history.js', 'js/history/play-history.js',
+  'js/puzzles/new-puzzles-logic.js', 'js/puzzles/new-puzzles-online.js', 'js/puzzles/new-puzzles-print.js', 'js/puzzles/new-puzzles-registry.js',
+  'js/modes-init.js', 'js/pwa.js', 'js/account.js'
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(VERSION).then((cache) => Promise.all(SHELL.map((u) => cache.add(new Request(u, { cache: 'reload' })).catch(() => {}))))
+    caches.open(VERSION)
+      .then((cache) => Promise.all(APP_FILES.map((f) => cache.add(new Request(f, { cache: 'reload' })).catch(() => {}))))
       .then(() => self.skipWaiting())
   );
 });
@@ -28,22 +47,23 @@ self.addEventListener('fetch', (event) => {
   /* Anmeldung und Datenbank (Supabase, Google) nie zwischenspeichern */
   if (url.hostname.endsWith('supabase.co') || url.hostname.endsWith('google.com')) return;
 
-  /* Seitenaufrufe: erst Netzwerk (immer aktuell), offline aus dem Zwischenspeicher */
-  if (req.mode === 'navigate') {
+  /* Eigene Dateien (Seite, Skripte, Stile): erst Netzwerk, damit immer eine zusammenpassende Version geladen wird.
+     Ohne Verbindung kommen sie aus dem Zwischenspeicher. */
+  if (url.origin === self.location.origin) {
     event.respondWith(
       fetch(req).then((res) => {
         if (res && res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
         return res;
       }).catch(() =>
         caches.match(req, { ignoreSearch: true })
-          .then((r) => r || caches.match(SHELL[1]) || caches.match(SHELL[0]))
+          .then((r) => r || (req.mode === 'navigate' ? caches.match('index.html') : undefined))
       )
     );
     return;
   }
 
-  /* Schriften, Bibliotheken und eigene Dateien: Zwischenspeicher zuerst, im Hintergrund aktualisieren */
-  if (url.origin === self.location.origin || CDN_HOSTS.includes(url.hostname)) {
+  /* Schriften und Bibliotheken von Fremdservern: Zwischenspeicher zuerst, im Hintergrund aktualisieren */
+  if (CDN_HOSTS.includes(url.hostname)) {
     event.respondWith(
       caches.match(req).then((cached) => {
         const net = fetch(req).then((res) => {

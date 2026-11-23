@@ -1,0 +1,229 @@
+/* ======================================================================
+   Spielfelder
+   Spielfeld-Ansicht, Tastenfeld, Zoom und das Suchsel-Raster.
+   ====================================================================== */
+
+/* Responsive Board Viewport — avoids flexbox center left-clipping (Requirement 3) */
+.board-viewport {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: auto;
+  padding: var(--space-sm);
+  border-radius: var(--rounded);
+  background-color: var(--background);
+  border: var(--hairline);
+  -webkit-overflow-scrolling: touch;
+}
+
+.board-center-wrap {
+  width: fit-content;
+  min-width: min-content;
+  margin-inline: auto;
+}
+
+.sudoku-grid {
+  display: grid;
+  border: var(--hairline-strong);
+  background-color: var(--surface-container-low);
+  touch-action: manipulation;
+}
+
+.sudoku-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: 1px solid var(--outline-variant);
+  border-bottom: 1px solid var(--outline-variant);
+  font-family: var(--font-headline);
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  position: relative;
+  padding: 0;
+  background-color: var(--surface-container-low);
+  color: var(--primary);
+  font-weight: 600;
+  transition: background-color var(--dur-micro) var(--ease-out);
+}
+.sudoku-cell.given {
+  background-color: var(--cell-given);
+  color: var(--on-surface);
+  font-weight: 700;
+}
+.sudoku-cell.peer {
+  background-color: var(--cell-peer);
+}
+.sudoku-cell.same-val {
+  background-color: var(--cell-same);
+}
+.sudoku-cell.selected {
+  background-color: var(--primary-container);
+  box-shadow: inset 0 0 0 2px var(--primary);
+  z-index: 2;
+}
+.sudoku-cell.cell-correct {
+  background-color: var(--positive-container);
+  color: var(--positive);
+}
+.sudoku-cell.cell-wrong {
+  background-color: var(--error-container);
+  color: var(--error);
+}
+.sudoku-cell.cell-solution {
+  color: var(--secondary);
+  font-weight: 500;
+}
+.sudoku-cell.box-right {
+  border-right: 2px solid var(--on-surface);
+}
+.sudoku-cell.box-bottom {
+  border-bottom: 2px solid var(--on-surface);
+}
+.sudoku-cell.edge-right {
+  border-right: 0;
+}
+.sudoku-cell.edge-bottom {
+  border-bottom: 0;
+}
+
+/* Keypad */
+.keypad-wrap {
+  margin-top: var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+.keypad-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(46px, 1fr));
+  gap: var(--space-xs);
+}
+.key-btn {
+  min-height: 44px;
+  border-radius: var(--rounded);
+  border: var(--hairline-control);
+  background-color: var(--surface-container-low);
+  color: var(--on-surface);
+  font-family: var(--font-headline);
+  font-weight: 500;
+  font-variant-numeric: tabular-nums;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  transition: background-color var(--dur-micro) var(--ease-out);
+}
+.key-btn:hover {
+  background-color: var(--surface-container-high);
+}
+.key-btn.key-accent {
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  border-color: var(--primary);
+}
+
+.board-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: var(--hairline);
+}
+
+/* Zoom bar */
+.zoom-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+  font-size: var(--label-size);
+  color: var(--on-surface-variant);
+}
+.zoom-bar input[type="range"] {
+  width: 120px;
+  accent-color: var(--primary);
+}
+
+/* Wortsuche Grid (2-Click System) */
+.ws-stage {
+  position: relative;
+  display: block;
+  touch-action: manipulation;
+  background-color: var(--surface-container-low);
+}
+.ws-grid {
+  display: grid;
+  border: var(--hairline-strong);
+  background-color: transparent;
+  position: relative;
+  z-index: 2;
+}
+.ws-cell {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-headline);
+  font-weight: 600;
+  border-right: 1px solid var(--outline-variant);
+  border-bottom: 1px solid var(--outline-variant);
+  cursor: pointer;
+  position: relative;
+  z-index: 2;
+  background-color: transparent;
+  color: var(--on-surface);
+  transition: background-color var(--dur-micro) var(--ease-out);
+}
+.ws-cell:hover {
+  background-color: var(--cell-peer);
+}
+.ws-cell.ws-start {
+  background-color: var(--primary-container);
+  color: var(--on-primary-container);
+  box-shadow: inset 0 0 0 2px var(--primary);
+}
+.ws-cell.ws-edge-right { border-right: 0; }
+.ws-cell.ws-edge-bottom { border-bottom: 0; }
+
+.ws-svg-overlay {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 1;
+}
+/* Gitter liegt ueber dem Overlay (Markierungen sichtbar); Klicks gehen wegen pointer-events:none durch */
+
+.ws-wordlist {
+  margin-top: var(--space-md);
+  padding-top: var(--space-md);
+  border-top: var(--hairline);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-xs);
+}
+.ws-word-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--rounded-full);
+  border: var(--hairline);
+  font-family: var(--font-label);
+  font-size: 0.85rem;
+  font-weight: 500;
+  background-color: var(--surface-container-low);
+  color: var(--on-surface);
+  transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+}
+.ws-word-chip.found {
+  text-decoration: line-through;
+}
+.ws-color-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: var(--rounded-full);
+  flex-shrink: 0;
+}

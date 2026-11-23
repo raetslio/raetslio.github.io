@@ -1,0 +1,293 @@
+/* ======================================================================
+   Fenster und Druckansicht
+   Dialoge, Überdruck-Hilfe und die Seiten, die beim Drucken sichtbar sind.
+   ====================================================================== */
+
+/* Modals */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: var(--overlay-scrim);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-md);
+  z-index: 1000;
+  overflow-y: auto;
+}
+.modal-backdrop[data-open="true"] {
+  display: flex;
+}
+
+.modal-card {
+  background-color: var(--surface-container-low);
+  border: var(--hairline);
+  border-radius: var(--rounded-lg);
+  width: 100%;
+  max-width: 1120px;
+  padding: var(--space-md) var(--space-lg);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+  max-height: 92vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-md);
+  padding-bottom: var(--space-sm);
+  border-bottom: var(--hairline);
+}
+
+.print-layout {
+  display: grid;
+  grid-template-columns: 360px minmax(0, 1fr);
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.print-controls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.print-preview-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.preview-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-sm);
+}
+
+.a4-preview-frame {
+  background-color: var(--background);
+  background-image: linear-gradient(45deg, var(--checker-a) 25%, transparent 25%),
+    linear-gradient(-45deg, var(--checker-a) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, var(--checker-a) 75%),
+    linear-gradient(-45deg, transparent 75%, var(--checker-a) 75%);
+  background-size: 16px 16px;
+  background-position: 0 0, 0 8px, 8px -8px, -8px 0;
+  border: var(--hairline);
+  border-radius: var(--rounded-lg);
+  padding: var(--space-md);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 440px;
+}
+
+.a4-sheet-box {
+  width: 100%;
+  max-width: 480px;
+  aspect-ratio: 210 / 297;
+  background-color: var(--sheet-paper);
+  box-shadow: var(--sheet-shadow);
+  border: 1px solid var(--outline);
+  overflow: hidden;
+  position: relative;
+}
+.a4-sheet-box.transparent-sheet {
+  background-color: transparent;
+  border: 2px dashed var(--primary);
+  box-shadow: none;
+}
+.a4-sheet-box svg {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.export-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--space-sm);
+  padding-top: var(--space-sm);
+  border-top: var(--hairline);
+}
+
+.slider-row {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+.slider-row input[type="range"] {
+  flex: 1;
+  accent-color: var(--primary);
+  min-height: 36px;
+}
+.slider-val {
+  font-family: var(--font-label);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  min-width: 52px;
+  text-align: right;
+  color: var(--on-surface);
+  font-weight: 500;
+}
+
+.radio-card-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.radio-card {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm);
+  border: var(--hairline);
+  border-radius: var(--rounded);
+  cursor: pointer;
+  background-color: var(--surface-container-low);
+  transition: background-color var(--dur-micro) var(--ease-out), border-color var(--dur-micro) var(--ease-out);
+}
+.radio-card[data-selected="true"] {
+  background-color: var(--primary-container);
+  border-color: var(--primary);
+}
+.radio-card input {
+  margin-top: 3px;
+  accent-color: var(--primary);
+}
+.radio-card-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--on-surface);
+  display: block;
+}
+.radio-card-desc {
+  font-size: 0.8rem;
+  color: var(--on-surface-variant);
+  display: block;
+  line-height: 1.35;
+}
+
+/* Overprint Guide Box (Requirement 4) */
+.overprint-guide {
+  background-color: var(--surface-container);
+  border: 1px solid var(--outline);
+  border-radius: var(--rounded);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+.overprint-guide-title {
+  font-family: var(--font-label);
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--secondary);
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin: 0;
+}
+.overprint-guide-list {
+  margin: 0;
+  padding-left: 1.15rem;
+  font-size: 0.8rem;
+  color: var(--on-surface);
+  display: grid;
+  gap: 3px;
+  line-height: 1.4;
+}
+
+.overprint-action-row {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+.hidden { display: none !important; }
+
+/* Print Surface (only visible during @media print) */
+#print-output-container {
+  display: none;
+}
+
+@media (max-width: 920px) {
+  .page-grid {
+    grid-template-columns: 1fr;
+  }
+  .side-column {
+    order: -1;
+  }
+  .print-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 640px) {
+  .app-shell {
+    padding: var(--space-sm) var(--space-sm) var(--space-xl);
+  }
+  .panel {
+    padding: var(--space-md);
+  }
+  .export-grid {
+    grid-template-columns: 1fr;
+  }
+  .modal-card {
+    padding: var(--space-md);
+  }
+  .two-col-inputs {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0;
+  }
+  html, body {
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+    overflow: visible !important;
+    width: 210mm;
+  }
+  .app-shell, .modal-backdrop {
+    display: none !important;
+  }
+  #print-output-container {
+    display: block !important;
+    margin: 0;
+    padding: 0;
+  }
+  .print-page-sheet {
+    width: 210mm;
+    height: 296mm;
+    page-break-after: always;
+    break-after: page;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+  .print-page-sheet:last-child {
+    page-break-after: auto;
+    break-after: auto;
+  }
+  .print-page-sheet svg {
+    display: block;
+    width: 210mm;
+    height: 296mm;
+  }
+}

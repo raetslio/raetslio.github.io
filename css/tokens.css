@@ -1,0 +1,142 @@
+/* ======================================================================
+   Farben, Schriften, Abstände, Bewegung (Hell- und Dunkel-Design)
+   Alle Design-Werte als CSS-Variablen. Hier ändern, um das Aussehen der ganzen App anzupassen.
+   ====================================================================== */
+
+:root {
+  color-scheme: light;
+
+  /* Page and surfaces (Haven) */
+  --background: #f5f6f5;
+  --surface-container-low: #ffffff;
+  --surface-container: #e3ebe2;
+  --surface-container-high: #dbe2dd;
+
+  /* Ink */
+  --on-surface: #23272a;
+  --on-surface-variant: #5c6468;
+
+  /* Rules */
+  --outline: #c9d0cc;
+  --outline-variant: #dde2df;
+
+  /* Accents */
+  --primary: #3c5a6e;
+  --on-primary: #ffffff;
+  --primary-container: #e2e9ee;
+  --on-primary-container: #2a4152;
+  --secondary: #4f6b53;
+  --tertiary: #5f7c63;
+  --error: #a63d32;
+  --on-error: #ffffff;
+  --error-container: #f7e6e4;
+
+  /* Semantic */
+  --positive: #3f6e49;
+  --positive-container: #e4efe6;
+  --warning: #8f6324;
+  --warning-container: #f6efe2;
+  --focus: #3c5a6e;
+
+  /* Data series */
+  --data-1: #3c5a6e;
+  --data-2: #5f7c63;
+  --data-3: #a8694a;
+  --data-4: #8a7a68;
+  --data-context: #c3cac6;
+
+  /* Board & print highlights */
+  --cell-peer: #eef2f4;
+  --cell-same: #d9e4eb;
+  --cell-given: #f7f8f7;
+  --overlay-scrim: rgba(35, 39, 42, 0.45);
+  --sheet-paper: #ffffff;
+  --sheet-shadow: 0 2px 10px rgba(35, 39, 42, 0.08);
+  --checker-a: #eceeed;
+  --checker-b: #f7f8f7;
+
+  /* Suchsel highlight palette (shared identically online & print) */
+  --ws-hl-0: #3c5a6e;
+  --ws-hl-1: #5f7c63;
+  --ws-hl-2: #b86b4b;
+  --ws-hl-3: #b0883b;
+  --ws-hl-4: #7b648f;
+  --ws-hl-5: #3b7d7c;
+  --ws-hl-6: #a85b6e;
+  --ws-hl-7: #6d7c46;
+  --ws-hl-8: #516896;
+  --ws-hl-9: #966a50;
+
+  /* Fonts */
+  --font-headline: 'Outfit', sans-serif;
+  --font-body: 'Hanken Grotesk', sans-serif;
+  --font-label: 'Outfit', sans-serif;
+
+  /* Type scale (Focused Tool) */
+  --display-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);
+  --headline-size: clamp(1.2rem, 1.05rem + 0.45vw, 1.45rem);
+  --subhead-size: clamp(1.02rem, 0.98rem + 0.2vw, 1.15rem);
+  --body-size: clamp(0.9375rem, 0.9rem + 0.15vw, 1rem);
+  --label-size: 0.75rem;
+
+  /* Shape */
+  --rounded: 0.375rem;
+  --rounded-lg: 0.5rem;
+  --rounded-full: 9999px;
+
+  /* Style effects */
+  --hairline: 1px solid var(--outline-variant);
+  --hairline-control: 1px solid var(--outline);
+  --hairline-strong: 2px solid var(--on-surface);
+  --elevation: none;
+
+  /* Spacing scale (4pt base) */
+  --space-xs: 0.25rem;
+  --space-sm: 0.5rem;
+  --space-md: 1rem;
+  --space-lg: 1.5rem;
+  --space-xl: 2.5rem;
+  --space-2xl: 4rem;
+  --space-3xl: 6rem;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-micro: 120ms;
+  --dur-short: 220ms;
+  --dur-long: 420ms;
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --background: #1c2023;
+  --surface-container-low: #24292d;
+  --surface-container: #28332b;
+  --surface-container-high: #30373c;
+  --on-surface: #e6e9e7;
+  --on-surface-variant: #a9b2b6;
+  --outline: #4a545a;
+  --outline-variant: #343b40;
+  --primary: #9db8cc;
+  --on-primary: #1c2023;
+  --primary-container: #2e3d48;
+  --on-primary-container: #e3edf5;
+  --secondary: #a6c2aa;
+  --tertiary: #84a489;
+  --error: #e07f74;
+  --on-error: #1c2023;
+  --error-container: #3e2624;
+  --positive: #88be91;
+  --positive-container: #243628;
+  --warning: #deb16d;
+  --warning-container: #393022;
+  --focus: #9db8cc;
+  --cell-peer: #2a3136;
+  --cell-same: #32414c;
+  --cell-given: #202529;
+  --overlay-scrim: rgba(12, 15, 17, 0.7);
+  --sheet-paper: #ffffff;
+  --sheet-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+  --checker-a: #2b3135;
+  --checker-b: #22272a;
+}
