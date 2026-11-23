@@ -4,18 +4,19 @@
    ====================================================================== */
 'use strict';
 
-var NEW_MODES = { binoxxo: 'view-binoxxo', labyrinth: 'view-labyrinth', hitori: 'view-hitori', mauer: 'view-mauer', magic: 'view-magic', heft: 'view-heft', verlauf: 'view-verlauf', spiele: 'view-spiele' };
+var NEW_MODES = { binoxxo: 'view-binoxxo', labyrinth: 'view-labyrinth', hitori: 'view-hitori', mauer: 'view-mauer', magic: 'view-magic', heft: 'view-heft', verlauf: 'view-verlauf', spiele: 'view-spiele', statistik: 'view-statistik' };
 var origSwitch = window.switchMode;
 window.switchMode = function (m) {
   var isNew = !!NEW_MODES[m];
   Object.keys(NEW_MODES).forEach(function (k) { $(NEW_MODES[k]).classList.toggle('hidden', k !== m); $('tab-' + k).setAttribute('aria-selected', k === m ? 'true' : 'false'); });
-  var pb = $('btn-open-print'); if (pb) pb.classList.toggle('hidden', m === 'heft' || m === 'verlauf' || m === 'spiele');
+  var pb = $('btn-open-print'); if (pb) pb.classList.toggle('hidden', m === 'heft' || m === 'verlauf' || m === 'spiele' || m === 'statistik');
   if (!isNew) { origSwitch(m); return; }
   window.appState.mode = m;
   ['sudoku', 'wortsuche'].forEach(function (k) { $('view-' + k).classList.add('hidden'); $('tab-' + k).setAttribute('aria-selected', 'false'); });
   if (m === 'heft') refreshUI();
   if (m === 'verlauf') hvRender();
   if (m === 'spiele') gvRender();
+  if (m === 'statistik' && window.ST) ST.render();
 };
 BX.init(); BX.bind(); MZ.init(); HT.init(); NXMG.init(); MW.init(); BK.init(); hvInit(); gvInit();
 /* Spielstand beim Verlassen/Ausblenden der Seite sofort sichern (inkl. Sudoku-Zeit) */
