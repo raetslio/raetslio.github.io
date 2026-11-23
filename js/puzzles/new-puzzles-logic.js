@@ -36,9 +36,58 @@ function htConnected(open, n) {
   }
   return cnt === total;
 }
+/* Zählt alle gültigen Lösungen (max. limit). Gibt {count, sols, aborted} zurück. */
+function htSolve(g, n, limit, budget) {
+  var N = n * n, nodes = 0, sols = [], aborted = false;
+  function conn(s) { /* weiß + unbekannt zusammenhängend? */
+    return htConnected(function (a, b) { return s[a * n + b] !== 1; }, n);
+  }
+  function setWhite(s, i, q) {
+    s[i] = 2; var r = (i / n) | 0, c = i % n, v = g[r][c], t, j;
+    for (t = 0; t < n; t++) {
+      j = r * n + t; if (t !== c && g[r][t] === v) { if (s[j] === 2) return false; if (s[j] === 0) { s[j] = 1; q.push(j); } }
+      j = t * n + c; if (t !== r && g[t][c] === v) { if (s[j] === 2) return false; if (s[j] === 0) { s[j] = 1; q.push(j); } }
+    }
+    return true;
+  }
+  function prop(s, q) {
+    while (q.length) {
+      var i = q.pop();
+      if (s[i] === 1) {
+        var r = (i / n) | 0, c = i % n;
+        for (var d = 0; d < 4; d++) {
+          var nr = r + NB[d][0], nc = c + NB[d][1];
+          if (nr < 0 || nc < 0 || nr >= n || nc >= n) continue;
+          var j = nr * n + nc;
+          if (s[j] === 1) return false;
+          if (s[j] === 0) { if (!setWhite(s, j, q)) return false; }
+        }
+      }
+    }
+    return true;
+  }
+  function rec(s) {
+    if (aborted || sols.length >= limit) return;
+    if (++nodes > budget) { aborted = true; return; }
+    if (!conn(s)) return;
+    var p = -1, i;
+    for (i = 0; i < N; i++) if (s[i] === 0) { p = i; break; }
+    if (p < 0) { sols.push(s.slice()); return; }
+    for (var w = 0; w < 2; w++) {
+      var t = s.slice(), q = [], ok;
+      if (w === 0) { ok = setWhite(t, p, q); } else { t[p] = 1; q.push(p); ok = true; }
+      if (ok && prop(t, q)) rec(t);
+      if (aborted || sols.length >= limit) return;
+    }
+  }
+  var s0 = new Uint8Array(N); /* Zellen ohne irgendeinen Doppelgänger dürfen trotzdem geschwärzt werden: bewusst nicht vorbelegt */
+  rec(s0);
+  return { count: aborted ? limit : sols.length, sols: sols, aborted: aborted };
+}
 function htCreate(n, diff) {
   var dens = [0.16, 0.21, 0.26, 0.31][diff], target = Math.round(n * n * dens), best = null;
-  for (var at = 0; at < 40; at++) {
+  var deadline = Date.now() + 6000;
+  for (var at = 0; at < 400 && (Date.now() < deadline || !best); at++) {
     var lat = htLatin(n), sh = [], r, c;
     for (r = 0; r < n; r++) sh.push(new Array(n).fill(0));
     var order = shuf(nRange(n * n)), cnt = 0;
@@ -56,11 +105,51 @@ function htCreate(n, diff) {
       for (var t = 0; t < n; t++) { if (!sh[r][t]) cand.push(lat[r][t]); if (!sh[t][c]) cand.push(lat[t][c]); }
       g[r][c] = cand[rnd(cand.length)];
     }
-    var res = { n: n, grid: g, solution: sh };
-    if (!best || cnt > best.cnt) best = { cnt: cnt, d: res };
-    if (cnt >= target - 1) return res;
+    /* Eindeutigkeit prüfen und ggf. gezielt nachbessern */
+    for (var fix = 0; fix < 60; fix++) {
+      var res0 = htSolve(g, n, 2, 20000);
+      if (res0.aborted) break;
+      if (res0.count === 1) { return { n: n, grid: g, solution: sh }; }
+      /* zweite Lösung finden, die von der gespeicherten abweicht */
+      var alt = null, i2;
+      for (i2 = 0; i2 < res0.sols.length; i2++) {
+        var same = true; for (var q2 = 0; q2 < n * n; q2++) if ((res0.sols[i2][q2] === 1) !== !!sh[(q2 / n) | 0][q2 % n]) { same = false; break; }
+        if (!same) { alt = res0.sols[i2]; break; }
+      }
+      if (!alt) break; /* gespeicherte Lösung ungültig – neuer Versuch */
+      var A = [], B = [];
+      for (i2 = 0; i2 < n * n; i2++) {
+        var r3 = (i2 / n) | 0, c3 = i2 % n, inS = !!sh[r3][c3], inA = alt[i2] === 1;
+        if (inS && !inA) A.push(i2); else if (!inS && inA) B.push(i2);
+      }
+      var done = false;
+      shuf(A);
+      for (var ai = 0; ai < A.length && !done; ai++) {
+        var zr = (A[ai] / n) | 0, zc = A[ai] % n, vals = [];
+        for (var t2 = 0; t2 < n; t2++) {
+          if (t2 !== zc && !sh[zr][t2] && alt[zr * n + t2] !== 1) vals.push(g[zr][t2]);
+          if (t2 !== zr && !sh[t2][zc] && alt[t2 * n + zc] !== 1) vals.push(g[t2][zc]);
+        }
+        if (vals.length) { g[zr][zc] = vals[rnd(vals.length)]; done = true; }
+      }
+      shuf(B);
+      for (var bi = 0; bi < B.length && !done; bi++) {
+        var br = (B[bi] / n) | 0, bc = B[bi] % n, bad = false;
+        for (var d2 = 0; d2 < 4; d2++) { var xr = br + NB[d2][0], xc = bc + NB[d2][1]; if (xr >= 0 && xc >= 0 && xr < n && xc < n && sh[xr][xc]) bad = true; }
+        if (bad) continue;
+        sh[br][bc] = 1;
+        if (!htConnected(function (a, b) { return !sh[a][b]; }, n)) { sh[br][bc] = 0; continue; }
+        var vs = [];
+        for (var t3 = 0; t3 < n; t3++) { if (t3 !== bc && !sh[br][t3]) vs.push(g[br][t3]); if (t3 !== br && !sh[t3][bc]) vs.push(g[t3][bc]); }
+        if (vs.length) g[br][bc] = vs[rnd(vs.length)];
+        done = true;
+      }
+      if (!done) break;
+    }
+    best = best || true;
   }
-  return best.d;
+  /* Notfall (sollte praktisch nie eintreten): kleinere Dichte versuchen */
+  return diff > 0 ? htCreate(n, diff - 1) : htCreate(n, 0);
 }
 /* st: 0 leer, 1 geschwärzt, 2 sichtbar markiert */
 function htAnalyze(g, st, n, strict) {
@@ -136,13 +225,43 @@ function mgCount(n, giv, limit) {
   rec(0);
   return nodes > 400000 ? limit : count;
 }
+/* Logische Lösbarkeit: Linie (Zeile/Spalte/Diagonale) mit genau einer Lücke ergibt die Zahl zwingend.
+   Wird so alles gefüllt, ist die Lösung eindeutig – auch bei großen Quadraten. */
+function mgPeel(n, giv) {
+  var N2 = n * n, M = n * (N2 + 1) / 2, g = copyM(giv), used = new Uint8Array(N2 + 2), i, j, empty = 0;
+  var lines = [], d1 = [], d2 = [];
+  for (i = 0; i < n; i++) { var rw = [], cl = []; for (j = 0; j < n; j++) { rw.push([i, j]); cl.push([j, i]); } lines.push(rw, cl); d1.push([i, i]); d2.push([i, n - 1 - i]); }
+  lines.push(d1, d2);
+  for (i = 0; i < n; i++) for (j = 0; j < n; j++) { if (g[i][j]) used[g[i][j]] = 1; else empty++; }
+  var ch = true;
+  while (ch && empty > 0) {
+    ch = false;
+    for (var l = 0; l < lines.length; l++) {
+      var cells = lines[l], sum = 0, miss = null, nm = 0;
+      for (var q = 0; q < cells.length; q++) { var v = g[cells[q][0]][cells[q][1]]; if (v) sum += v; else { nm++; miss = cells[q]; } }
+      if (nm === 1) {
+        var x = M - sum;
+        if (x < 1 || x > N2 || used[x]) return false;
+        g[miss[0]][miss[1]] = x; used[x] = 1; empty--; ch = true;
+      }
+    }
+    if (empty === 1) {
+      var lastC = null, lastV = 0;
+      for (i = 0; i < n; i++) for (j = 0; j < n; j++) if (!g[i][j]) lastC = [i, j];
+      for (i = 1; i <= N2; i++) if (!used[i]) lastV = i;
+      if (lastC && lastV) { g[lastC[0]][lastC[1]] = lastV; used[lastV] = 1; empty--; ch = true; }
+    }
+  }
+  return empty === 0;
+}
 function mgCreate(n, diff) {
   var sol = mgTransform(mgBuild(n)), N2 = n * n, M = n * (N2 + 1) / 2;
-  var target = Math.max(2, Math.round(N2 * [0.6, 0.46, 0.36, 0.28][diff])), giv = copyM(sol), order = shuf(nRange(N2)), keep = N2, uniq = n <= 4;
+  var target = Math.max(2, Math.round(N2 * [0.6, 0.46, 0.36, 0.28][diff])), giv = copyM(sol), order = shuf(nRange(N2)), keep = N2;
   for (var k = 0; k < order.length && keep > target; k++) {
     var r = Math.floor(order[k] / n), c = order[k] % n, v = giv[r][c];
     giv[r][c] = 0;
-    if (!uniq || mgCount(n, giv, 2) === 1) keep--; else giv[r][c] = v;
+    /* nur entfernen, wenn die Lösung nachweislich eindeutig bleibt */
+    if (mgPeel(n, giv) || (n <= 4 && mgCount(n, giv, 2) === 1)) keep--; else giv[r][c] = v;
   }
   return { n: n, M: M, solution: sol, givens: giv };
 }

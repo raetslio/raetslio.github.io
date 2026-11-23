@@ -111,6 +111,47 @@ function buildAllowedVectors(dirs) {
   return vecs;
 }
 
+/* Stellt sicher, dass jedes Wort genau einmal im Gitter vorkommt. Zufällige Füllbuchstaben werden
+   bei Doppelfunden neu gewürfelt. Gibt false zurück, wenn ein Doppelfund nur aus Wortbuchstaben besteht. */
+function wsMakeUnique(grid, n, placements, vectors, weights) {
+  var isWord = [], r, c, k;
+  for (r = 0; r < n; r++) isWord.push(new Array(n).fill(false));
+  placements.forEach(function (pl) { for (k = 0; k < pl.word.length; k++) isWord[pl.sr + pl.dr * k][pl.sc + pl.dc * k] = true; });
+  function cellsKey(cells) { return cells.map(function (x) { return x[0] * n + x[1]; }).sort(function (a, b) { return a - b; }).join(','); }
+  for (var iter = 0; iter < 400; iter++) {
+    var extras = [];
+    placements.forEach(function (pl) {
+      var w = pl.word, own = [];
+      for (var q = 0; q < w.length; q++) own.push([pl.sr + pl.dr * q, pl.sc + pl.dc * q]);
+      var ownKey = cellsKey(own), seen = {};
+      for (var vi = 0; vi < vectors.length; vi++) {
+        var dr = vectors[vi][0], dc = vectors[vi][1];
+        for (var sr = 0; sr < n; sr++) for (var sc = 0; sc < n; sc++) {
+          var er = sr + dr * (w.length - 1), ec = sc + dc * (w.length - 1);
+          if (er < 0 || er >= n || ec < 0 || ec >= n) continue;
+          var ok = true, cells = [];
+          for (var t = 0; t < w.length; t++) { var rr = sr + dr * t, cc = sc + dc * t; if (grid[rr][cc] !== w[t]) { ok = false; break; } cells.push([rr, cc]); }
+          if (!ok) continue;
+          var key = cellsKey(cells);
+          if (key === ownKey || seen[key]) continue;
+          seen[key] = 1; extras.push(cells);
+        }
+      }
+    });
+    if (!extras.length) return true;
+    var changed = false;
+    for (var e = 0; e < extras.length; e++) {
+      var fill = extras[e].filter(function (x) { return !isWord[x[0]][x[1]]; });
+      if (!fill.length) return false;
+      var pick = fill[Math.floor(Math.random() * fill.length)], old = grid[pick[0]][pick[1]], nl = old, tries = 0;
+      while (nl === old && tries++ < 50) nl = weights[Math.floor(Math.random() * weights.length)];
+      if (nl !== old) { grid[pick[0]][pick[1]] = nl; changed = true; }
+    }
+    if (!changed) return false;
+  }
+  return false;
+}
+
 function generateWordSearch() {
   var ws = appState.ws;
   var n = ws.size;
@@ -126,6 +167,12 @@ function generateWordSearch() {
   var placements = [];
   var unplaced = [];
 
+  var alpha = ws.umlautDirect ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  var weights = ws.umlautDirect ? 'AAAAAAAAABCCCDDEEEEEEEEEEEFFGGGHHIIIIIIJJKKLLLMMMNNNNNNOOOOOOPPQRRRRRRSSSSSSTTTTTTUUUUVWWXYZZÄÖÜ' : alpha;
+  /* Mehrere Versuche, bis jedes Wort garantiert genau einmal vorkommt */
+  for (var attempt = 0, uniqueOk = false; attempt < 60 && !uniqueOk; attempt++) {
+  for (var gr = 0; gr < n; gr++) grid[gr].fill('');
+  placements = []; unplaced = [];
   for (var wi = 0; wi < words.length; wi++) {
     var word = words[wi];
     if (word.length > n) {
@@ -188,16 +235,15 @@ function generateWordSearch() {
     });
   }
 
-  /* Alphabetically sort display list while preserving placement colorIdx */
-  var alpha = ws.umlautDirect ? 'ABCDEFGHIJKLMNOPQRSTUVWXYZÄÖÜ' : 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  var weights = ws.umlautDirect ? 'AAAAAAAAABCCCDDEEEEEEEEEEEFFGGGHHIIIIIIJJKKLLLMMMNNNNNNOOOOOOPPQRRRRRRSSSSSSTTTTTTUUUUVWWXYZZÄÖÜ' : alpha;
-
   for (var fr = 0; fr < n; fr++) {
     for (var fc = 0; fc < n; fc++) {
       if (grid[fr][fc] === '') {
         grid[fr][fc] = weights[Math.floor(Math.random() * weights.length)];
       }
     }
+  }
+
+  uniqueOk = wsMakeUnique(grid, n, placements, vectors, weights);
   }
 
   ws.grid = grid;

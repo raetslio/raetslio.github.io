@@ -196,7 +196,54 @@ function countSolutionsLimited(puzzle, n, subR, subC, limit) {
   }
 
   backtrack(0);
-  return solutions;
+  /* Wurde die Suche abgebrochen, ist Eindeutigkeit nicht bewiesen: wie "mehrere Lösungen" behandeln */
+  return steps > maxSteps ? limit : solutions;
+}
+
+/* Logischer Löser (nackte + versteckte Einzelwerte) für große Gitter.
+   Löst er das Rätsel vollständig, ist die Lösung zwingend eindeutig. */
+function sudokuLogicSolvable(g, n, subR, subC, deadline) {
+  var W = n + 1, N = n * n, hasBoxes = subR > 1 && subC > 1, bw = hasBoxes ? n / subC : 1;
+  var val = new Int16Array(N), rowH = new Uint8Array(n * W), colH = new Uint8Array(n * W), boxH = new Uint8Array(n * W);
+  var boxOf = new Int16Array(N), units = [], r, c, i, u;
+  for (r = 0; r < n; r++) for (c = 0; c < n; c++) boxOf[r * n + c] = hasBoxes ? Math.floor(r / subR) * bw + Math.floor(c / subC) : 0;
+  for (u = 0; u < n; u++) { units.push([], []); if (hasBoxes) units.push([]); }
+  var per = hasBoxes ? 3 : 2;
+  for (r = 0; r < n; r++) for (c = 0; c < n; c++) {
+    i = r * n + c; units[r * per].push(i); units[c * per + 1].push(i);
+    if (hasBoxes) units[boxOf[i] * per + 2].push(i);
+  }
+  var empty = 0;
+  for (r = 0; r < n; r++) for (c = 0; c < n; c++) {
+    var v = g[r][c]; i = r * n + c; val[i] = v;
+    if (v > 0) { rowH[r * W + v] = 1; colH[c * W + v] = 1; boxH[boxOf[i] * W + v] = 1; } else empty++;
+  }
+  function can(i, v) { var rr = (i / n) | 0, cc = i % n; return !rowH[rr * W + v] && !colH[cc * W + v] && !boxH[boxOf[i] * W + v]; }
+  function put(i, v) { var rr = (i / n) | 0, cc = i % n; val[i] = v; rowH[rr * W + v] = 1; colH[cc * W + v] = 1; boxH[boxOf[i] * W + v] = 1; empty--; }
+  var progress = true, cnt = new Int16Array(W), last = new Int32Array(W);
+  while (progress && empty > 0) {
+    progress = false;
+    if (Date.now() > deadline) return false;
+    for (i = 0; i < N; i++) {
+      if (val[i]) continue;
+      var k = 0, only = 0;
+      for (var x = 1; x <= n && k < 2; x++) if (can(i, x)) { k++; only = x; }
+      if (k === 0) return false;
+      if (k === 1) { put(i, only); progress = true; }
+    }
+    for (u = 0; u < units.length; u++) {
+      var cells = units[u], x2, j;
+      for (x2 = 1; x2 <= n; x2++) { cnt[x2] = 0; }
+      for (j = 0; j < cells.length; j++) {
+        i = cells[j]; if (val[i]) continue;
+        for (x2 = 1; x2 <= n; x2++) if (can(i, x2)) { cnt[x2]++; last[x2] = i; }
+      }
+      for (x2 = 1; x2 <= n; x2++) {
+        if (cnt[x2] === 1 && !val[last[x2]] && can(last[x2], x2)) { put(last[x2], x2); progress = true; }
+      }
+    }
+  }
+  return empty === 0;
 }
 
 function createSudokuPuzzleData(n, subR, subC, diffKey) {
@@ -233,30 +280,13 @@ function createSudokuPuzzleData(n, subR, subC, diffKey) {
       }
     }
   } else {
-    /* Balanced fast clue removal for large grids up to 55x55 */
-    var rowCounts = new Array(n).fill(n);
-    var colCounts = new Array(n).fill(n);
-    var minPerLine = Math.max(1, Math.floor(n * ratio * 0.65));
-    for (var j = 0; j < coords.length && removed < targetRemove; j++) {
-      var r2 = coords[j][0];
-      var c2 = coords[j][1];
-      if (rowCounts[r2] > minPerLine && colCounts[c2] > minPerLine) {
-        givens[r2][c2] = 0;
-        rowCounts[r2]--;
-        colCounts[c2]--;
-        removed++;
-      }
-    }
-    /* Second pass if still short of targetRemove */
-    for (var k = 0; k < coords.length && removed < targetRemove; k++) {
-      var r3 = coords[k][0];
-      var c3 = coords[k][1];
-      if (givens[r3][c3] !== 0 && rowCounts[r3] > 1 && colCounts[c3] > 1) {
-        givens[r3][c3] = 0;
-        rowCounts[r3]--;
-        colCounts[c3]--;
-        removed++;
-      }
+    /* Große Gitter: Hinweis nur entfernen, wenn das Rätsel weiterhin logisch (und damit eindeutig) lösbar ist.
+       Zeitbudget begrenzt die Arbeit; es bleiben dann eher mehr Hinweise stehen, aber nie mehrdeutig. */
+    var deadline = Date.now() + Math.min(2500, 300 + n * n * 1.2);
+    for (var j = 0; j < coords.length && removed < targetRemove && Date.now() < deadline; j++) {
+      var r2 = coords[j][0], c2 = coords[j][1], sv = givens[r2][c2];
+      givens[r2][c2] = 0;
+      if (sudokuLogicSolvable(givens, n, subR, subC, deadline)) removed++; else givens[r2][c2] = sv;
     }
   }
 
