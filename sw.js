@@ -1,7 +1,7 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v3';
+const VERSION = 'raetslio-v4';
 
 /* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
 const APP_FILES = [
@@ -17,7 +17,7 @@ const APP_FILES = [
   'js/puzzles/binoxxo-logic.js', 'js/puzzles/labyrinth-logic.js', 'js/puzzles/binoxxo-online.js', 'js/puzzles/labyrinth-online.js',
   'js/heft/heft-data.js', 'js/heft/heft-texts.js', 'js/heft/svg-helpers.js', 'js/heft/heft-build.js', 'js/heft/heft-ui.js',
   'js/print/print-extra.js', 'js/puzzles/sudoku-notes.js', 'js/print/pdf-export.js',
-  'js/history/print-history.js', 'js/history/play-history.js',
+  'js/history/print-history.js', 'js/history/play-history.js', 'js/history/stats.js',
   'js/puzzles/new-puzzles-logic.js', 'js/puzzles/new-puzzles-online.js', 'js/puzzles/new-puzzles-print.js', 'js/puzzles/new-puzzles-registry.js',
   'js/modes-init.js', 'js/pwa.js', 'js/account.js'
 ];

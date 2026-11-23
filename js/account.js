@@ -48,7 +48,7 @@
       return true;
     } catch (e) { switching = false; return false; }
   }
-  var SP = { verlauf: { ls: 'raetsel_heft_verlauf', mod: 'HV' }, spiele: { ls: 'raetsel_heft_spiele', mod: 'GV' } };
+  var SP = { verlauf: { ls: 'raetsel_heft_verlauf', mod: 'HV' }, spiele: { ls: 'raetsel_heft_spiele', mod: 'GV' }, stats: { ls: 'raetsel_heft_stats', mod: 'ST' } };
   var $ = function (id) { return document.getElementById(id); };
   var sb = null, user = null, pushTimer = null, syncing = false, lastMsg = '', view = 'login';
   var configured = SUPABASE_URL.indexOf('DEIN-PROJEKT') < 0 && SUPABASE_ANON_KEY.indexOf('DEIN-ANON') < 0;
@@ -209,7 +209,7 @@
     return { hefte: h, nH: h.length, nV: v ? v.items.length : 0, nS: g ? g.items.length : 0, sig: hash(h.map(function (x) { return [x.id, x.d]; })) + '|' + hash(v) + '|' + hash(g) };
   }
   function addData(data) {
-    var added = { hefte: 0, verlauf: 0, spiele: 0 };
+    var added = { hefte: 0, verlauf: 0, spiele: 0, stats: 0 };
     hefteOf(data).forEach(function (x) {
       var key = BK_PRE + x.id, ex = localStorage.getItem(key);
       if (ex !== null) {
@@ -433,7 +433,7 @@
       var data = {};
       for (var i = 0; i < localStorage.length; i++) {
         var k = localStorage.key(i);
-        if (k && (k.indexOf(BK_PRE) === 0 || k === SP.verlauf.ls || k === SP.spiele.ls)) data[k] = localStorage.getItem(k);
+        if (k && (k.indexOf(BK_PRE) === 0 || k === SP.verlauf.ls || k === SP.spiele.ls || k === SP.stats.ls)) data[k] = localStorage.getItem(k);
       }
       var out = { app: 'Rätslio', version: 1, exported: new Date().toISOString(), owner: user ? user.email : 'Gerät', data: data };
       var sm = summarize(data);
