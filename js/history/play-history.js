@@ -91,7 +91,7 @@ function gvRender() {
     return '<div class="hv-item"><div style="flex:1;min-width:210px"><strong>' + TYPE_LABEL[it.type] + ' ' + sizeTxt(it.type, it.size) + '</strong> · ' + DIFFS[it.diff] +
       (cur.indexOf(it.id) >= 0 ? ' <span class="tag">Geöffnet</span>' : '') + (it.done ? ' <span class="tag">Gelöst</span>' : '') +
       '<br><span class="label">Zuletzt gespielt ' + dt + ' Uhr · ' + info + '</span><div class="gv-bar" role="img" aria-label="Fortschritt ' + bar + ' Prozent"><span style="width:' + bar + '%"></span></div></div>' +
-      '<div class="hv-act">' + b('open', it.done ? 'Erneut öffnen' : 'Weiterspielen', it.done ? '' : 'btn-primary') + b('del', 'Entfernen') + '</div></div>';
+      '<div class="hv-act">' + b('open', it.done ? 'Erneut öffnen' : 'Weiterspielen', it.done ? '' : 'btn-primary') + b('share', 'Teilen') + b('del', 'Entfernen') + '</div></div>';
   }).join('') : '<div class="bk-empty">' + (d.items.length ? 'Keine Rätsel für diesen Filter.' : 'Noch keine angefangenen Rätsel. Trage in einem Rätsel etwas ein – es erscheint dann hier automatisch.') + '</div>';
 }
 function gvOpen(it) {

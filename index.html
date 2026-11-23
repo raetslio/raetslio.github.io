@@ -582,6 +582,7 @@
             <div class="field-group"><label class="field-label" for="gv-f-type">Rätselart</label><select id="gv-f-type" class="select-control"><option value="all">Alle</option><option value="sudoku">Sudoku</option><option value="ws">Suchsel</option><option value="binoxxo">Binoxxo</option><option value="maze">Labyrinth</option><option value="hitori">Hitori</option><option value="magic">Magisches Quadrat</option><option value="mauer">Zahlenmauer</option></select></div>
             <div class="field-group"><label class="field-label" for="gv-f-status">Status</label><select id="gv-f-status" class="select-control"><option value="all">Alle</option><option value="open">Angefangen</option><option value="done">Gelöst</option></select></div>
           </div>
+          <div class="panel-subblock"><span class="label">Rätsel teilen</span><p class="muted-note">Über „Teilen“ bei einem Rätsel in der Liste entsteht ein Link. Wer ihn öffnet, bekommt dasselbe Rätsel – ohne deinen Fortschritt. Einen erhaltenen Link oder Code kannst du hier einfügen.</p><div style="display:flex;flex-wrap:wrap;gap:8px"><input id="sh-in" class="input-control" type="text" placeholder="Link oder Code einfügen" aria-label="Link oder Code einfügen" style="flex:1;min-width:200px"><button type="button" id="sh-open" class="btn btn-primary">Rätsel öffnen</button></div><div id="sh-out" class="hidden" style="margin-top:8px"><textarea id="sh-link" class="input-control" rows="3" readonly aria-label="Link zum Teilen" style="width:100%"></textarea><button type="button" id="sh-copy" class="btn btn-sm">Link kopieren</button></div></div>
           <div id="gv-status" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
           <div id="gv-list"></div>
         </section>
@@ -948,6 +949,7 @@
   <script src="js/history/print-history.js"></script>
   <script src="js/history/play-history.js"></script>
   <script src="js/history/stats.js"></script>
+  <script src="js/history/share.js"></script>
   <script src="js/puzzles/new-puzzles-logic.js"></script>
   <script src="js/puzzles/new-puzzles-online.js"></script>
   <script src="js/puzzles/new-puzzles-print.js"></script>
