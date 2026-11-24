@@ -54,7 +54,13 @@
     var act = m.querySelector('.qr-act');
     function btn(l, cls, fn) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-sm ' + cls; b.textContent = l; b.addEventListener('click', fn); act.appendChild(b); }
     btn('Link kopieren', 'btn-primary', function () { copy(o.url); });
-    if (navigator.share) btn('Teilen …', '', function () { navigator.share({ url: o.url }).catch(function () {}); });
+    if (navigator.share) btn('Teilen …', '', function () {
+      /* Mit Logo als Vorschaubild; wenn das Gerät keine Dateien kann, nur der Link */
+      fetch('icons/rl-180.png').then(function (r) { return r.blob(); }).then(function (b) {
+        var f = new File([b], 'Raetslio.png', { type: 'image/png' }), d = { files: [f], url: o.url, title: 'Rätslio?' };
+        return (navigator.canShare && navigator.canShare(d)) ? d : { url: o.url };
+      }).catch(function () { return { url: o.url }; }).then(function (d) { return navigator.share(d); }).catch(function () {});
+    });
     btn('Schließen', '', close);
     function close() { m.remove(); document.removeEventListener('keydown', key); }
     function key(e) { if (e.key === 'Escape') close(); }
@@ -69,7 +75,6 @@
     var code = await shEncode(e);
     openShare({ title: TYPE_LABEL[type] + ' teilen', note: 'Wer den Link öffnet, bekommt dasselbe Rätsel – ohne Lösung und ohne deinen Fortschritt.', url: siteUrl() + '#rs=' + code });
   }
-  function shareSite() { openShare({ title: 'Rätslio?', note: 'Link zur Website.', url: siteUrl() }); }
   function inject() {
     Object.keys(VIEW_TYPE).forEach(function (vid) {
       var v = document.getElementById(vid); if (!v || v.querySelector('.sh-tab')) return;
@@ -79,12 +84,6 @@
       d.querySelector('button').addEventListener('click', function () { sharePuzzle(VIEW_TYPE[vid]); });
       st.appendChild(d);
     });
-    var sc = document.querySelector('.header-controls');
-    if (sc && !document.getElementById('btn-share-site')) {
-      var b = document.createElement('button'); b.type = 'button'; b.id = 'btn-share-site'; b.className = 'btn btn-sm'; b.textContent = 'Website teilen'; b.addEventListener('click', shareSite); sc.appendChild(b);
-    }
-    var sp = document.querySelector('#view-spiele .sh-site');
-    if (!sp) { var blk = document.getElementById('sh-in'); blk = blk && blk.closest('.panel-subblock'); if (blk) { var p = document.createElement('p'); p.className = 'sh-site'; p.style.marginTop = '10px'; p.innerHTML = '<button type="button" class="btn btn-sm">Website teilen</button>'; p.firstChild.addEventListener('click', shareSite); blk.appendChild(p); } }
   }
   inject();
 })();
