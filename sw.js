@@ -1,13 +1,13 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v21';
+const VERSION = 'raetslio-v22';
 
 /* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
 const APP_FILES = [
   './',
   'index.html',
-  'sudoku/', 'suchsel/', 'binoxxo/', 'labyrinth/', 'hitori/', 'zahlenmauer/', 'magisches-quadrat/', 'heft/', 'statistik/', 'spiele/', 'verlauf/',
+  'sudoku/', 'suchsel/', 'binoxxo/', 'labyrinth/', 'hitori/', 'zahlenmauer/', 'magisches-quadrat/', 'heft/', 'spiele/', 'verlauf/',
   'manifest.webmanifest',
   'favicon.ico', 'icons/rl.ico', 'icons/rl-32.png', 'icons/rl-180.png', 'icons/rl-192.png', 'icons/rl-512.png', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
   'css/tokens.css', 'css/base.css', 'css/components.css', 'css/board.css', 'css/modals.css', 'css/extensions.css',
@@ -18,7 +18,7 @@ const APP_FILES = [
   'js/puzzles/binoxxo-logic.js', 'js/puzzles/labyrinth-logic.js', 'js/puzzles/binoxxo-online.js', 'js/puzzles/labyrinth-online.js',
   'js/heft/heft-data.js', 'js/heft/heft-texts.js', 'js/heft/svg-helpers.js', 'js/heft/heft-build.js', 'js/heft/heft-ui.js',
   'js/print/print-extra.js', 'js/puzzles/sudoku-notes.js', 'js/print/pdf-export.js',
-  'js/history/print-history.js', 'js/history/play-history.js', 'js/history/stats.js', 'js/history/share.js', 'js/history/extras.js',
+  'js/history/print-history.js', 'js/history/play-history.js', 'js/history/share.js', 'js/history/extras.js',
   'js/puzzles/new-puzzles-logic.js', 'js/puzzles/new-puzzles-online.js', 'js/puzzles/new-puzzles-print.js', 'js/puzzles/new-puzzles-registry.js',
   'js/modes-init.js', 'js/pwa.js', 'js/account.js'
 ];

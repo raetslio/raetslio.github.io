@@ -65,7 +65,6 @@
           <button type="button" id="tab-mauer" class="nav-tab" aria-selected="false" onclick="switchMode('mauer')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 20h18M5 20v-5h6v5M13 20v-5h6v5M8 15v-5h8v5M11 10V5h2v5"/></svg> Zahlenmauer</button>
           <button type="button" id="tab-magic" class="nav-tab" aria-selected="false" onclick="switchMode('magic')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg> Magisches Quadrat</button>
           <button type="button" id="tab-heft" class="nav-tab" aria-selected="false" onclick="switchMode('heft')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 8h8M8 12h8"/></svg> Rätselheft</button>
-          <button type="button" id="tab-statistik" class="nav-tab" aria-selected="false" onclick="switchMode('statistik')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Statistik</button>
           <button type="button" id="tab-spiele" class="nav-tab" aria-selected="false" onclick="switchMode('spiele')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 4l12 8-12 8z"/></svg> Spielverlauf</button>
           <button type="button" id="tab-verlauf" class="nav-tab" aria-selected="false" onclick="switchMode('verlauf')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Druckverlauf</button>
         </nav>
@@ -594,16 +593,6 @@
     </main>
 
     <!-- RÄTSELHEFT VIEW -->
-    <!-- STATISTIK VIEW -->
-    <main id="view-statistik" class="page-grid hidden">
-      <div class="main-column">
-        <section class="panel panel-stack">
-          <h2 class="section-title"><strong>Statistik</strong></h2>
-          <div id="st-box"></div>
-        </section>
-      </div>
-    </main>
-
     <!-- SPIELVERLAUF VIEW -->
     <main id="view-spiele" class="page-grid hidden">
       <div class="main-column">
@@ -980,7 +969,6 @@
   <script src="js/print/pdf-export.js"></script>
   <script src="js/history/print-history.js"></script>
   <script src="js/history/play-history.js"></script>
-  <script src="js/history/stats.js"></script>
   <script src="js/history/share.js"></script>
   <script src="js/history/extras.js"></script>
   <script src="js/puzzles/new-puzzles-logic.js"></script>
