@@ -1,14 +1,14 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v8';
+const VERSION = 'raetslio-v9';
 
 /* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
 const APP_FILES = [
   './',
   'index.html',
   'manifest.webmanifest',
-  'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
+  'favicon.ico', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
   'css/tokens.css', 'css/base.css', 'css/components.css', 'css/board.css', 'css/modals.css', 'css/extensions.css',
   'js/host-fallback.js',
   'js/core/constants.js', 'js/core/persistence.js', 'js/core/theme-mode.js', 'js/core/instructions.js',
