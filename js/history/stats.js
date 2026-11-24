@@ -108,6 +108,8 @@ function stRender() {
 (function () {
   var prev = window.saveStateToHost;
   window.saveStateToHost = function () { try { stRecordAll(); } catch (x) {} return prev.apply(this, arguments); };
-  stRender();
+  /* Erst nach dem Laden aller Skripte rendern (sizeTxt, GV_TYPES usw. stehen in später geladenen Dateien) */
+  function first() { try { stRender(); } catch (x) {} }
+  if (document.readyState === 'complete') first(); else window.addEventListener('load', first);
 })();
-window.ST = { render: stRender, merge: stMerge };
+window.ST = { render: function () { try { stRender(); } catch (x) {} }, merge: stMerge };
