@@ -211,7 +211,7 @@
       <div class="main-column">
         <section class="panel rules-strip" aria-labelledby="ws-rules-heading">
           <div class="rules-header">
-            <h2 id="ws-rules-heading" class="section-title">Suchsel · <strong>Spielanleitung</strong></h2>
+            <h2 id="ws-rules-heading" class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
             <span id="ws-rule-badge" class="tag">16×16 · Umlaute direkt</span>
           </div>
           <ol id="ws-rules-list" class="rules-list"></ol>
@@ -250,7 +250,7 @@
               <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
               Lösung anzeigen
             </button>
-            <button type="button" class="btn" onclick="resetWsProgress()">Funde zurücksetzen</button>
+            <button type="button" class="btn" onclick="resetWsProgress()">Eingaben leeren</button>
             <button type="button" class="btn btn-sage" onclick="generateWordSearch()">
               <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
               Neu mischen
@@ -316,7 +316,7 @@
             </span>
           </label>
 
-          <button type="button" class="btn btn-primary" onclick="generateWordSearch()">Suchsel generieren</button>
+          <button type="button" class="btn btn-primary" onclick="generateWordSearch()">Neues Rätsel</button>
           <button type="button" class="btn" onclick="BK.addCurrent('ws')">Zum Rätselheft hinzufügen</button>
         </section>
       </aside>
@@ -497,7 +497,7 @@
             <button type="button" class="btn" onclick="MW.hint()">Tipp</button>
             <button type="button" class="btn btn-sage" onclick="MW.reveal()">Lösung anzeigen</button>
             <button type="button" class="btn" onclick="MW.clear()">Eingaben leeren</button>
-            <button type="button" class="btn" onclick="MW.newPuzzle()">Neue Zahlenmauer</button>
+            <button type="button" class="btn" onclick="MW.newPuzzle()">Neues Rätsel</button>
           </div>
         </section>
       </div>
@@ -556,8 +556,8 @@
           <label class="check-item" style="justify-content:center;margin-top:8px"><input type="checkbox" id="mz-auto" checked onchange="MZ.auto=this.checked"><span>Pfeilknöpfe laufen bis zur nächsten Kreuzung</span></label>
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
             <button type="button" class="btn btn-sage" onclick="MZ.reveal()">Lösung anzeigen</button>
-            <button type="button" class="btn" onclick="MZ.restart()">Von vorn</button>
-            <button type="button" class="btn" onclick="MZ.newPuzzle()">Neues Labyrinth</button>
+            <button type="button" class="btn" onclick="MZ.restart()">Eingaben leeren</button>
+            <button type="button" class="btn" onclick="MZ.newPuzzle()">Neues Rätsel</button>
           </div>
         </section>
       </div>

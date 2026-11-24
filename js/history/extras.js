@@ -19,7 +19,7 @@
       var meta = v.querySelector('.board-meta');
       if (!meta) {
         var sec = v.querySelector('section.panel[aria-label^="Interaktiv"]'); if (!sec) return;
-        var bar = document.createElement('div'); bar.className = 'board-topbar'; bar.style.justifyContent = 'center';
+        var bar = document.createElement('div'); bar.className = 'board-topbar';
         meta = document.createElement('div'); meta.className = 'board-meta'; bar.appendChild(meta); sec.insertBefore(bar, sec.firstChild);
       }
       var p = document.createElement('span'); p.className = 'stat-pill'; p.id = 'timer-' + t; p.textContent = '00:00'; meta.appendChild(p); pills[t] = p;
@@ -77,7 +77,7 @@
       var d = document.createElement('div'); d.className = 'panel-subblock sh-tab';
       d.innerHTML = '<span class="label">Rätsel teilen</span><p class="muted-note">Link zu diesem Rätsel.</p><button type="button" class="btn">Teilen</button>';
       d.querySelector('button').addEventListener('click', function () { sharePuzzle(VIEW_TYPE[vid]); });
-      st.insertBefore(d, st.children[1] || null);
+      st.appendChild(d);
     });
     var sc = document.querySelector('.header-controls');
     if (sc && !document.getElementById('btn-share-site')) {
