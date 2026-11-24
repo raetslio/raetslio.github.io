@@ -1,0 +1,1006 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="artifact-type" content="tool">
+  <meta name="design-style" content="haven">
+  <script>
+  /* Darstellung früh setzen (verhindert Aufblitzen): gespeicherte Wahl oder Geräteeinstellung */
+  (function () { try { var m = localStorage.getItem('rs_theme') || 'system'; var d = m === 'dark' || (m !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); if (d) document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {} })();
+  </script>
+  <title>Statistik — Rätslio?</title>
+  <meta name="description" content="Rätslio? – Sudoku, Suchsel, Binoxxo, Labyrinth, Hitori, Zahlenmauer und Magisches Quadrat online spielen, drucken und als Rätselheft zusammenstellen.">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rätslio?">
+  <meta property="og:title" content="Rätslio?">
+  <meta property="og:description" content="Rätsel direkt spielen, als Arbeitsblatt drucken oder zum fertigen Rätselheft zusammenstellen.">
+  <meta property="og:image" content="https://raetslio.github.io/icons/rl-512.png?v=3">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="https://raetslio.github.io/icons/rl-512.png?v=3">
+  <link rel="icon" type="image/png" sizes="32x32" href="data:image/png;base64,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">
+  <link rel="icon" href="/icons/rl.ico?v=3" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/rl-32.png?v=3">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/rl-192.png?v=3">
+  <link rel="apple-touch-icon" sizes="180x180" href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAALQAAAC0CAYAAAA9zQYyAAAn8UlEQVR42u2deXwc1ZXvf+feW9WrNkuW8QZeAS+BJDgBbIycBwTIQMIkCIKdvKxD3iRsL8tjZvIyiief2YBMAgSSeAJv2GyMsoc1DMSyDcYQAwEsDAZbxsa7rK33qnvP+6Oq27LBoNbS3bbqfD79QUC3VF31rVO/c+655xBG2pipadH3ZdsiGCxdavL/+bQrr7QiydBMKaw5WruzIeQsAiawMdUMTCCYOEARBFaBxmmGSBCwk4ToZWAnjH5VStWujbMxHctu3rBsmVN4e0uLaFoF0bbq+xpEPJJHRiP2m1taRHN7O7W2tur8f2r6wrVTWIuzGdwEw2cweKqQKkJEAAFsGGAGswF7N0PATiUaEQgAkfB+FgQwwMww2k0TaCsEPUOgNpJmddtdN3fkP9rc3CxbZ8/m/s6tsoE+DOTTP3vNOFuqiwHzGQBnS8uKAgSjXbDRMMYwAAYREzMBIBCN7M0W2LC4ad/hMBMx/GsnhCASEkJKAIB2nBSA1YD4VU67f1h//y17RhLs4YSGmpubRR7ksz9/7Sxm8bdg/qy0rLHMDO06YDYaAIhBIKIA3GMSdGbyHrJEQkplgYigXWcfQPcLSbe33fUfmwpgt7YaAFwxQPsHpQHgzCuuOtlS9reNMUuUZYe1k4NhrQECASIAePQBzoABGIKklJYN7WbTROI+15ibnr7v5tcOZ6icQBe88mlXXhmNJmP/B4RvSaXibi4LBrsEkgHEgR2EmzWBlLLD0K6TYMKN6Ujypg3LlqWGw1sPHrSWFoGlSxkAn7342gtZiBulsua4uSyYjUsUgBzYe4DNrImEUqEQtONsNMZ856nlNz8CgNDSQoPV1oMCLv94aG5ulrvtif9MUl4PTyMHIAdWNNhSWQpEYK3/fU3u7e/CZ2swEqRo8JqaWlRb21J3/uVXT1eWdYewVJOTSRsvACARXKPABkG1AQArFBHGdduMSX957fKfbsmzNmJAF2Bect1CJUQrCTHOzWVdIlLBZQlsGMB2lR1SxujdxtXNT624ZW2xUMuiYb7ims9IKVsJPEY7TgBzYMNmRCSMdl0hRDUJedmkOR95fe2DN2xsampR27a1mWEDOg/zgsVXfcWy7HvZaNtobXy9HFhgwwu1MYaAkFLWZZNmzdu+5qEbNgwUalkEzJ9WKnSf1q5mYwK9HNhIQk3MbBhslGVdMmnOaS+vefDGAXlqGkg2Y/6S6xYqSY8YbSIBzIGVMlgkIUBSpOGaT6xZfvPq98t+HBHMlpYW0draqudffvV0KejXYMQCmAMrtfxgY0CMGKT41fzLr57e2tqqW1paRLGSgxobG0XkrLNUSIceFFKd2C/HHFhgJZUfho0rlRUn4PSxZ55yl7t9O9rb2wfuoZuaWmRra6uOJEI3Kts+3c1lXUKQzQisTFCDlJvLusq2Tw8lwje0trbqpqYWOSANndcoCxZfe6GyrIddJ+cSEMAcWPk1NeAqy1au43ziqeU3P/JuepreAXhLC533ZiKSNu7LQoopxnUZgW4OrDKiRCOUImPMlgipUx+fHk/n64neVXI0Nz8gsHSpSWvn71QoNFW7rg5gDqyCBLXQrquVHZqeNrnrsXSpaW5+QLy7h/ar586+4poZRsiXwNr2/39QaBRYZSkPIiaiLGlz6uoVt7zRvzqvQHdz+xwCwAZ0vbKsMINNAHNgleinmY2Ryo4Y0PUA2Ge3n4f2vfNZi6+bSsSvMHP4SEFjYIFVRnwIEFGGmeauXf7jrXkvLQCgaRUEACbiq6RlRxisA5gDq2gvDdbSCkWI+CoA7DNc0MjcdMU3GzTpTURUz2w4ADqwSvfSRIKYuVOyPLltxX/sB0Ain6DWki9Wtl3vbWgNYA6s8r20Ya2VbddryRcD3oKgaFsEr3rJmM8yMwcsB3YUMe11TDDmMgBoWwRDAHDm4m+doIT7KjMiYC6r3CAib29wWU9Tv8ijIi9j+Y/PawVEPi7lDA6JiJB22Zm1bvnt2xQAKDjnSisccbJp7bcdKAPIgDEMrU2hcRKV6bYy/g1FfsurSgvvmdlvxVWeo/MbJoEZEIIgBJWraxsxjFZ2JGKyfC6AO/waDVpUOMpygWwYkVAIVbEIopEwlJKQQpYcKAajoa4WUgrs7ezy4aGKgZkIaKyvgzYG+w90+0+00h6DNhquq5FMZ5BIppDO5Dywicrx1GAwQ4AWAbiDLrj66lBfp3hJSnmicR1TyqVuIkBrA0spjGsYg/q6atiW1zaqHI8yBiAFYfL4RkghsH3XPuQcp2ye8J2ekWFbCpPHN0Ibg+279kIbLsvtlr9GOcdBZ1cv9uw/AMd1IaUosbdmI6QltNGbleo+RaU61YkEc4LXrat0V46IoLVGNBLGlEnjEYuEoY1BbyKJvmQamWwOWuuSA6OkhPH/+UbH28jkchAVArRhRti2wQBcrfFmx9twtS75DSelRDhkoyoWQSwawfhx9aiuiqFjxy6k0hlIKUvokEiw1iDgeHbGzFRGYI4UKuQ6OaYSnRmC55kj4RCmnzARIdtCIpnCzn2d6EukoLU5NPop2b3OUEoimUpDSYmeRALp7NCAfj+ty0UEwIYZkZCNZCoNV2t09yXKAnT+gKUUqI5HMb6xAbFoGDNOmIjNHW8jnclAClEy+WHYsFR2iDXPVmz0LAgBEBkU0dZgSAcAD5wpk8YjZFvo6U1i646dcBwNKQWUkmWJ4VkwlBQQwnsp6b0GDrSnI/OPY8MMbQxcrZHvGsx8EHAhCEpKKCG8ANT/3EHI+R1AF47P/9mr1SmL6AAzo6sngUQqg6mTx6OmKoYpk8Zhc8fb0MaghI97QwSpWc9SUsiTSukJiQDtMiY01iEeiyCZTKNjxy642kApWbig5Yre+//p/L/z+3lgIUC+DEjlHDiuCyUlwraFeDSCmqoYIuEQhA+u0QaaDXI5B53dvUik0nAcDW00lJKwlQXLUiCQl3HxD+pIx1e+EBVQSsLVGh07dmHmlEmIR6MYV1+HHbv3QakS6mkChJInKQaPAzOIuSR5MmMY4ZCN+tpqaG2wc28nco5bgPloMSIvXeW6GulkCsyM2uoqfODEqZg9YwpOnDIZUycdh6pYFLU+0IdLjawPdFdvH7bt3IPNHW/jta3bsW3nbuzp7Cqcq5BlFTx+pRkzQwqBXM7Fzj2dmHb8BNTXVWN/V0/JAmpiJm/6gzlOseGaER57cVhWg1EVjyBk2+jpS6CnL+FHxnyUgAwIIZBzXKQSWdRWx3DOmR/Gwnmn4IOzZmDycWMHfEOEQzYmjmvAxHENmDtzKtDk/b/O7l680L4Za59/BX9++TXs2LMftqUQDtkVk3F5B9RSoKcvgUQyjZqqGOKxKPYf6Pa9dGmuLRuuVvAG9ZQmw8EeENFwGESEvmQaxnBJv/SQonsh4GqN3kQC4xrGYPFF5+DiRWfihInjDnlfQT/2W5h5t9Pbf4Eir5qFEKivrca580/DufNPw4HuXjy+bgP+8OQ6vLK5AzXxaOE4Ku2JpbVBIplCbXUcsUgInYTSaCIi8gdDTFBgrirVTBP2xY5lKf+Rmzs0bK5geUFE6E2mUFsVx5WXnYPPnH82xtXXFTyUYS4EhFKIAf5e73wcfvr7xxFjaqtx+YUfw1+fuxAPrlqH1kfb0JdKI2QpCEFAxXDtHW8254DBUEp5gWPJFDTA4LgCOFJK50gEKOEPlNGm4muhpBDQWiOdzeFjp38Q31hyCaZNGl/wxAWIh/EBl7+B+t8stqXw6fMW4vwF8/D4ug14aNV6pLM52JbyMyiVcOd7gTEYUFKWtHSBmUGMmKpIUVYpMEuJZG8CddVV+PuvLcFFi844BOSBeuKhwi39JWVjDGLRCC455yzMmnYC/vln9+Ll17aipioGbUxFnTsqzx8NdnQfGWaB7t4EZk07Hsv+6Zu4aNEZML63lH76rdSASOHFGsYYnDR1Mn629Jv41LkL0NWbKDwpRrsFDWSOIDN6+pK4+GNn4n9/8VJvWV4bSFn++z8vR4xhRMMhfP+qL2BCYz2WrXwQ0XCobHUwAdAV7Jn7kilcsPCjWHLROQC83HklwNzfvJJNL3i88rKLUFddhX9bthzRaHhUQx1IjsM0c28ihfMXfARLLjqnsEonRGU+yr3FHQGtDZovaML1f7MYqXR2VF/DAOh+MPf0JXDBwo/gc588F8aUt4i+2KeK1gaXXdiEq5Zcgt5EsiQBawB0BWvmRDKFeXNPwj98bYmXAiIcVUGWkALaGHzp0xfgkx+bj55EsuJkUgB0KU4AETI5B+PH1uNfv/VVRMKhwvar4TAvK+FlJnS/lzHmkMKj4ciCCF87X3/lFThxyiSkM9mKlUsB0CNkDEBrjb+78gqMrast5JiHCrE2xvf05O+7E5D9XkKIQ0pN8+8fqqZmZsQiYXz7y5eXuRovyHKURXv29Cax5JPnYsGH50IbMyTtyYUgUhRWDju7e7Fz737s6+pBd28CWhvEImFUV8XQOKYG4xrGoCYeK7zfeGM/Bv2EEMKTHh/5wEm49ONnY8XDT6ImXnkLLwHQIyE1sjlMO348/tdnL/ZAHIJnNsYU6p33d/XgiWdeQNuzf0HH27vR1dsH19VwXBfM3o2kpISlJOprazBzykR8ZO5JaProqRg/tv6Q3zfY78bM+NJnLsB/P/M8kql0Gfb6BUCX1IgI2ZyDr3zmE4hHI0Pyznn4+pIp3PHLR/DImmext7MLUgjYtgVLKdiWAiEMUL4w3/Pm+7q68faefXhi3fP4xS8fxscXzMPnPnUeJoyt9zItovg9597Ci8HYMbW45NwFWLbyQdRWxw9ubQuAPsa8sxBIpjOYN/dEfPyseV6l3BBhXvfiRtx05wN4Y9tOxKNh1MRjhR4a3iuv2A81D3YLREA6m8PyB5/A409vwFVLLsGnzllQKC0tVoLk9fSl5zfh9088jd5kCkrKY37BZXQGhf5F/eJfXwAlJcCDawWQh/n3Tz6N6/7lNuzYvQ9jaqogpSxkMt4PoHxthtYGUhBqq6uQTGfQcutduOnOlf22X/GggG4cU4sFp831Mh6joNZj1AEtBCGVyWLOzCk4/dRZhSBusDDf94f/xtKf3A3bshAOheBqPWgvyOxlXJSUqK2O4a7f/BFLb7ur8P8G83uZgXPPPG1UeOdRCTSB4GqNiz82v9CDo1jTPsy/fGw1brhjJWJ+/YQZpkwCs9cSraGuBr9+fA1uuec3hdqN4ry0ABHwoVkzMHXSeGRyzjFfkTeqgCYi5BwHExsbcM6ZHypkBIrzzF756DMvtuOGX9yPmlhsUJJgIOZqjfqaavzXbx7Dk8+8ACFEUTeN12bNIByyMXvGCcg5zjEvO0YV0III6WwO8+aehNqqOAwXF2zll8S7evvwr8tWePliMbKVbQxvt8rP7v8D0pksSBS3/zL/zlNPmj46rvGoigV9Lz3/w3MKGYhipQAR4ef3P4htO3cjGg4Nm8x4rydCJGzj9Y7teHTtcyCgKJmUv2FnTpmIaDh8zC+wjBqgiQiO42JcfR1Om3NiofahGLCEEHi9YwceXLUOVbFoyXZeM3sNXR5d/WzRC0D5dx7XUI+qmJdvP5Z19KgCOus4OHHqZNTXVhe8bbF2/8N/QjKVKWl5JhuDsG3j9Y4d2L57rxeADthLe9+xOh5FXXW85A0wA6BHDGgvJXby1Mmexy1Gh/pF/ns7u7D2zy8jGgmPuNQ4XCp5zSOT2LxtZ1FBqDcQwdPh4xrGwNWBhz429LPfIjcPdDGXNA9/23MvYe+BLliWLEsnEWbG9l17ByVZABQ0/7Gc5xg1QGttUBWLYPoJEw8JlgaaHQGAdS9u9Hdely+qPdDdO0gfD9i2dcwXKI0KoIm8pooNdbVoqK0eVGajq6cPm7ZsR8i2ytcdFUAqkx0kzl7diNePLQD6qNfPrjGojkcRjYSL8tB5eLfv3ocDPX1QSpUNaPJlw+Aly7FfbTdKJAeBjUG9753NIBYmXu/YgWwuV94tTQTU11UP6kYAgKzjlnzIUKmtbOWj/WuCD5ZXjtwf0359cOGPFxnp795/AFqbsjVkz3dsmnH8xKKDWvJTjN09fRBEw7qX8fCn2Yhfy0oEmgFISVBKQikFNcK7KaTwdohUxSKHeN2B6m8AONDTi1DIhpLKn95RYsnkakwcNxZzZk4pUjJ5n3ccF129CYRDtleUNcx5dCIA5E1hkJLK9hAoKdD5ZduxY2owvrEezEAylR50cf2AdZW/m2Si34y8KO/mvzsejWLuzCmIhEMl7/YppNdm4fwF87waFFNM8xtvMHAqk0VDfS2i0fCIZWryzSQnj2+ElBKvb32r5LMLSwo09wOssAvaH4Iz0kBLKRCy7cF5Hnglo1JKf99g6f1PLBrBx07/0CHHNHCcPcmUSmdhWyOXpSFCYUd7fiW11Geq5JKDyFtxc7XG5m070NOXHHnJIQW6evrQl0gWHsPF2uaO7Xj1jW2IRkrpoRlKKnT29OLrV3wKExrrC43Vi9G1IMLz7Zvxl1c3oyYeH5ECJSLA1QY1VTGAvHx5OVYkyxMUsqfpcjkH2VwOugRAZ3MOkqnMoP6OqzX6kmmvnliUphFifrm7s/sAzjh1NpZc7PXaKxaRwqLQCxvhuBqZXG5Elu3zQOdyNhzHLVsmpWxZjnzvCSpBX2OCF4Bu2bHLa/E1QP2Zr5fe29mFfQe6YdtWybyOJSV6kymcPO14/Ms3v1pY0Cm+fpuwa18nNr65rZDDHonvkG+dRmXuUz0q8tCGGSHbwp9feQ09fcmDj+KBAAFg/V82obO7F1aJ9uUpKdGbSGL65An48d9/A2NqqorejJD/3gDwp/UvorOr56gbnRcA/R5ghiwLO3bvx6/+uBrCn9j0fjAIIuQcF/c//KcRDaYOh7m7L4GTpx+Pn3zvGhw3doy3IXcQXk/4S/6PrnnWO34TbJI9dry0MYjHwvh/v3kMz760CUpJr2Gi32qAfd2a7zOX7zt34x0r8ca2HQiH7BEffCmlwIHePpz5wdm47R+vRWN97aA7KOUL+VdveAkbN29DJGxX5ODOAOghBFmCBLTr4js3/hwPrXqmkD4kf55gvh+01143jX+67W788rE2xGPREa1/zuvOrt4EPn3eQvz4H77RL98sBvVdCQTHdXH3b/84qjqQjqrOScwMSym4rsY/3vpfaHvuJXzm/IU4edrxiIRCYGbs7+rB6x078PjTG/Cn9S+gKhYZUZiFEHBdFznHxdWf+2t89dJPFI51sCAav63ZLx9bixdffRO11bFR0QZs1AGd18ZSCsSjYTyxbgNWPfsixjXUIWRbMIaRTGfQ2FCHWDiMqlgUyXRmxLb+SymQzmQRsm38y1VfxHkLTvP62Q2h2Xp+9vaezi7c+atHSpw3D4Aum6dmBuKxaMErG+M1Uw7ZNuLRCGSRPTCKh1miL5HE8eMb8YPrvoy5M6cOvZ1v/oYlwr//5wrsPdCN6lh01LTSHbVA9380A/nC94ND2M0wND1/P5i7e/vw0VNOxj9f9xWMHVM7LGPjjNaQUuKu3z6GJ595EbVVsVEF86gHur/HPui5RziTIbxl+E80nY6Wb/xPL3tihg6zd0NIPLHuefzk3t+iOh4ddTAHQJc6pSQEuvsS+Nwnz8V3vnJ5QdMPtTgr792f37gZS2/zGkeOVguALjHMf9P8V7hqySWFJ8FQpU0e5lc2b8V3bvwZHNeFbVklbbNQUec5QK00MPf0JfG1yy7CVUsuKcBGwwTzy69vwTf/7adIpjMIjWKYAw9dApNSoLs3gS9ccj6+vvhTQx4KVIDZ191PPf8KvvvjO5HJeuk/PYphDoAeaZh9z3ze/Hm47ouXDgvM3l5ML7332JrnsPT2uwEGQrY9qj1zAPRIywx/ytb04yfiu3+7BF4/jKHCzAUJ8/Dq9fjB7fdAEEFZMoA5AHqkzZsU8K0vNaO2Kj7kRZP++wiXP/QkHln9LMK2DVfrUbUSGABdpiAwkUrjrNPm4oxTZxVqK4akl4VAV28CN/zifuzaf8Dfwc6D7qIaZDkCK0oaKCnwhUvOH57gTwi8+dZOXPm9H+JP618oLJpw4JgDDz3y3pmQTGfxoVkz8KFZMwY9Zas/zKufewk/+Ond6OpJoKGuZtRUzgVAV4JyJoLWGh8/a573szGFOd4D9vDwmpxLIdD6aBtuvGMllJKIRsIlmxoQAB0YAK/DUU1VDKd/4ORCtqNomH2v/p8PPITbV/wO8WgEQhDcwDMHQJc6GEylM5g94wRMOm6s34arSKD9vYy33PNr3PmrR1BTFQMzgkxGEBSWQ24Ajutizowp3kzBItvX5jfm/nzlg/hF60OorYqXrTlkAHRg/toJYeqk8UV/NF+D/fLrWz2Yq6v8DbzBaQ2ALpMZYxAJ2Zg22QOaiulz5EuTlQ//yR+9TAhYDoAun9wAoJkRDoXQUFvTn9EB6+beZAovvbalsL8xsADosgpoo72xF5FIcWMj8rJix+592N/VA2sUdDgKgD4aJAcbRMMhhAtte4vp4Qzs6+yG47rBUnYAdGVkOIxhhEM2bEsVJzn8f/Ykkn7VXAB0AHQFqGhmhmUpENGgshPJdGZQLXMDC4AeEfN6OqvD/O7ALZdz/AblwbkMgK4Ior0qu8HhDDhaB3nnAOhK09KDd69GayDIPg/JyjinkEs3p7DIY3rHMQ7ws3qwy9T+R8xh52Sgx1c5Dygu+zGVB2gCLEvBti2EbHvEhwYVc0GUFIUVPtuyYHhgFXNCECKuDaVk/isW/7gkgVDI9nZvv0tlnWEuNJEhEEK2BallRaT5iACpDWzbgmWpssUBqhzQNNbXYXxjPcBAMj3ycwoHa9OOn1CU1MjmHNTX1RQ5R/DgzJdw2MbcE6chHn3/Fr5SCsycOrmizpcxBrGIN6dQSYnXtrxV8put5IM381/cGANtjD9uuLJAzveZ08YMXNKS56Xf3r0fnd09aKirGbCmJnhNY954a6c/RsI98jnxZwEWfXwlAlr717bQTKfEUUHJB28SEfYd6IGrDd7YtgPdJZhTWKzkmDFlEpSU2PrWTmRyzoC9jBQCPYkEfv/kOnzl0gvhag0l5Xt+Jt/9aN1fNuLxtX/2JtUe4WQwM8K2hRlTJsHVGm907ICrTcVIDlcb1FbFQAR09SS8fPxo0NB5j+S6Gq7rAlw5QIMPAuhqDcd1B7zrRBPBVgorHnoCHz/rNEw+rvE9oc53P8rmHPx85R/gau23JXh3uWH6pQUBb3eMq3VFAe26GlqXb3FIlPMEHD6rsFJe/XVxsZ+zLAu9iRS+c8PP8fae/VD+KDidl1j9HstSCGSyOfzfH9+J9s0diEXDhbYEI3F8pXuV78YK8tAjoCOj4ZDXduAf/wOPrnmuMIio/0sIgefbN+NrLT/CE888j6pYNNjNfdSm7Y5x08YgGgnjQHcvvnfznfjN42twxgdnY/zYMQAIPX0JrH9pE9b/5VXkHGfUjY0IgD5KPbWXa1fY0P461r+06bAAkhCNhBGNhAOYA6CPDsuvgMYikXcESQwckt4KLAD6qPLWgQVAHzNGeGexP3NQhhQAfZSZIA9axwCuBvL7XgUBigBL+DtdArIDoCvdIwNAyvV+bowA48NAleUBnnSBfRlgVxpwGIhKD/IA7ADoivTKjvFeZzQA/2M8Y3oVIa4Ay18wdIwH+7YEsHYvsGYvkNFAWAZQB0BXGMxpF2gIA1+eAcyrByQRssbzxDnH9+AEhATwgTrglDrgvAnAnZuBV3uAuBVAPaRrEJyC4YV5WhXw/VOBM8d6XjfpAtrfJijIe+Ur0FIukHCBGVXA904FFo5jJF3vPYEFQJdVM+cMMDYMfHs2cFwE6HEOBfhIN4EkD3pFwNUnE06p826MAOoA6LISrRn4ygzguOhBQAdq0tfdgoCvnegFj64JNn8HQJdRany0HjitAUg4HqCD+T0ZDUyKAhdO9H4OGigFQJfc2IfxvAlDP5l5qBcdB9SFPC8dWAB0SbWzo4FxYS8YzJihaV+CB3FDyAsUsybQ0gHQpQSaAJeBiVGgSg1Puo0BKAFMjSNoOhMAXXrTDNTaXhA4nADW2UGtRwB0GSRHPksx3AGcCq5MAHS5AsKE60mP4bQ+J0jbBUCXwSR5hUY5PXwBHAPYkw7ObQB0ic0wYAtgexLYmfZ+5mG4QRIOsKnHKy8NAsMA6NKeQF9yrN/nATiUTIdhr+LulS5gRwqwZRAYBkCXWkczEJHAH3d59c2hIZSA5ktPf7f90KAzsADokgaGSgDdOeC+LV76jqh4z6rZKx393XZgUy8QUUEZaQB0GbV0TAGr9wD3bvF+Fn7B0kA+y/By2U/uYqzs8Dx+APPgTBV6TwU2ZKjjFvDrtzxv/aUZXtVc2k/p0REkRtT3xCs7gPu3EpQofcfOY0j/sQIoTUTRUnVdZwZco72IXopjDuqYAp7cDbzRB3xqMuP0BkKVdfC7AwcXYdIaeOEA47dvEV7p9gLCox3m/DV1jTcvplSu0p88llYgJABE/fM4on+efNXpuhpEXod87+odOz4pD/XOFHDrJsLvY8DcWmByzJMVDG/R5O0UsLEb6EgQNB/01EfvWfACB9uyQERwXBcAg1CSlroeu0R9CoSdJEQju+7ISw+/3iGZzoAZqIpFsUccOObGAOfz0yHywN2aeOeiC7MXTIaOkVYGzN7Ugqp4FMyMlH+NS+KrmJmkJNZmpyIS3aV6LjB7Xe77EilkczlUxaOojsfQ3ZuAOsbmW7P/fW3hpfLe6z1H+9cmIriuRm11HFWxKDK5HPoSKQhBpftuRCBBPYJAe4gITFSSPy0EIZPNobOrF1IITBjXAMtS0MYck7Ep+x773V7Hwv1LRNB+Y8oJ4xogpUBnVy8yWaeoOTNDOsdETEQg0B6ljX5NlXBoDzMgpMCezi5UV8UQj4YxdfJ4dGzfhZzrQgrhg81lukCH/kxUOVuhqKKOzxsF7WoNWylMnTwesWgYiWQaezu7IESJpzIwoLXZpIRU7f5zT5TqzAgAruuiY8duzJgyETVVMcycOgk793SiN5GE6+r+UWTpzonxRJ8xBobIG7GgzYBHUoy8Nme4+uBQnvzxlfzJxgczGnU1VZjQWI9YJIJMLoeOHbvg+o6pZDwzC2aGILyqXHY3SkNZQSLEJToE9k9GOpPFGx07MGXSeMSjEUw7fgKSqQz6kklksg601iUPbJSUiEUjUFKiJh5HyM5VFNBh20YsGoGrNWqr4mWZsSKlQDgUQlU8ilgkDCkEEqk0OnbsQjqThSzxEChBgozWWRduu6qp4819ndgmpDqRXceASJQGHkBKQjqTxeaO7Wisr0NDXQ2q41HUVMXKEiAyvEbkk8c3etIHhJzjVIy2Z2bYlsLk8Y3QxntyaFOeAT1e3peRzeWwu6sHezu74Lq65DADbEgqAe1uC1mJzQQACxdfe4+07SVOLqMJVPLZhQaA0QbhkF2465WSkEKW/GIxGA11tZBSYG9nl7eQWiFlQuzr5sb6OmhjsP9At3ezcWnPjzbetKtkOoO+RAqZbA5CCogyRD4Mdi07LN1c7u61y2/+og8vrwLR51CGAq98qlIpiZzjYF9nN/b70U+5MHp96/bCTMVKy7swgE1b3vIDxPIcneeBuZCGzadcy5S08eepYRXgN2s0Eo9zLpcSEFE+mA4v+eOUiKCUV9VezoxWXjNXYlatP8jlOj4ib9Y4fNlRxvUDFhBSO9mUkfykl3BoaRFP3XPLWwxeLSyL2VMAZdWJ5QaJUdlL0JVwfOxfqzIfgxGWxYax+ql7bnkLLS1CNK3ySkgFyZVUakEWWGBDRJqISAArAaBplVdhQAD4I5//Rn3IyE0EUc9sgGDDRGAVTjORAIM7s8I9+bl7busEQAIANzW1qOfuua2TQPdIyyYG6+B8BVbZvpm1tGwCcNdz99zW2dTUojxNDaBtEQwAYqafaCeXIgiJQHsEVsneGUJqJ5ciUrcBIJ9hfwvW0qWmufkBsXb5j7cYmPuUbRNz4KUDq1CambWyQ2SMuW/NvT/c2tz8gMDSpf2ABtA6eyMDIEXyBu06aRKiHHnywAJ7f+8shNBuLsWW/e8AyGcXhwCd99Jt9/7oDTb6JmWHROClA6tQ7yyMMTc9ffdNb/b3zu+WySC0tNB5byYiaXb/IoSYZrydLMHu8MAqgWYjlCJjzJYIqVMfnx5PY+nSQ9Lyh4PKze3t9Pi9P0waw9eQkMREQR/5wColEjQkJBnD1zx+7w+Tze3t7yicf8fmoPb2dm5qalFrH7zhtYlz5tWGQuH52nVcCrx0YOWVGq4djijHyf3o6eW3/KS5+QHZ2rr0HZL4SIsn1NzcLLbU1YloMrpGKHW662TdUlfiBRYY4FXUKSukjOuuT8VSC6d1dZnW1lbzbkmLI3ldnj17Nm9YtsxhxmJj9H4plWJ/CTGwwEromY2UShmj9zNj8YZly5zW2bOPWM7ynsvbzc3NsrW1Vc+//KqFMmQ9wtpE2NvMGsiPwEoCMwkBIURau/qCp1bcsjbP5JE+I9/rFxb09EM3dkyeM2+TUvZnGWz8Us+g1iOwkYWZCEJZwri5y59acesfm5pa1MMP3/6eqWT5fr9427Y209TUotY8eOPGSXPnbVfSugRg8v9gAHVgIwKzEEJIZZF2s199asVPVjQ1tai2tqXu+31WDuQPFKD+ww0bJs+dt1EI+VeCRMiw0YRAfgQ2rAGgllJJEpRyXfeKp1fcet9AYX5fDX245X/xWVdc3SSU1UpCjHVzWZcoyH4ENiye2VV2SDGbvezq5jXLb15dDMzvleV4V2trW+o2NbWotStubTPAWUbrdVY4opjZBBmQwIYiMZjZWOGIYqOfNpxdOBiYByw5Dpcfzc3N8tEVd+wfa51ytxojolKpBd4KjnZ9XR1o68AGyDJrqSwppCJ29U3JV5OfX//oz/Y1NzfL9wsAhyw5DrGWlkJRyNmLr72QpbhBSmuudrIwxrhEJAOwA3svkIUQSlohaO28ol19/dMrbnn4cLaKNTnoQ2prY3grivKRlXe+PuGkM/+LhMlA0DxlhSJGu8TMgccO7B0gE5G0QhHB4F7D/AM3gy+vW3nzq83NzbK9vT3P1qBsWEDrn+w+/YprZoak+hbDfF4qK6qdHAwb7W98FwHcoxBiwAAMQUJKy4Z2nRRB3JPV7g/Xr7hl8+EMDcWGEy5qbn5AtLZepgFg/pJrT5KCvg7GYqmsBjYG2nXB8OZREIMQeO9jEmAwM1N+NoOQUimQENCusx+E5drw7U/fd/NrHsgPyNbWy961LqPcQBe0dXN7O+XvtqYvfPs41vxJZn0pAwuVZYcBhtEaxmjAGGZvPzqD2VupCUA/esD1rlf+2hGEICEkhPRCKNfJZUhgDbH8JUn6fdtdN+0ueOTZs3mwWrl0QB8BbAA460vXTSNHnA02ZzObMxmYIqUKH9IJiBlsTP58BdhUoOX9DQlxSMs2ZobRbgbAViLxDEis1sJZ8/Tdt755iDwdAZBHHuiDCoqaFn1fti2C6f8lZje32HWyZ6YI0cns6OkgMYuEGMfG1IDNBDDGgFAVeOpK9MzoA+EASOwkIXrZmN1g8ypZ8k2T5U1dumZze+vSXH/n1rQKom3V9zVGeFLE/wc5rySv3snI8QAAAABJRU5ErkJggg==">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/rl-180.png?v=3">
+  <link rel="apple-touch-icon" href="/icons/rl-180.png?v=3">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Rätslio?">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/board.css">
+  <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/extensions.css">
+  <script src="js/host-fallback.js"></script>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="site-header">
+      <div class="brand-block">
+        <h1 class="headline" aria-label="Rätslio?">Rätslio<svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><rect width="512" height="512" rx="112" fill="#3c5a6e"/><g fill="none" stroke="#e2e9ee" stroke-opacity="0.28" stroke-width="6" stroke-linecap="round"><rect x="86" y="86" width="340" height="340" rx="26"/><path d="M199.3 86v340M312.7 86v340M86 199.3h340M86 312.7h340"/></g><path d="M190 204C190 150 226 120 262 120C300 120 330 146 330 184C330 226 288 240 270 264C262 276 262 290 262 308" fill="none" stroke="#ffffff" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/><circle cx="262" cy="376" r="30" fill="#d9946e"/></svg></h1>
+        <p class="caption-sage">Rätsel direkt spielen, als Arbeitsblatt drucken oder zum fertigen Rätselheft zusammenstellen</p>
+      </div>
+
+      <div class="header-controls">
+        <nav class="nav-tabs" aria-label="Rätselmodus wählen">
+          <button type="button" id="tab-sudoku" class="nav-tab" aria-selected="true" onclick="switchMode('sudoku')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
+            Sudoku
+          </button>
+          <button type="button" id="tab-wortsuche" class="nav-tab" aria-selected="false" onclick="switchMode('wortsuche')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35M8 11h6M11 8v6"/></svg>
+            Suchsel
+          </button>
+          <button type="button" id="tab-binoxxo" class="nav-tab" aria-selected="false" onclick="switchMode('binoxxo')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg> Binoxxo</button>
+          <button type="button" id="tab-labyrinth" class="nav-tab" aria-selected="false" onclick="switchMode('labyrinth')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3h18v18H3zM3 9h12v6M9 15v6M15 3v6"/></svg> Labyrinth</button>
+          <button type="button" id="tab-hitori" class="nav-tab" aria-selected="false" onclick="switchMode('hitori')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/><rect x="12" y="12" width="8" height="8" fill="currentColor" stroke="none"/></svg> Hitori</button>
+          <button type="button" id="tab-mauer" class="nav-tab" aria-selected="false" onclick="switchMode('mauer')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 20h18M5 20v-5h6v5M13 20v-5h6v5M8 15v-5h8v5M11 10V5h2v5"/></svg> Zahlenmauer</button>
+          <button type="button" id="tab-magic" class="nav-tab" aria-selected="false" onclick="switchMode('magic')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg> Magisches Quadrat</button>
+          <button type="button" id="tab-heft" class="nav-tab" aria-selected="false" onclick="switchMode('heft')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 8h8M8 12h8"/></svg> Rätselheft</button>
+          <button type="button" id="tab-statistik" class="nav-tab" aria-selected="false" onclick="switchMode('statistik')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg> Statistik</button>
+          <button type="button" id="tab-spiele" class="nav-tab" aria-selected="false" onclick="switchMode('spiele')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 4l12 8-12 8z"/></svg> Spielverlauf</button>
+          <button type="button" id="tab-verlauf" class="nav-tab" aria-selected="false" onclick="switchMode('verlauf')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Druckverlauf</button>
+        </nav>
+
+        <button type="button" id="btn-open-print" class="btn btn-primary" onclick="openPrintModal()">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Druckfenster &amp; Export
+        </button>
+
+        <button type="button" id="btn-theme-toggle" class="btn" aria-pressed="false" onclick="toggleTheme()" title="Darstellung wechseln: System, Hell, Dunkel">
+          <svg id="icon-theme-system" class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          <svg id="icon-theme-sun" class="icon-svg hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"/></svg>
+          <svg id="icon-theme-moon" class="icon-svg hidden" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <span id="theme-label">System</span>
+        </button>
+
+        <button type="button" id="btn-account" class="btn" onclick="RSAUTH.open()" title="Optional anmelden, um alles geräteübergreifend zu speichern">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
+          <span id="account-label">Anmelden</span>
+        </button>
+      </div>
+    </header>
+
+    <!-- SUDOKU VIEW -->
+    <main id="view-sudoku" class="page-grid">
+      <div class="main-column">
+
+        <section class="panel" aria-label="Interaktives Sudoku-Spielfeld">
+          <div class="board-topbar">
+            <div class="board-meta">
+              <span id="sudoku-diff-tag" class="tag">Leicht</span>
+              <span id="sudoku-progress-stat" class="stat-pill">0 / 0 ausgefüllt</span>
+              <span id="sudoku-timer-stat" class="stat-pill" title="Zeit">00:00</span>
+            </div>
+            <div class="zoom-bar" id="sudoku-zoom-bar">
+              <label for="sudoku-zoom-slider">Raster-Zoom:</label>
+              <input id="sudoku-zoom-slider" type="range" min="18" max="54" value="40" oninput="setSudokuCellZoom(this.value)">
+              <span id="sudoku-zoom-val" class="stat-pill">40 px</span>
+            </div>
+          </div>
+
+          <div id="sudoku-feedback" class="feedback-banner info hidden" role="status" aria-live="polite">
+            <span id="sudoku-feedback-text"></span>
+          </div>
+
+          <div class="board-viewport" id="sudoku-viewport">
+            <div class="board-center-wrap">
+              <div id="sudoku-grid" class="sudoku-grid" role="grid" aria-label="Sudoku-Gitter"></div>
+            </div>
+          </div>
+
+          <div class="keypad-wrap">
+            <div id="sudoku-keypad-hint" class="label">Zifferntastatur — Feld antippen und Zahl wählen (oder Tastatur nutzen)</div>
+            <div id="sudoku-keypad" class="keypad-grid"></div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center"><button type="button" id="btn-notes" class="btn" aria-pressed="false" onclick="SN.toggle()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 20h9M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4z"/></svg><span>Notizblock: aus</span></button><button type="button" class="btn btn-sm" onclick="SN.clearAll()">Notizen löschen</button><span class="label">Taste N schaltet um</span></div>
+          </div>
+
+          <div class="board-actions">
+            <button type="button" class="btn btn-primary" onclick="checkSudoku()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 6L9 17l-5-5"/></svg>
+              Prüfen / Korrigieren
+            </button>
+            <button type="button" id="btn-clear-wrong" class="btn hidden" onclick="clearWrongSudokuCells()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 6h18M8 6V4h8v2M19 6l-1 14H6L5 6"/></svg>
+              Falsche leeren
+            </button>
+            <button type="button" id="btn-sudoku-reveal" class="btn btn-sage" onclick="toggleSudokuReveal()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              Lösung anzeigen
+            </button>
+            <button type="button" class="btn" onclick="resetSudokuEntries(this)">Eingaben leeren</button>
+            <button type="button" class="btn" onclick="requestSudokuGeneration()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Neues Rätsel
+            </button>
+          </div>
+        </section>
+        <section class="panel rules-strip" aria-labelledby="sudoku-rules-heading">
+          <div class="rules-header">
+            <h2 id="sudoku-rules-heading" class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="sudoku-rule-badge" class="tag">9×9 · Unterblöcke 3×3</span>
+          </div>
+          <ol id="sudoku-rules-list" class="rules-list"></ol>
+        </section>
+      </div>
+
+      <aside class="side-column" aria-label="Sudoku-Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Raster &amp; <strong>Schwierigkeit</strong></h2>
+
+          <div class="field-group">
+            <span class="field-label">Schnellauswahl Rastergröße</span>
+            <div class="chip-group" id="sudoku-size-presets">
+              <button type="button" class="chip-btn" data-size="4" onclick="selectSudokuPreset(4)">4×4</button>
+              <button type="button" class="chip-btn" data-size="9" aria-pressed="true" onclick="selectSudokuPreset(9)">9×9</button>
+              <button type="button" class="chip-btn" data-size="16" onclick="selectSudokuPreset(16)">16×16</button>
+              <button type="button" class="chip-btn" data-size="20" onclick="selectSudokuPreset(20)">20×20</button>
+              <button type="button" class="chip-btn" data-size="25" onclick="selectSudokuPreset(25)">25×25</button>
+              <button type="button" class="chip-btn" data-size="36" onclick="selectSudokuPreset(36)">36×36</button>
+              <button type="button" class="chip-btn" data-size="40" onclick="selectSudokuPreset(40)">40×40</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="sudoku-size-input">
+              <span>Benutzerdefinierte Größe (4 bis 55)</span>
+              <span id="sudoku-subgrid-preview">Blöcke: 3×3</span>
+            </label>
+            <div class="input-row">
+              <input id="sudoku-size-input" class="input-control" type="number" min="4" max="55" value="9" oninput="onSudokuSizeInput(this.value)">
+              <button type="button" class="btn btn-primary" onclick="requestSudokuGeneration()">Erstellen</button>
+            </div>
+            <div id="sudoku-prime-note" class="feedback-banner warning feedback-banner-compact hidden"></div>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Schwierigkeitsgrad</span>
+            <div class="segmented" id="sudoku-diff-segmented" role="group" aria-label="Schwierigkeitsgrad">
+              <button type="button" class="seg-btn" data-diff="leicht" aria-pressed="true" onclick="setSudokuDifficulty('leicht')">Leicht</button>
+              <button type="button" class="seg-btn" data-diff="mittel" aria-pressed="false" onclick="setSudokuDifficulty('mittel')">Mittel</button>
+              <button type="button" class="seg-btn" data-diff="schwer" aria-pressed="false" onclick="setSudokuDifficulty('schwer')">Schwer</button>
+              <button type="button" class="seg-btn" data-diff="experte" aria-pressed="false" onclick="setSudokuDifficulty('experte')">Experte</button>
+            </div>
+            <span id="sudoku-diff-hint" class="label">Ca. 62 % vorgegebene Zahlen</span>
+          </div>
+
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('sudoku')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <!-- SUCHSEL (WORTSUCHE) VIEW -->
+    <main id="view-wortsuche" class="page-grid hidden">
+      <div class="main-column">
+
+        <section class="panel" aria-label="Interaktives Suchsel-Gitter">
+          <div class="board-topbar">
+            <div class="board-meta"><span id="ws-diff-tag" class="tag">–</span><span id="ws-count-tag" class="stat-pill">0 / 0 Wörter gefunden</span><span id="timer-ws" class="stat-pill" title="Zeit">00:00</span></div>
+            <div class="zoom-bar">
+              <label for="ws-zoom-slider">Zellengröße:</label>
+              <input id="ws-zoom-slider" type="range" min="20" max="46" value="32" oninput="setWsCellZoom(this.value)">
+              <span id="ws-zoom-val" class="stat-pill">32 px</span>
+            </div>
+          </div>
+
+          <div id="ws-feedback" class="feedback-banner info hidden" role="status" aria-live="polite">
+            <span id="ws-feedback-text"></span>
+          </div>
+
+          <div class="board-viewport" id="ws-viewport">
+            <div class="board-center-wrap">
+              <div id="ws-stage" class="ws-stage">
+                <svg id="ws-svg-overlay" class="ws-svg-overlay" aria-hidden="true"></svg>
+                <div id="ws-grid" class="ws-grid" role="grid" aria-label="Suchsel-Buchstabengitter"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ws-wordlist" id="ws-wordlist" aria-label="Zu suchende Wörter"></div>
+
+          <div class="board-actions">
+            <button type="button" id="btn-ws-reveal" class="btn btn-primary" onclick="toggleWsSolution()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              Lösung anzeigen
+            </button>
+            <button type="button" class="btn" onclick="resetWsProgress()">Eingaben leeren</button>
+            <button type="button" class="btn btn-sage" onclick="generateWordSearch()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Neu mischen
+            </button>
+          </div>
+        </section>
+        <section class="panel rules-strip" aria-labelledby="ws-rules-heading">
+          <div class="rules-header">
+            <h2 id="ws-rules-heading" class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="ws-rule-badge" class="tag">16×16 · Umlaute direkt</span>
+          </div>
+          <ol id="ws-rules-list" class="rules-list"></ol>
+        </section>
+      </div>
+
+      <aside class="side-column" aria-label="Suchsel-Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Wörter &amp; <strong>Optionen</strong></h2>
+
+          <div class="field-group">
+            <label class="field-label" for="ws-size-input">
+              <span>Gittergröße (10×10 bis 35×35)</span>
+              <span id="ws-size-label">16×16</span>
+            </label>
+            <input id="ws-size-input" type="range" min="10" max="35" value="16" oninput="onWsSizeChange(this.value)" style="accent-color: var(--primary);">
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="ws-words-input">
+              <span>Wortliste (max. 150 Wörter)</span>
+              <span id="ws-word-counter">0 / 150</span>
+            </label>
+            <textarea id="ws-words-input" class="textarea-control" oninput="onWsWordsInput()" placeholder="Ein Wort pro Zeile oder mit Komma trennen…"></textarea>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Wortrichtungen</span>
+            <div class="check-grid">
+              <label class="check-item">
+                <input type="checkbox" id="dir-h" checked onchange="onWsOptionsChange()">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+                <span>Waagerecht</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" id="dir-v" checked onchange="onWsOptionsChange()">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 4v16M6 14l6 6 6-6"/></svg>
+                <span>Senkrecht</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" id="dir-d" checked onchange="onWsOptionsChange()">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 6l12 12M18 10v8h-8"/></svg>
+                <span>Diagonal</span>
+              </label>
+              <label class="check-item">
+                <input type="checkbox" id="dir-r" onchange="onWsOptionsChange()">
+                <svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M20 12H4M10 6l-6 6 6 6"/></svg>
+                <span>Rückwärts</span>
+              </label>
+            </div>
+          </div>
+
+          <label class="toggle-row" for="ws-umlaut-toggle">
+            <div>
+              <span class="toggle-title">Umlaute direkt (Ä, Ö, Ü)</span>
+              <span id="ws-umlaut-desc" class="toggle-desc">Aktiv: Ä, Ö, Ü bleiben erhalten; Aus: AE, OE, UE</span>
+            </div>
+            <span class="toggle-switch">
+              <input type="checkbox" id="ws-umlaut-toggle" checked onchange="onWsUmlautToggle()">
+              <span class="toggle-track"><span class="toggle-thumb"></span></span>
+            </span>
+          </label>
+
+          <button type="button" class="btn btn-primary" onclick="generateWordSearch()">Neues Rätsel</button>
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('ws')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+    <!-- BINOXXO VIEW -->
+    <main id="view-binoxxo" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel" aria-label="Interaktives Binoxxo-Spielfeld">
+          <div class="board-topbar"><div class="board-meta"><span id="bx-diff-tag" class="tag">–</span><span id="bx-progress-stat" class="stat-pill">–</span><span id="timer-binoxxo" class="stat-pill" title="Zeit">00:00</span></div></div>
+          <div id="bx-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <div class="bx-wrap"><div id="bx-grid" class="bx-grid" role="grid" aria-label="Binoxxo-Gitter"></div></div>
+          <div class="btn-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
+            <button type="button" class="btn btn-primary" onclick="BX.check()">Prüfen</button>
+            <button type="button" class="btn" onclick="BX.hint()">Tipp</button>
+            <button type="button" class="btn btn-sage" onclick="BX.reveal()">Lösung anzeigen</button>
+            <button type="button" class="btn" onclick="BX.clear()">Eingaben leeren</button>
+            <button type="button" class="btn" onclick="BX.newPuzzle()">Neues Rätsel</button>
+          </div>
+        </section>
+        <section class="panel rules-strip">
+          <div class="rules-header">
+            <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="bx-badge" class="tag">8×8</span>
+          </div>
+          <ol class="rules-list">
+            <li>Fülle jedes Feld mit einem <b>X</b> oder einem <b>O</b>.</li>
+            <li>Nie mehr als <b>zwei gleiche</b> Zeichen direkt nebeneinander – weder waagerecht noch senkrecht.</li>
+            <li>Jede Zeile und jede Spalte enthält <b>gleich viele X und O</b>.</li>
+            <li>Keine zwei Zeilen und keine zwei Spalten sind identisch.</li>
+            <li>Antippen/Klicken wechselt: leer → X → O → leer. Pfeiltasten bewegen den Fokus, Tasten X, O und Entf funktionieren ebenfalls.</li>
+          </ol>
+        </section>
+      </div>
+      <aside class="side-column" aria-label="Binoxxo-Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Raster &amp; <strong>Schwierigkeit</strong></h2>
+          <div class="field-group">
+            <span class="field-label">Rastergröße</span>
+            <div class="chip-group" id="bx-sizes"></div>
+          </div>
+          <div class="field-group">
+            <span class="field-label">Schwierigkeitsgrad</span>
+            <div class="segmented" id="bx-diffs"></div>
+            <span class="label">Je schwerer, desto weniger Vorgaben.</span>
+          </div>
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('binoxxo')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <!-- HITORI VIEW -->
+    <main id="view-hitori" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel" aria-label="Interaktives Hitori-Spielfeld">
+          <div class="board-topbar"><div class="board-meta"><span id="ht-diff-tag" class="tag">–</span><span id="ht-progress-stat" class="stat-pill">–</span><span id="timer-hitori" class="stat-pill" title="Zeit">00:00</span></div></div>
+          <div id="ht-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <div class="nx-wrap"><div id="ht-grid" class="nx-grid" role="grid" aria-label="Hitori-Gitter"></div></div>
+          <div class="btn-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
+            <button type="button" class="btn btn-primary" onclick="HT.check()">Prüfen</button>
+            <button type="button" class="btn" onclick="HT.hint()">Tipp</button>
+            <button type="button" class="btn btn-sage" onclick="HT.reveal()">Lösung anzeigen</button>
+            <button type="button" class="btn" onclick="HT.clear()">Eingaben leeren</button>
+            <button type="button" class="btn" onclick="HT.newPuzzle()">Neues Rätsel</button>
+          </div>
+        </section>
+        <section class="panel rules-strip">
+          <div class="rules-header">
+            <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="ht-badge" class="tag"></span>
+          </div>
+          <ol class="rules-list">
+            <li>Schwärze (streiche) Felder, sodass in <b>jeder Zeile und jeder Spalte keine Zahl mehr als einmal sichtbar</b> bleibt.</li>
+            <li>Geschwärzte Felder dürfen sich <b>nicht seitlich berühren</b> – diagonal ist erlaubt.</li>
+            <li>Alle sichtbaren Felder müssen <b>zusammenhängen</b> (waagerecht und senkrecht verbunden).</li>
+            <li>Antippen/Klicken wechselt: leer → geschwärzt → sichtbar markiert (Kreis) → leer. Mit den Pfeiltasten bewegst du den Fokus; Taste S schwärzt, O markiert, Entf leert.</li>
+          </ol>
+        </section>
+      </div>
+      <aside class="side-column" aria-label="Interaktives Hitori-Spielfeld – Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Raster &amp; <strong>Schwierigkeit</strong></h2>
+          <div class="field-group">
+            <span class="field-label">Rastergröße</span>
+            <div class="chip-group" id="ht-sizes"></div>
+          </div>
+          <div class="field-group">
+            <span class="field-label">Schwierigkeitsgrad</span>
+            <div class="segmented" id="ht-diffs"></div>
+            <span class="label">Je schwerer, desto weniger Vorgaben.</span>
+          </div>
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('hitori')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <!-- MAGIC VIEW -->
+    <main id="view-magic" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel" aria-label="Interaktives Magisches Quadrat">
+          <div class="board-topbar"><div class="board-meta"><span id="mg-diff-tag" class="tag">–</span><span id="mg-progress-stat" class="stat-pill">–</span><span id="timer-magic" class="stat-pill" title="Zeit">00:00</span></div></div>
+          <div id="mg-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <div id="mg-info" class="label" style="text-align:center;margin-bottom:8px"></div>
+          <div class="nx-wrap"><div id="mg-grid" class="nx-grid mg" role="group" aria-label="Magisches Quadrat"></div></div>
+          <div id="mg-pad" class="nx-pad" aria-label="Zahlenfeld"></div>
+          <div class="btn-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
+            <button type="button" class="btn btn-primary" onclick="NXMG.check()">Prüfen</button>
+            <button type="button" class="btn" onclick="NXMG.hint()">Tipp</button>
+            <button type="button" class="btn btn-sage" onclick="NXMG.reveal()">Lösung anzeigen</button>
+            <button type="button" class="btn" onclick="NXMG.clear()">Eingaben leeren</button>
+            <button type="button" class="btn" onclick="NXMG.newPuzzle()">Neues Rätsel</button>
+          </div>
+        </section>
+        <section class="panel rules-strip">
+          <div class="rules-header">
+            <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="mg-badge" class="tag"></span>
+          </div>
+          <ol class="rules-list">
+            <li>Trage alle Zahlen von <b>1 bis zur Feldanzahl</b> genau einmal ein (3×3: 1–9, 4×4: 1–16 …).</li>
+            <li>Jede <b>Zeile, Spalte und beide Diagonalen</b> ergeben dieselbe Summe, die <b>magische Zahl</b>.</li>
+            <li>Rechts und unten siehst du die Summen deiner Eingaben: grün = richtig, rot = falsch. Pfeiltasten wechseln das Feld. Am Handy nutzt du das Zahlenfeld unter dem Rätsel.</li>
+          </ol>
+        </section>
+      </div>
+      <aside class="side-column" aria-label="Interaktives Magisches Quadrat – Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Größe &amp; <strong>Schwierigkeit</strong></h2>
+          <div class="field-group">
+            <span class="field-label">Rastergröße</span>
+            <div class="chip-group" id="mg-sizes"></div>
+          </div>
+          <div class="field-group">
+            <span class="field-label">Schwierigkeitsgrad</span>
+            <div class="segmented" id="mg-diffs"></div>
+            <span class="label">Je schwerer, desto weniger Vorgaben.</span>
+          </div>
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('magic')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <!-- MAUER VIEW -->
+    <main id="view-mauer" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel" aria-label="Interaktive Zahlenmauer">
+          <div class="board-topbar"><div class="board-meta"><span id="mw-diff-tag" class="tag">–</span><span id="mw-progress-stat" class="stat-pill">–</span><span id="timer-mauer" class="stat-pill" title="Zeit">00:00</span></div></div>
+          <div id="mw-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <p id="mw-oprule" class="muted-note" style="text-align:center;margin:0 0 8px"></p>
+          <div id="mw-wrap" class="nw-wrap"></div>
+          <div id="mw-pad" class="nx-pad" aria-label="Zahlenfeld"></div>
+          <div class="btn-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
+            <button type="button" class="btn btn-primary" onclick="MW.check()">Prüfen</button>
+            <button type="button" class="btn" onclick="MW.hint()">Tipp</button>
+            <button type="button" class="btn btn-sage" onclick="MW.reveal()">Lösung anzeigen</button>
+            <button type="button" class="btn" onclick="MW.clear()">Eingaben leeren</button>
+            <button type="button" class="btn" onclick="MW.newPuzzle()">Neues Rätsel</button>
+          </div>
+        </section>
+        <section class="panel rules-strip">
+          <div class="rules-header">
+            <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="mw-badge" class="tag"></span>
+          </div>
+          <ol class="rules-list">
+            <li>Jeder Stein ist durch die gewählte Rechenart mit den <b>zwei Steinen direkt darunter</b> verbunden.</li>
+            <li><b>Plus:</b> Summe · <b>Minus:</b> Unterschied (große minus kleine Zahl) · <b>Mal:</b> Produkt · <b>Geteilt:</b> große durch kleine Zahl, ohne Rest.</li>
+            <li>Berechne die leeren Steine – von unten nach oben oder durch Umkehren der Rechnung auch von oben nach unten. Pfeiltasten wechseln den Stein. Am Handy nutzt du das Zahlenfeld unter dem Rätsel.</li>
+          </ol>
+        </section>
+      </div>
+      <aside class="side-column" aria-label="Interaktive Zahlenmauer – Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Rechenart, Größe &amp; <strong>Schwierigkeit</strong></h2>
+          <div class="field-group">
+            <span class="field-label">Rechenart</span>
+            <div class="chip-group" id="mw-ops"></div>
+          </div>
+          <div class="field-group">
+            <span class="field-label">Höhe der Mauer</span>
+            <div class="chip-group" id="mw-sizes"></div>
+            <span class="label">Bei „Mal“ sind höchstens 4, bei „Geteilt“ höchstens 5 Zeilen möglich.</span>
+          </div>
+          <div class="field-group">
+            <span class="field-label">Schwierigkeitsgrad</span>
+            <div class="segmented" id="mw-diffs"></div>
+            <span class="label">Je schwerer, desto größere Zahlen und weniger Vorgaben.</span>
+          </div>
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('mauer')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <!-- LABYRINTH VIEW -->
+    <main id="view-labyrinth" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel" aria-label="Interaktives Labyrinth">
+          <div class="board-topbar"><div class="board-meta"><span id="mz-diff-tag" class="tag">–</span><span id="mz-progress-stat" class="stat-pill">–</span><span id="timer-maze" class="stat-pill" title="Zeit">00:00</span></div></div>
+          <div id="mz-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <div class="label" id="mz-stats" style="text-align:center;margin-bottom:8px"></div>
+          <div id="mz-wrap" class="mz-wrap"></div>
+          <div class="dpad" aria-label="Richtungstasten">
+            <button type="button" class="btn up" onclick="MZ.dpad(0)" aria-label="Hoch"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 15l6-6 6 6"/></svg></button>
+            <button type="button" class="btn lf" onclick="MZ.dpad(3)" aria-label="Links"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>
+            <button type="button" class="btn dn" onclick="MZ.dpad(2)" aria-label="Runter"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <button type="button" class="btn rt" onclick="MZ.dpad(1)" aria-label="Rechts"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
+          <label class="check-item" style="justify-content:center;margin-top:8px"><input type="checkbox" id="mz-auto" checked onchange="MZ.auto=this.checked"><span>Pfeilknöpfe laufen bis zur nächsten Kreuzung</span></label>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
+            <button type="button" class="btn btn-sage" onclick="MZ.reveal()">Lösung anzeigen</button>
+            <button type="button" class="btn" onclick="MZ.restart()">Eingaben leeren</button>
+            <button type="button" class="btn" onclick="MZ.newPuzzle()">Neues Rätsel</button>
+          </div>
+        </section>
+        <section class="panel rules-strip">
+          <div class="rules-header">
+            <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="mz-badge" class="tag">15×15</span>
+          </div>
+          <ol class="rules-list">
+            <li>Finde den Weg vom <b>Start</b> (Öffnung oben links) zum <b>Ziel</b> (Öffnung unten rechts).</li>
+            <li>Steuere mit den <b>Pfeiltasten / WASD</b>, den Pfeilknöpfen oder wische mit dem Finger (oder zieh mit der Maus) irgendwo auf dem Labyrinth in die Richtung, in die du laufen willst – der Finger muss nicht auf der Spielfigur sein. Wischst du nach unten, läufst du nach unten. Mit Umschalt+Pfeil läufst du bis zur nächsten Kreuzung.</li>
+            <li>Sackgasse? Geh einfach zurück – dein Pfad wird dabei wieder eingekürzt.</li>
+          </ol>
+        </section>
+      </div>
+      <aside class="side-column" aria-label="Labyrinth-Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Größe &amp; <strong>Schwierigkeit</strong></h2>
+          <div class="field-group">
+            <span class="field-label">Größe (Felder pro Seite)</span>
+            <div class="chip-group" id="mz-sizes"></div>
+            <span class="field-label" style="margin-top:8px">Labyrinth-Typ</span><div class="chip-group" id="mz-hard"></div><span class="label">Extrem: sehr viele Sackgassen und ein langer, verwinkelter Lösungsweg.</span>
+            <span id="mz-diff-hint" class="label"></span>
+          </div>
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('labyrinth')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+    </main>
+
+    <!-- RÄTSELHEFT VIEW -->
+    <!-- STATISTIK VIEW -->
+    <main id="view-statistik" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel panel-stack">
+          <h2 class="section-title"><strong>Statistik</strong></h2>
+          <div id="st-box"></div>
+        </section>
+      </div>
+    </main>
+
+    <!-- SPIELVERLAUF VIEW -->
+    <main id="view-spiele" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Spiel<strong>verlauf</strong> <span id="gv-count" class="tag">0</span></h2>
+          <p class="muted-note">Alle Rätsel, die du hier online angefangen hast – mit deinem Fortschritt. Mit „Weiterspielen“ geht es genau dort weiter, wo du aufgehört hast.</p>
+          <div class="gv-filters">
+            <div class="field-group"><label class="field-label" for="gv-f-type">Rätselart</label><select id="gv-f-type" class="select-control"><option value="all">Alle</option><option value="sudoku">Sudoku</option><option value="ws">Suchsel</option><option value="binoxxo">Binoxxo</option><option value="maze">Labyrinth</option><option value="hitori">Hitori</option><option value="magic">Magisches Quadrat</option><option value="mauer">Zahlenmauer</option></select></div>
+            <div class="field-group"><label class="field-label" for="gv-f-status">Status</label><select id="gv-f-status" class="select-control"><option value="all">Alle</option><option value="open">Angefangen</option><option value="done">Gelöst</option></select></div>
+          </div>
+          <div class="panel-subblock"><span class="label">Rätsel teilen</span><p class="muted-note">Über „Teilen“ bei einem Rätsel in der Liste entsteht ein Link. Wer ihn öffnet, bekommt dasselbe Rätsel – ohne deinen Fortschritt. Einen erhaltenen Link oder Code kannst du hier einfügen.</p><div style="display:flex;flex-wrap:wrap;gap:8px"><input id="sh-in" class="input-control" type="text" placeholder="Link oder Code einfügen" aria-label="Link oder Code einfügen" style="flex:1;min-width:200px"><button type="button" id="sh-open" class="btn btn-primary">Rätsel öffnen</button></div><div id="sh-out" class="hidden" style="margin-top:8px"><textarea id="sh-link" class="input-control" rows="3" readonly aria-label="Link zum Teilen" style="width:100%"></textarea><button type="button" id="sh-copy" class="btn btn-sm">Link kopieren</button></div></div>
+          <div id="gv-status" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <div id="gv-list"></div>
+        </section>
+      </div>
+      <aside class="side-column" aria-label="Spielverlauf-Hinweise">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Gut <strong>zu wissen</strong></h2>
+          <ul class="rules-list">
+            <li>Ein Rätsel erscheint hier, sobald du darin etwas eingetragen hast.</li>
+            <li>Dein Fortschritt wird automatisch gespeichert, auch wenn du ein neues Rätsel erzeugst.</li>
+            <li>Es werden die letzten 60 Rätsel behalten. Mit Konto ist der Verlauf auf allen Geräten verfügbar.</li>
+          </ul>
+          <button type="button" id="gv-clear-done" class="btn">Gelöste entfernen</button>
+          <button type="button" id="gv-clear" class="btn">Alle entfernen</button>
+        </section>
+      </aside>
+    </main>
+
+    <!-- VERLAUF VIEW -->
+    <main id="view-verlauf" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Druck<strong>verlauf</strong> <span id="hv-count" class="tag">0</span></h2>
+          <p class="muted-note">Jedes Rätsel, das du über „Druckfenster &amp; Export“ druckst oder als PNG speicherst, wird hier festgehalten. So kannst du die Lösung auch später noch drucken oder das Arbeitsblatt nachdrucken.</p>
+          <div id="hv-status" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <div id="hv-list"></div>
+        </section>
+      </div>
+      <aside class="side-column" aria-label="Verlauf-Hinweise">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Gut <strong>zu wissen</strong></h2>
+          <ul class="rules-list">
+            <li>Es werden die letzten 50 Blätter gespeichert.</li>
+            <li>Der Verlauf wird mit deinem Konto auf allen Geräten abgeglichen.</li>
+            <li>Gleiche Rätsel erscheinen nur einmal und zählen mit, wie oft sie gedruckt wurden.</li>
+          </ul>
+          <button type="button" id="hv-clear" class="btn">Verlauf leeren</button>
+        </section>
+      </aside>
+    </main>
+
+    <main id="view-heft" class="page-grid hidden">
+      <div class="main-column">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Meine <strong>Hefte</strong></h2>
+          <div class="row-2">
+            <div class="field-group"><label class="field-label" for="bk-sel">Heft wählen</label><select id="bk-sel" class="select-control" onchange="BK.switchBooklet(this.value)"></select></div>
+            <div class="field-group"><label class="field-label" for="bk-name">Name des Hefts</label><input id="bk-name" class="input-control" type="text" maxlength="40" oninput="BK.renameBooklet(this.value)"></div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button type="button" class="btn btn-sm" onclick="BK.newBooklet()">Neues Heft</button>
+            <button type="button" class="btn btn-sm" onclick="BK.duplicateBooklet()">Duplizieren</button>
+            <button type="button" class="btn btn-sm" onclick="BK.deleteBooklet()">Löschen</button>
+            <button type="button" class="btn btn-sm" onclick="BK.exportBooklet()">Als Datei sichern</button>
+            <label class="btn btn-sm" style="cursor:pointer">Aus Datei laden<input type="file" accept=".json,application/json" style="display:none" onchange="BK.importBooklet(this)"></label>
+          </div>
+          <p class="muted-note">Hefte werden automatisch gespeichert. Mit Konto sind sie auf allen Geräten verfügbar. Mit „Als Datei sichern“ kannst du ein Heft zusätzlich als Datei sichern.</p>
+        </section>
+        <section class="panel panel-stack">
+          <h2 class="section-title">Rätsel <strong>hinzufügen</strong></h2>
+          <div class="row-2">
+            <div class="field-group">
+              <label class="field-label" for="bk-gen-type">Rätselart</label>
+              <select id="bk-gen-type" class="select-control" onchange="BK.onGenType()">
+                <option value="sudoku">Sudoku</option>
+                <option value="binoxxo">Binoxxo</option>
+                <option value="maze">Labyrinth</option>
+                <option value="hitori">Hitori</option>
+                <option value="magic">Magisches Quadrat</option>
+                <option value="mauer">Zahlenmauer</option>
+                <option value="ws">Suchsel (mit eigener Wortliste)</option>
+              </select>
+            </div>
+            <div class="field-group hidden" id="bk-gen-op-wrap">
+              <label class="field-label" for="bk-gen-op">Rechenart</label>
+              <select id="bk-gen-op" class="select-control"><option value="plus">Plus (+)</option><option value="minus">Minus (−)</option><option value="mal">Mal (×)</option><option value="geteilt">Geteilt (:)</option></select>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="bk-gen-size">Größe</label>
+              <select id="bk-gen-size" class="select-control"></select>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="bk-gen-diff">Schwierigkeit</label>
+              <select id="bk-gen-diff" class="select-control">
+                <option value="0">Leicht</option><option value="1" selected>Mittel</option><option value="2">Schwer</option><option value="3">Experte</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="bk-gen-count">Anzahl</label>
+              <input id="bk-gen-count" class="input-control" type="number" min="1" max="20" value="1">
+            </div>
+          </div>
+          <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
+            <button type="button" id="bk-gen-btn" class="btn btn-primary" onclick="BK.generateAdd()">Neu erzeugen &amp; hinzufügen</button>
+            <span id="bk-gen-note" class="label"></span>
+          </div>
+          <div id="bk-ws-box" class="hidden" style="display:flex;flex-direction:column;gap:10px">
+            <div class="field-group"><label class="field-label" for="bk-ws-words">Wortliste (ein Wort pro Zeile)</label><textarea id="bk-ws-words" class="textarea-control" rows="6"></textarea></div>
+            <div style="display:flex;flex-wrap:wrap;gap:12px">
+              <label class="check-item"><input type="checkbox" id="bk-ws-h" checked><span>waagerecht</span></label>
+              <label class="check-item"><input type="checkbox" id="bk-ws-v" checked><span>senkrecht</span></label>
+              <label class="check-item"><input type="checkbox" id="bk-ws-d" checked><span>diagonal</span></label>
+              <label class="check-item"><input type="checkbox" id="bk-ws-r"><span>rückwärts</span></label>
+              <label class="check-item"><input type="checkbox" id="bk-ws-uml" checked><span>Umlaute direkt</span></label>
+            </div>
+            <div class="row-2"><div class="field-group"><label class="field-label" for="bk-ws-name">Name des Rätsels (optional)</label><input id="bk-ws-name" class="input-control" type="text" maxlength="50" placeholder="z. B. Tiere im Wald"></div>
+            <div class="field-group" style="justify-content:flex-end"><button type="button" class="btn btn-sm" onclick="BK.wsFromTab()">Liste aus Suchsel-Tab übernehmen</button></div></div>
+          </div>
+          <p class="muted-note">Du kannst auch in den Tabs Sudoku, Suchsel, Binoxxo, Labyrinth, Hitori, Zahlenmauer und Magisches Quadrat über „Zum Rätselheft hinzufügen“ genau das Rätsel übernehmen, das du gerade siehst.</p>
+        </section>
+
+        <section class="panel panel-stack">
+          <h2 class="section-title">Rätsel im <strong>Heft</strong> <span id="bk-count" class="tag">0</span></h2>
+          <div id="bk-list"></div>
+        </section>
+
+        <section class="panel panel-stack">
+          <h2 class="section-title">Zusatz<strong>seiten</strong> <span id="bk-ex-count" class="tag">0</span></h2>
+          <div style="display:flex;flex-wrap:wrap;gap:8px">
+            <button type="button" class="btn btn-sm" onclick="BK.addExtra('text')">Textseite (z. B. Vorwort)</button>
+            <button type="button" class="btn btn-sm" onclick="BK.addExtra('image')">Bildseite</button>
+            <button type="button" class="btn btn-sm" onclick="BK.addExtra('notes')">Notizseite</button>
+            <button type="button" class="btn btn-sm" onclick="BK.addExtra('record')">Rekordblatt</button>
+          </div>
+          <div id="bk-ex-list"></div>
+        </section>
+
+        <section class="panel panel-stack">
+          <h2 class="section-title">Seiten<strong>vorschau</strong> <span id="bk-pages" class="tag">0 Seiten</span></h2>
+          <div id="bk-thumbs" class="bk-thumbs"></div>
+        </section>
+      </div>
+
+      <aside class="side-column" aria-label="Heft-Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Heft <strong>anpassen</strong></h2>
+          <details class="bk-group" open><summary>Titelseite</summary><div class="grp">
+            <label class="check-item"><input type="checkbox" id="bk-o-cover" onchange="BK.setOpt('cover',this.checked)"><span>Titelseite anzeigen</span></label>
+            <div class="field-group"><label class="field-label" for="bk-o-covstyle">Cover-Stil</label><select id="bk-o-covstyle" class="select-control" onchange="BK.setOpt('coverStyle',this.value)"><option value="magazin">Rätselmagazin (bunt)</option><option value="bold">Farbig (Vollfläche)</option><option value="light">Hell &amp; schlicht</option></select></div>
+            <label class="check-item"><input type="checkbox" id="bk-o-art" onchange="BK.setOpt('coverArt',this.checked)"><span>Bild auf der Titelseite</span></label>
+            <label class="check-item"><input type="checkbox" id="bk-o-csud" onchange="BK.setOpt('coverSudoku',this.checked)"><span>9×9-Sudoku auf dem Cover (Lösung im Lösungsteil)</span></label>
+            <button type="button" class="btn btn-sm" onclick="BK.newCoverSudoku()">Anderes Cover-Sudoku</button>
+            <div class="field-group"><label class="field-label" for="bk-img-file">Eigenes Bild für das Cover</label><input id="bk-img-file" class="input-control" type="file" accept="image/*" onchange="BK.onCoverFile(this)"></div>
+            <div id="bk-img-grp" class="hidden" style="display:flex;flex-direction:column;gap:10px">
+              <label class="check-item"><input type="checkbox" id="bk-o-cimg" onchange="BK.setOpt('coverUseImage',this.checked)"><span>Eigenes Bild verwenden (ersetzt Sudoku)</span></label>
+              <select id="bk-o-cimgmode" class="select-control" aria-label="Bildanordnung" onchange="BK.setOpt('coverImgMode',this.value)"><option value="card">Als Bildkarte</option><option value="full">Vollbild im Hintergrund</option></select>
+              <button type="button" class="btn btn-sm" onclick="BK.removeCoverImage()">Bild entfernen</button>
+            </div>
+            <button type="button" class="btn btn-sm" onclick="BK.editCover()">Cover bearbeiten (Elemente verschieben / entfernen)</button>
+            <div class="field-group"><label class="field-label" for="bk-title">Titel</label><input id="bk-title" class="input-control" type="text" maxlength="60" oninput="BK.setOpt('title',this.value)"></div>
+            <div class="field-group"><label class="field-label" for="bk-subtitle">Untertitel</label><input id="bk-subtitle" class="input-control" type="text" maxlength="80" oninput="BK.setOpt('subtitle',this.value)"></div>
+            <div class="field-group"><label class="field-label" for="bk-owner">Dieses Heft gehört … (Name)</label><input id="bk-owner" class="input-control" type="text" maxlength="40" oninput="BK.setOpt('owner',this.value)" placeholder="optional"></div>
+            <div class="field-group"><span class="field-label">Akzentfarbe</span><div id="bk-accent" class="bk-swatches"></div></div>
+          </div></details>
+          <details class="bk-group" open><summary>Reihenfolge</summary><div class="grp">
+            <div class="segmented" id="bk-sort">
+              <button type="button" class="seg-btn" data-s="type" onclick="BK.setSort('type')">Nach Art</button>
+              <button type="button" class="seg-btn" data-s="diff" onclick="BK.setSort('diff')">Nach Schwierigkeit</button>
+              <button type="button" class="seg-btn" data-s="manual" onclick="BK.setSort('manual')">Eigene</button>
+            </div>
+            <span id="bk-sort-hint" class="label"></span>
+          </div></details>
+          <details class="bk-group"><summary>Anleitungen &amp; Inhalt</summary><div class="grp">
+            <label class="check-item"><input type="checkbox" id="bk-o-intro" onchange="BK.setOpt('intro',this.checked)"><span>Anleitung zum Heft</span></label>
+            <textarea id="bk-introText" class="textarea-control" rows="7" oninput="BK.setOpt('introText',this.value)" aria-label="Text der Anleitung zum Heft"></textarea>
+            <button type="button" class="btn btn-sm" onclick="BK.resetIntro()">Standardtext wiederherstellen</button>
+            <label class="check-item"><input type="checkbox" id="bk-o-rules" onchange="BK.setOpt('rules',this.checked)"><span>Spielregeln der Rätselarten</span></label>
+            <div id="bk-rules-ui" style="display:flex;flex-direction:column;gap:10px"></div>
+            <label class="check-item"><input type="checkbox" id="bk-o-toc" onchange="BK.setOpt('toc',this.checked)"><span>Inhaltsverzeichnis</span></label>
+          </div></details>
+          <details class="bk-group"><summary>Seiten &amp; Layout</summary><div class="grp">
+            <div class="field-group"><label class="field-label" for="bk-o-format">Heftformat</label><select id="bk-o-format" class="select-control" onchange="BK.setOpt('format',this.value)"><option value="a4">DIN A4 (einzelne Seiten)</option><option value="a5">DIN A5-Heft (A4 drucken, in der Mitte falten)</option></select><span id="bk-format-hint" class="feedback-banner warning hidden" style="font-size:.85rem"><b>Beim Drucken wichtig:</b> A4 quer, beidseitig drucken und <b>„An der kurzen Seite wenden“</b> aktivieren – sonst stehen die Rückseiten auf dem Kopf. Druck auf A4 quer, beidseitig, Wenden an der kurzen Kante. Blätter ineinanderlegen und in der Mitte falten. Seitenzahl wird auf Vielfache von 4 aufgefüllt, Rätsel pro Seite werden halbiert.</span></div>
+            <label class="check-item"><input type="checkbox" id="bk-o-pn" onchange="BK.setOpt('pageNumbers',this.checked)"><span>Seitenzahlen anzeigen</span></label>
+            <div class="field-group"><label class="field-label" for="bk-o-pnpos">Position der Seitenzahl</label><select id="bk-o-pnpos" class="select-control" onchange="BK.setOpt('pageNumPos',this.value)"><option value="center">Mittig unten</option><option value="outer">Außen unten (Buchstil)</option></select></div>
+            <label class="check-item"><input type="checkbox" id="bk-o-run" onchange="BK.setOpt('runHeader',this.checked)"><span>Kopfzeile mit Heftitel</span></label>
+            <label class="check-item"><input type="checkbox" id="bk-o-meta" onchange="BK.setOpt('showMeta',this.checked)"><span>Art, Größe und Schwierigkeit bei jedem Rätsel zeigen</span></label>
+            <div class="field-group"><label class="field-label" for="bk-o-notes">Zusätzliche Notizseiten (0–10)</label><input id="bk-o-notes" class="input-control" type="number" min="0" max="10" onchange="BK.setOpt('notes',Math.max(0,Math.min(10,+this.value||0)))"></div>
+            <label class="check-item"><input type="checkbox" id="bk-o-pad" onchange="BK.setOpt('pad',this.checked)"><span>Auf Vielfaches von 4 Seiten auffüllen</span></label>
+          </div></details>
+          <details class="bk-group"><summary>Lösungen</summary><div class="grp">
+            <label class="check-item"><input type="checkbox" id="bk-o-sol" onchange="BK.setOpt('solutions',this.checked)"><span>Lösungen am Ende</span></label>
+            <div class="field-group"><label class="field-label" for="bk-o-solper">Lösungen pro Seite</label><select id="bk-o-solper" class="select-control" onchange="BK.setOpt('solPer',+this.value)"><option value="4">4 pro Seite</option><option value="2">2 pro Seite</option><option value="1">1 pro Seite</option></select></div>
+          </div></details>
+          <div class="panel-subblock">
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-primary" onclick="BK.printBooklet()">Heft drucken / als PDF speichern</button>
+              <button type="button" class="btn" onclick="BK.downloadPdf()">Als PDF speichern</button>
+              <button type="button" class="btn" onclick="BK.clearAll()">Heft leeren</button>
+            </div>
+            <p class="muted-note">Im Druckdialog „Als PDF speichern“, Ränder „Keine“ und Maßstab 100 % wählen.</p>
+            <div id="bk-status" class="feedback-banner info hidden" style="font-size:.85rem"></div>
+          </div>
+        </section>
+      </aside>
+    </main>
+  </div>
+
+  <!-- PRINT MODAL -->
+  <div id="print-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="print-modal-title" data-open="false" onclick="onModalBackdropClick(event)">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h2 id="print-modal-title" class="section-title" style="margin: 0;">Druckvorschau &amp; <strong>DIN A4 Export</strong></h2>
+          <span id="print-modal-subtitle" class="label">Arbeitsblatt (Blatt 1) &amp; Lösungsblatt oder passgenauer Überdruck</span>
+        </div>
+        <button type="button" class="btn btn-sm" onclick="closePrintModal()" aria-label="Druckfenster schließen">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          Schließen
+        </button>
+      </div>
+
+      <div class="print-layout">
+        <div class="print-controls">
+          <div class="two-col-inputs">
+            <div class="field-group">
+              <label class="field-label" for="print-name">Name</label>
+              <input id="print-name" class="input-control" type="text" value="" placeholder="Leer für Schreiblinie" oninput="onPrintSettingChange()">
+            </div>
+            <div class="field-group">
+              <label class="field-label" for="print-date">Datum</label>
+              <input id="print-date" class="input-control" type="text" value="18.11.2026" oninput="onPrintSettingChange()">
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="print-margin">Seitenränder (A4)</label>
+            <div class="slider-row">
+              <input id="print-margin" type="range" min="10" max="25" step="1" value="15" oninput="onPrintSettingChange()">
+              <span id="print-margin-val" class="slider-val">15 mm</span>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="print-instr-size">Schriftgröße Anweisungen</label>
+            <div class="slider-row">
+              <input id="print-instr-size" type="range" min="8" max="14" step="0.5" value="9.5" oninput="onPrintSettingChange()">
+              <span id="print-instr-val" class="slider-val">9.5 pt</span>
+            </div>
+          </div>
+
+          <!-- Multi-Print: strictly only visible in Sudoku mode (Requirement 2) -->
+          <div id="print-multi-group" class="field-group">
+            <span class="field-label">Mehrfachdruck (Rätsel pro Blatt)</span>
+            <div class="segmented" role="group" aria-label="Rätsel pro Seite">
+              <button type="button" class="seg-btn" data-multi="1" aria-pressed="true" onclick="setMultiPrint(1)">1 pro Blatt</button>
+              <button type="button" class="seg-btn" data-multi="2" aria-pressed="false" onclick="setMultiPrint(2)">2 pro Blatt</button>
+              <button type="button" class="seg-btn" data-multi="4" aria-pressed="false" onclick="setMultiPrint(4)">4 pro Blatt</button>
+            </div>
+            <div id="print-multi-warning" class="feedback-banner warning feedback-banner-compact hidden">
+              Warnung: Bei 4 Rätseln pro Blatt und Rastergröße &gt; 10×10 werden die Zellen auf A4 sehr klein und schwer auszufüllen.
+            </div>
+          </div>
+
+          <div class="field-group" id="solution-option-group">
+            <span class="field-label">Lösungsoption (Blatt 2 / Überdruck)</span>
+            <div class="radio-card-list" role="radiogroup" aria-label="Lösungsmodus wählen">
+              <label class="radio-card" id="opt-card-standard" data-selected="true" onclick="setSolutionMode('standard')">
+                <input type="radio" name="solutionMode" value="standard" checked onchange="setSolutionMode('standard')">
+                <div>
+                  <span class="radio-card-title">Standard Lösungsblatt (Blatt 2)</span>
+                  <span class="radio-card-desc">Separates Blatt 2 mit vollständigem Gitter, Kopfzeile, Hinweisen und hervorgehobenen Lösungen.</span>
+                </div>
+              </label>
+              <label class="radio-card" id="opt-card-overprint" data-selected="false" onclick="setSolutionMode('overprint')">
+                <input type="radio" name="solutionMode" value="overprint" onchange="setSolutionMode('overprint')">
+                <div>
+                  <span class="radio-card-title">Überdruck-Lösung (Passgenauer Überdruck)</span>
+                  <span class="radio-card-desc">Druckt nur Lösungsziffern bzw. Markierungen an exakten Koordinaten — ohne Gitter, Hintergrund, Kopfzeile oder Text.</span>
+                </div>
+              </label>
+            </div>
+          </div>
+
+          <!-- Clear instructions for Overprinting prepared sheets (Requirement 4) -->
+          <div id="overprint-guide-box" class="overprint-guide">
+            <h3 class="overprint-guide-title">
+              <svg class="icon-svg-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+              Anleitung zum Überdrucken vorbereiteter Blätter
+            </h3>
+            <ol class="overprint-guide-list">
+              <li>Drucken Sie zuerst <strong>Blatt 1 (Arbeitsblatt)</strong> als Vorlage auf Papier aus.</li>
+              <li>Legen Sie das bedruckte Blatt passgenau (gleiche Oberkante) wieder in das Papierfach Ihres Druckers ein.</li>
+              <li>Wählen Sie im Druckdialog zwingend <strong>„Tatsächliche Größe“ (100 % Skalierung)</strong> ohne „An Seite anpassen“, damit die Lösung exakt in die Felder gedruckt wird.</li>
+              <li>Nutzen Sie die <strong>Blatt-1-Hilfslinien</strong> im Vorschaufenster zur visuellen Lagekontrolle — diese Hilfslinien werden nicht mitgedruckt.</li>
+            </ol>
+          </div>
+        </div>
+
+        <div class="print-preview-col">
+          <div class="preview-toolbar">
+            <div class="segmented" role="group" aria-label="Vorschauseite wählen">
+              <button type="button" class="seg-btn" id="prev-btn-sheet1" aria-pressed="true" onclick="setPreviewSheet('sheet1')">Blatt 1 (Arbeitsblatt)</button>
+              <button type="button" class="seg-btn" id="prev-btn-sheet2" aria-pressed="false" onclick="setPreviewSheet('sheet2')">Blatt 2 (Lösung)</button>
+              <button type="button" class="seg-btn" id="prev-btn-overprint" aria-pressed="false" onclick="setPreviewSheet('overprint')">Überdruck</button>
+            </div>
+            <label id="preview-ghost-wrap" class="check-item hidden" style="min-height: 38px;">
+              <input type="checkbox" id="preview-ghost-check" checked onchange="renderPrintPreview()">
+              <span>Blatt-1-Hilfslinien (nur Vorschau)</span>
+            </label>
+          </div>
+
+          <div class="a4-preview-frame">
+            <div id="a4-sheet-box" class="a4-sheet-box"></div>
+          </div>
+
+          <div id="print-export-status" class="feedback-banner info hidden" style="margin: 0; font-size: 0.85rem;"></div>
+
+          <div class="export-grid">
+            <button type="button" class="btn btn-primary" onclick="executePdfPrint('selected')">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              PDF Drucken / Speichern
+            </button>
+            <button type="button" class="btn" onclick="downloadSheetPng('sheet1')">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Blatt 1 speichern (PNG)
+            </button>
+            <button type="button" class="btn" onclick="downloadSheetPng('sheet2')">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+              Blatt 2 / Lösung (PNG)
+            </button>
+            <div class="overprint-action-row">
+              <button type="button" class="btn btn-sage" style="flex: 1;" onclick="downloadSheetPng('overprint')">
+                <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+                Überdruck (PNG)
+              </button>
+              <button type="button" class="btn" onclick="executePdfPrint('overprint')" title="Nur Überdruck-Lösung direkt drucken">
+                Drucken
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Dedicated Print Container -->
+  <div id="print-output-container" aria-hidden="true"></div>
+
+  <api-shim></api-shim>
+
+  <!-- Grund-App: Zustand, Sudoku, Suchsel, Druckfenster (Reihenfolge beachten!) -->
+  <script src="js/core/constants.js"></script>
+  <script src="js/core/persistence.js"></script>
+  <script src="js/core/theme-mode.js"></script>
+  <script src="js/core/instructions.js"></script>
+  <script src="js/puzzles/sudoku.js"></script>
+  <script src="js/puzzles/wortsuche.js"></script>
+  <script src="js/print/print-modal.js"></script>
+  <script src="js/core/init.js"></script>
+  <!-- Erweiterungen: Binoxxo, Labyrinth, Rätselheft, Verläufe, neue Rätselarten (strikter Modus) -->
+  <script src="js/common.js"></script>
+  <script src="js/puzzles/binoxxo-logic.js"></script>
+  <script src="js/puzzles/labyrinth-logic.js"></script>
+  <script src="js/puzzles/binoxxo-online.js"></script>
+  <script src="js/puzzles/labyrinth-online.js"></script>
+  <script src="js/heft/heft-data.js"></script>
+  <script src="js/heft/heft-texts.js"></script>
+  <script src="js/heft/svg-helpers.js"></script>
+  <script src="js/heft/heft-build.js"></script>
+  <script src="js/heft/heft-ui.js"></script>
+  <script src="js/print/print-extra.js"></script>
+  <script src="js/puzzles/sudoku-notes.js"></script>
+  <script src="js/print/pdf-export.js"></script>
+  <script src="js/history/print-history.js"></script>
+  <script src="js/history/play-history.js"></script>
+  <script src="js/history/stats.js"></script>
+  <script src="js/history/share.js"></script>
+  <script src="js/history/extras.js"></script>
+  <script src="js/puzzles/new-puzzles-logic.js"></script>
+  <script src="js/puzzles/new-puzzles-online.js"></script>
+  <script src="js/puzzles/new-puzzles-print.js"></script>
+  <script src="js/puzzles/new-puzzles-registry.js"></script>
+  <script src="js/modes-init.js"></script>
+  <!-- KONTO / LOGIN (optional) -->
+  <div id="acct-modal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="acct-title" data-open="false" onclick="if(event.target===this)RSAUTH.close()">
+    <div class="modal-card" style="max-width:440px">
+      <div class="modal-header">
+        <h2 id="acct-title" class="section-title" style="margin:0">Konto</h2>
+        <button type="button" class="btn btn-sm" onclick="RSAUTH.close()" aria-label="Schließen">Schließen</button>
+      </div>
+      <div id="acct-msg" class="feedback-banner info hidden" role="status" aria-live="polite" style="margin:0"></div>
+      <div id="acct-body" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
+    </div>
+  </div>
+  <script src="js/pwa.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/account.js"></script>
+</body>
+</html>

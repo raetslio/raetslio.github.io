@@ -1,6 +1,6 @@
 # Rätslio? – Projektübersicht
 
-Die App besteht aus **einer Seite (`index.html`)** und mehreren Dateien in Unterordnern.
+Die App besteht aus **einer Seite (`sudoku/index.html`)**, die für jede Unterseite kopiert wird (`/sudoku/`, `/suchsel/`, `/statistik/` …; erzeugt mit `python3 tools/build-routes.py`). `index.html` im Hauptordner leitet nur auf `/sudoku/` weiter und mehreren Dateien in Unterordnern.
 Sie läuft ohne Build-Schritt: Dateien auf einen Webserver legen (oder `index.html` direkt öffnen) – fertig.
 
 ## Ordner

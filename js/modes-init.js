@@ -66,3 +66,30 @@ window.extRestore = function (saved) {
 };
 if (window.__rsSaved) window.extRestore(window.__rsSaved);
 else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchMode(window.appState.mode);
+
+/* ======================================================================
+   Eigene Adresse für jede Unterseite (/sudoku/, /suchsel/, /statistik/ …)
+   ====================================================================== */
+(function () {
+  var ROUTES = { sudoku: 'sudoku', wortsuche: 'suchsel', binoxxo: 'binoxxo', labyrinth: 'labyrinth', hitori: 'hitori', mauer: 'zahlenmauer', magic: 'magisches-quadrat', heft: 'heft', statistik: 'statistik', spiele: 'spiele', verlauf: 'verlauf' };
+  var SLUGS = {}; Object.keys(ROUTES).forEach(function (m) { SLUGS[ROUTES[m]] = m; });
+  var web = /^https?:$/.test(location.protocol);
+  function pathMode() { var p = location.pathname.replace(/index\.html$/, '').split('/').filter(Boolean); return p.length ? (SLUGS[p[p.length - 1]] || null) : null; }
+  var routeMode = pathMode(), inner = window.switchMode, fromPop = false;
+  window.switchMode = function (m) {
+    if (!window.__rsInit && routeMode) m = routeMode;
+    inner(m);
+    var tab = document.getElementById('tab-' + m);
+    if (tab) document.title = tab.textContent.trim() + ' — Rätslio?';
+    if (!web || !ROUTES[m] || fromPop) return;
+    var url = '/' + ROUTES[m] + '/';
+    if (location.pathname === url) return;
+    try { (window.__rsInit ? history.pushState : history.replaceState).call(history, { m: m }, '', url + location.search); } catch (e) {}
+  };
+  window.addEventListener('popstate', function () {
+    var m = pathMode() || 'sudoku'; fromPop = true;
+    try { window.switchMode(m); } finally { fromPop = false; }
+  });
+  /* Start: Adresse hat Vorrang vor dem zuletzt gespeicherten Modus */
+  if (window.__rsInit) window.switchMode(routeMode || window.appState.mode || 'sudoku');
+})();

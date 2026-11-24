@@ -1,12 +1,13 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v18';
+const VERSION = 'raetslio-v19';
 
 /* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
 const APP_FILES = [
   './',
   'index.html',
+  'sudoku/', 'suchsel/', 'binoxxo/', 'labyrinth/', 'hitori/', 'zahlenmauer/', 'magisches-quadrat/', 'heft/', 'statistik/', 'spiele/', 'verlauf/',
   'manifest.webmanifest',
   'favicon.ico', 'icons/rl.ico', 'icons/rl-32.png', 'icons/rl-180.png', 'icons/rl-192.png', 'icons/rl-512.png', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
   'css/tokens.css', 'css/base.css', 'css/components.css', 'css/board.css', 'css/modals.css', 'css/extensions.css',
@@ -56,7 +57,7 @@ self.addEventListener('fetch', (event) => {
         return res;
       }).catch(() =>
         caches.match(req, { ignoreSearch: true })
-          .then((r) => r || (req.mode === 'navigate' ? caches.match('index.html') : undefined))
+          .then((r) => r || (req.mode === 'navigate' ? caches.match(url.pathname).then((r) => r || caches.match('sudoku/')) : undefined))
       )
     );
     return;

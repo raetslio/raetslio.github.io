@@ -11,24 +11,25 @@
   window.tmGet = function (id) { return times[id] || 0; };
   window.tmReset = function () { times = {}; tmSave(); };
   function fmt(s) { return String(Math.floor(s / 60)).padStart(2, '0') + ':' + String(s % 60).padStart(2, '0'); }
-  /* Zeit-Anzeige wie beim Sudoku: stat-pill in der Kopfzeile des Spielfelds */
+  /* Einheitliche Kopfzeile: Schwierigkeit · Fortschritt · Zeit (Elemente stehen in index.html) */
+  var HEAD = { ws: ['ws-diff-tag', null], binoxxo: ['bx-diff-tag', 'bx-progress-stat'], maze: ['mz-diff-tag', 'mz-progress-stat'], hitori: ['ht-diff-tag', 'ht-progress-stat'], mauer: ['mw-diff-tag', 'mw-progress-stat'], magic: ['mg-diff-tag', 'mg-progress-stat'] };
   function addPills() {
     Object.keys(VIEW_TYPE).forEach(function (vid) {
       var t = VIEW_TYPE[vid]; if (t === 'sudoku') return;
-      var v = document.getElementById(vid); if (!v || pills[t]) return;
-      var meta = v.querySelector('.board-meta');
-      if (!meta) {
-        var sec = v.querySelector('section.panel[aria-label^="Interaktiv"]'); if (!sec) return;
-        var bar = document.createElement('div'); bar.className = 'board-topbar';
-        meta = document.createElement('div'); meta.className = 'board-meta'; bar.appendChild(meta); sec.insertBefore(bar, sec.firstChild);
-      }
-      var p = document.createElement('span'); p.className = 'stat-pill'; p.id = 'timer-' + t; p.textContent = '00:00'; meta.appendChild(p); pills[t] = p;
+      var p = document.getElementById('timer-' + t); if (p) pills[t] = p;
     });
+  }
+  function fillHead(t, e) {
+    var h = HEAD[t]; if (!h) return;
+    var d = document.getElementById(h[0]), g = h[1] && document.getElementById(h[1]);
+    if (d) d.textContent = e && DIFFS[e.diff] ? DIFFS[e.diff] : (e && e.size ? e.size + '×' + e.size : '–');
+    if (g) g.textContent = !e ? '–' : (t === 'maze' ? ((e.state && e.state.steps) || 0) + ' Schritte' : (e.pct || 0) + ' % ausgefüllt');
   }
   addPills();
   setInterval(function () {
     var t = MODE_TYPE[window.appState && window.appState.mode]; if (!t || !pills[t] || !window.__rsInit) return;
     var e; try { e = gvSnap(t); } catch (x) { e = null; }
+    fillHead(t, e);
     if (!e) { pills[t].textContent = '00:00'; return; }
     if (e.started && !e.done && document.visibilityState === 'visible') { times[e.id] = (times[e.id] || 0) + 1; if (++dirty >= 5) tmSave(); }
     pills[t].textContent = fmt(times[e.id] || 0);
