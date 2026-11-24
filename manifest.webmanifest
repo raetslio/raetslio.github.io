@@ -3,8 +3,9 @@
   "short_name": "Rätslio",
   "lang": "de",
   "display": "standalone",
-  "start_url": "./",
-  "scope": "./",
+  "id": "/",
+  "start_url": "/sudoku/",
+  "scope": "/",
   "background_color": "#f5f6f5",
   "theme_color": "#3c5a6e",
   "icons": [
