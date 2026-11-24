@@ -54,7 +54,7 @@
     var act = m.querySelector('.qr-act');
     function btn(l, cls, fn) { var b = document.createElement('button'); b.type = 'button'; b.className = 'btn btn-sm ' + cls; b.textContent = l; b.addEventListener('click', fn); act.appendChild(b); }
     btn('Link kopieren', 'btn-primary', function () { copy(o.url); });
-    if (navigator.share) btn('Teilen …', '', function () { navigator.share({ title: o.title, text: o.note, url: o.url }).catch(function () {}); });
+    if (navigator.share) btn('Teilen …', '', function () { navigator.share({ url: o.url }).catch(function () {}); });
     btn('Schließen', '', close);
     function close() { m.remove(); document.removeEventListener('keydown', key); }
     function key(e) { if (e.key === 'Escape') close(); }
