@@ -53,6 +53,8 @@
   }
   var SP = { verlauf: { ls: 'raetsel_heft_verlauf', mod: 'HV' }, spiele: { ls: 'raetsel_heft_spiele', mod: 'GV' } };
   var $ = function (id) { return document.getElementById(id); };
+  /* Einladungslink erkannt? (muss vor dem Supabase-Start gelesen werden, der die Adresse bereinigt) */
+  var INVITE = /[#&?]type=invite/.test(location.hash + location.search), inviteShown = false, welcome = false;
   var sb = null, user = null, pushTimer = null, syncing = false, lastMsg = '', view = 'login';
   var configured = SUPABASE_URL.indexOf('DEIN-PROJEKT') < 0 && SUPABASE_ANON_KEY.indexOf('DEIN-ANON') < 0;
 
@@ -154,8 +156,8 @@
     }
     if (!sb) { body.innerHTML = '<p class="muted-note">Der Anmeldedienst konnte nicht geladen werden. Prüfe deine Internetverbindung und lade die Seite neu. Du kannst weiter ohne Konto spielen.</p>' + backupBlock(); return; }
     if (view === 'recovery') {
-      t.textContent = 'Neues Passwort';
-      body.innerHTML = '<p class="muted-note">Wähle ein neues Passwort für dein Konto.</p>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + field('acct-pw2', 'Passwort wiederholen', 'password', 'new-password') +
+      t.textContent = welcome ? 'Willkommen bei Rätslio?' : 'Neues Passwort';
+      body.innerHTML = '<p class="muted-note">' + (welcome ? 'Dein Konto ist bestätigt. Lege jetzt dein Passwort fest, damit du dich später jederzeit anmelden kannst.' : 'Wähle ein neues Passwort für dein Konto.') + '</p>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + field('acct-pw2', 'Passwort wiederholen', 'password', 'new-password') +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.setNewPassword()">Passwort speichern</button>';
       return;
     }
@@ -422,7 +424,8 @@
       if (a !== b) { msg('Die Passwörter stimmen nicht überein.', 'warning'); return; }
       var r = await sb.auth.updateUser({ password: a });
       if (r.error) { msg(err(r.error), 'error'); return; }
-      view = 'login'; render(); msg('Passwort geändert. Du bist angemeldet.', 'success'); sync();
+      var wasWelcome = welcome; welcome = false;
+      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync();
     },
     changePassword: async function () {
       var a = val('acct-pw1'); if (a.length < 8) { msg('Das Passwort muss mindestens 8 Zeichen haben.', 'warning'); return; }
@@ -517,10 +520,12 @@
       sb.auth.onAuthStateChange(function (ev, session) {
         if (ev === 'PASSWORD_RECOVERY') { loggedIn(session); view = 'recovery'; RSAUTH.open(); }
         else if (ev === 'SIGNED_OUT') { loggedIn(null); }
+        else if (ev === 'SIGNED_IN' && INVITE && !inviteShown && session) { inviteShown = true; welcome = true; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
         else if (ev === 'SIGNED_IN' && !user) { loggedIn(session); setTimeout(sync, 0); }
       });
       sb.auth.getSession().then(function (r) {
-        if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
+        if (r.data && r.data.session && INVITE && !inviteShown) { inviteShown = true; welcome = true; loggedIn(r.data.session); view = 'recovery'; RSAUTH.open(); }
+        else if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
         else loggedIn(null);
       });
     } catch (e) { sb = null; }

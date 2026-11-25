@@ -36,7 +36,7 @@ Deno.serve(async (req) => {
     const count = meta.invite_day === today ? Number(meta.invite_count ?? 0) : 0;
     if (count >= MAX_PER_DAY) return reply({ ok: false, error: `Du kannst pro Tag höchstens ${MAX_PER_DAY} Einladungen verschicken.` });
 
-    const { error } = await admin.auth.admin.inviteUserByEmail(to, { redirectTo: REDIRECT });
+    const { error } = await admin.auth.admin.inviteUserByEmail(to, { redirectTo: REDIRECT, data: { invited_by: u.user.email } });
     if (error) {
       if (/already|registered|exists/i.test(error.message)) return reply({ ok: false, error: 'Diese Adresse hat bereits ein Konto.' });
       return reply({ ok: false, error: 'Die Einladung konnte nicht gesendet werden.' });
