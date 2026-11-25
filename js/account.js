@@ -14,6 +14,9 @@
   var SUPABASE_URL = 'https://dnhjzlnbuqmyqgjxxygx.supabase.co';
   var SUPABASE_ANON_KEY = 'sb_publishable_BrUErzbAbLbrL2LXEPBiuQ_1ijwQtWQ';
 
+  /* >>> CAPTCHA (Cloudflare Turnstile): Site Key hier eintragen. Leer = kein Captcha. <<< */
+  var TURNSTILE_SITE_KEY = '';
+
   var BK_IDX = 'raetsel_hefte_v2', BK_PRE = 'raetsel_heft_v2_';
   var HK = 'rs_sync_hash';
   /* Getrennte Datenbereiche: Abgemeldet = eigener Bereich pro Gerät ('guest'), angemeldet = Bereich des Kontos.
@@ -82,6 +85,7 @@
       [/Email not confirmed/i, 'Bitte bestätige zuerst deine E-Mail-Adresse (Link in der Bestätigungsmail).'],
       [/already registered|already been registered/i, 'Diese E-Mail ist bereits registriert. Bitte melde dich an.'],
       [/Password should be at least/i, 'Das Passwort ist zu kurz (mindestens 8 Zeichen).'],
+      [/captcha/i, 'Die Captcha-Prüfung ist fehlgeschlagen. Bitte versuche es erneut.'],
       [/rate limit|too many/i, 'Zu viele Versuche. Bitte warte kurz und versuche es erneut.'],
       [/same password/i, 'Das neue Passwort muss sich vom alten unterscheiden.'],
       [/permission denied|row-level security|violates row/i, 'Datenbank-Berechtigung fehlt. Bitte einmal das Skript supabase-setup.sql im Supabase SQL Editor ausführen.'],
@@ -117,7 +121,31 @@
     } catch (e) {}
     return true;
   }
-  function render() {
+  /* ---------- Captcha (Cloudflare Turnstile) ---------- */
+  var capToken = '', capId = null, capLoading = false;
+  function capOn() { return !!TURNSTILE_SITE_KEY; }
+  function capHtml() { return capOn() ? '<div id="acct-captcha" style="display:flex;justify-content:center;min-height:65px;margin:4px 0"></div>' : ''; }
+  function capReset() { capToken = ''; try { if (window.turnstile && capId !== null) window.turnstile.reset(capId); } catch (e) {} }
+  function capInit() {
+    capId = null; capToken = '';
+    var box = $('acct-captcha'); if (!capOn() || !box) return;
+    function draw() {
+      var b = $('acct-captcha'); if (!b || !window.turnstile) return;
+      try { capId = window.turnstile.render(b, { sitekey: TURNSTILE_SITE_KEY, language: 'de', callback: function (t) { capToken = t; }, 'expired-callback': function () { capToken = ''; }, 'error-callback': function () { capToken = ''; } }); } catch (e) {}
+    }
+    if (window.turnstile) { draw(); return; }
+    if (capLoading) { setTimeout(capInit, 400); return; }
+    capLoading = true;
+    var sc = document.createElement('script'); sc.src = 'https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit'; sc.async = true;
+    sc.onload = function () { capLoading = false; draw(); };
+    sc.onerror = function () { capLoading = false; var b = $('acct-captcha'); if (b) b.innerHTML = '<p class="muted-note">Das Captcha konnte nicht geladen werden. Bitte Seite neu laden.</p>'; };
+    document.head.appendChild(sc);
+  }
+  function capNeed() { if (capOn() && !capToken) { msg('Bitte bestätige zuerst das Captcha.', 'warning'); return true; } return false; }
+  function capOpt() { return capOn() ? { captchaToken: capToken } : {}; }
+
+  function render() { renderBody(); if (!user) capInit(); }
+  function renderBody() {
     var body = $('acct-body'), t = $('acct-title'); if (!body) return;
     if (!configured) {
       t.textContent = 'Konto';
@@ -155,13 +183,13 @@
     }
     if (view === 'forgot') {
       t.textContent = 'Passwort vergessen';
-      body.innerHTML = '<p class="muted-note">Wir senden dir einen Link zum Zurücksetzen per E-Mail.</p>' + field('acct-email', 'E-Mail', 'email', 'email') +
+      body.innerHTML = '<p class="muted-note">Wir senden dir einen Link zum Zurücksetzen per E-Mail.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + capHtml() +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.forgot()">Link senden</button><button type="button" class="btn btn-sm" onclick="RSAUTH.show(\'login\')">Zurück zur Anmeldung</button>';
       return;
     }
     var reg = view === 'register';
     t.textContent = reg ? 'Registrieren' : 'Anmelden';
-    body.innerHTML = '<p class="muted-note">Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') +
+    body.innerHTML = '<p class="muted-note">Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') + capHtml() +
       '<button type="button" class="btn btn-primary" onclick="RSAUTH.' + (reg ? 'register' : 'login') + '()">' + (reg ? 'Konto erstellen' : 'Anmelden') + '</button>' +
       '<div class="muted-note" style="text-align:center;margin:2px 0">oder</div>' +
       '<button type="button" class="btn" onclick="RSAUTH.google()" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.2 7-10.3 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Mit Google anmelden</button>' +
@@ -364,22 +392,26 @@
     show: function (v) { view = v; msg(''); render(); },
     login: async function () {
       var e = val('acct-email').trim(), p = val('acct-pw'); if (!e || !p) { msg('Bitte E-Mail und Passwort eingeben.', 'warning'); return; }
+      if (capNeed()) return;
       msg('Anmelden …', 'info');
-      var r = await sb.auth.signInWithPassword({ email: e, password: p });
-      if (r.error) { msg(err(r.error), 'error'); return; }
+      var r = await sb.auth.signInWithPassword({ email: e, password: p, options: capOpt() });
+      if (r.error) { capReset(); msg(err(r.error), 'error'); return; }
       markFresh(); loggedIn(r.data.session); msg('Angemeldet.', 'success'); sync();
     },
     register: async function () {
       var e = val('acct-email').trim(), p = val('acct-pw'); if (!e || p.length < 8) { msg('Bitte E-Mail und ein Passwort mit mindestens 8 Zeichen eingeben.', 'warning'); return; }
+      if (capNeed()) return;
       msg('Konto wird erstellt …', 'info');
-      var r = await sb.auth.signUp({ email: e, password: p, options: { emailRedirectTo: location.origin + location.pathname } });
-      if (r.error) { msg(err(r.error), 'error'); return; }
+      var r = await sb.auth.signUp({ email: e, password: p, options: Object.assign({ emailRedirectTo: location.origin + location.pathname }, capOpt()) });
+      if (r.error) { capReset(); msg(err(r.error), 'error'); return; }
       if (r.data.session) { markFresh(); loggedIn(r.data.session); msg('Konto erstellt und angemeldet.', 'success'); sync(); }
       else { view = 'login'; render(); msg('Fast geschafft: Wir haben dir eine Bestätigungsmail geschickt. Klicke auf den Link darin und melde dich dann an.', 'success'); }
     },
     forgot: async function () {
       var e = val('acct-email').trim(); if (!e) { msg('Bitte deine E-Mail-Adresse eingeben.', 'warning'); return; }
-      var r = await sb.auth.resetPasswordForEmail(e, { redirectTo: location.origin + location.pathname });
+      if (capNeed()) return;
+      var r = await sb.auth.resetPasswordForEmail(e, Object.assign({ redirectTo: location.origin + location.pathname }, capOpt()));
+      capReset();
       if (r.error) { msg(err(r.error), 'error'); return; }
       msg('Falls ein Konto mit dieser E-Mail existiert, ist ein Link zum Zurücksetzen unterwegs.', 'success');
     },
