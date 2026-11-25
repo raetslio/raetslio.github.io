@@ -15,7 +15,7 @@
   var SUPABASE_ANON_KEY = 'sb_publishable_BrUErzbAbLbrL2LXEPBiuQ_1ijwQtWQ';
 
   /* >>> CAPTCHA (Cloudflare Turnstile): Site Key hier eintragen. Leer = kein Captcha. <<< */
-  var TURNSTILE_SITE_KEY = '';
+  var TURNSTILE_SITE_KEY = '0x4AAAAAAGSlJc4Rua-I1o6g';
 
   var BK_IDX = 'raetsel_hefte_v2', BK_PRE = 'raetsel_heft_v2_';
   var HK = 'rs_sync_hash';
