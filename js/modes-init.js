@@ -72,14 +72,34 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
 (function () {
   var ROUTES = { sudoku: 'sudoku', wortsuche: 'suchsel', binoxxo: 'binoxxo', labyrinth: 'labyrinth', hitori: 'hitori', mauer: 'zahlenmauer', magic: 'magisches-quadrat', heft: 'heft', spiele: 'spiele', verlauf: 'verlauf' };
   var SLUGS = {}; Object.keys(ROUTES).forEach(function (m) { SLUGS[ROUTES[m]] = m; });
+  var META = {
+    sudoku: ["Sudoku", "Sudoku online spielen oder drucken: in vielen Größen und vier Schwierigkeitsstufen, mit Notizen und Prüfen."],
+    wortsuche: ["Suchsel", "Suchsel (Wortsuche) online lösen oder als Arbeitsblatt drucken – mit eigenen Wörtern, wählbarer Größe und Richtungen."],
+    binoxxo: ["Binoxxo", "Binoxxo (Takuzu) online spielen und drucken: Fülle das Gitter mit X und O nach den Binoxxo-Regeln."],
+    labyrinth: ["Labyrinth", "Labyrinthe online durchlaufen oder drucken – in verschiedenen Größen und Schwierigkeitsgraden."],
+    hitori: ["Hitori", "Hitori online spielen und drucken: Schwärze Zahlen so, dass keine doppelt in Zeile oder Spalte steht."],
+    mauer: ["Zahlenmauer", "Zahlenmauern online rechnen oder als Arbeitsblatt drucken – mit Plus, Minus, Mal und Geteilt."],
+    magic: ["Magisches Quadrat", "Magische Quadrate online lösen und drucken: Alle Zeilen, Spalten und Diagonalen ergeben dieselbe Summe."],
+    heft: ["Rätselheft", "Stelle dein eigenes Rätselheft aus Sudoku, Suchsel, Binoxxo und mehr zusammen – mit Lösungen und PDF-Export."],
+    spiele: ["Spielverlauf", "Dein Spielverlauf bei Rätslio?: angefangene Rätsel öffnen und weiterspielen."],
+    verlauf: ["Druckverlauf", "Dein Druckverlauf bei Rätslio?: zuletzt gedruckte Rätsel noch einmal öffnen oder drucken."]
+  };
+  function setMeta(sel, attr, val) { var el = document.querySelector(sel); if (el) el.setAttribute(attr, val); }
+  function updateMeta(m) {
+    var x = META[m], slug = ROUTES[m]; if (!x) return;
+    document.title = x[0] + ' — Rätslio?';
+    setMeta('meta[name="description"]', 'content', x[1]);
+    setMeta('meta[property="og:title"]', 'content', x[0] + ' — Rätslio?');
+    setMeta('meta[property="og:description"]', 'content', x[1]);
+    if (slug) { var u = 'https://raetslio.github.io/' + slug + '/'; setMeta('link[rel="canonical"]', 'href', u); setMeta('meta[property="og:url"]', 'content', u); }
+  }
   var web = /^https?:$/.test(location.protocol);
   function pathMode() { var p = location.pathname.replace(/index\.html$/, '').split('/').filter(Boolean); return p.length ? (SLUGS[p[p.length - 1]] || null) : null; }
   var routeMode = pathMode(), inner = window.switchMode, fromPop = false;
   window.switchMode = function (m) {
     if (!window.__rsInit && routeMode) m = routeMode;
     inner(m);
-    var tab = document.getElementById('tab-' + m);
-    if (tab) document.title = tab.textContent.trim() + ' — Rätslio?';
+    updateMeta(m);
     if (!web || !ROUTES[m] || fromPop) return;
     var url = '/' + ROUTES[m] + '/';
     if (location.pathname === url) return;

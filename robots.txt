@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /spiele/
+Disallow: /verlauf/
+
+Sitemap: https://raetslio.github.io/sitemap.xml
