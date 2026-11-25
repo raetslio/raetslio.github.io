@@ -55,6 +55,10 @@
   var $ = function (id) { return document.getElementById(id); };
   /* Einladungslink erkannt? (muss vor dem Supabase-Start gelesen werden, der die Adresse bereinigt) */
   var INVITE = /[#&?]type=invite/.test(location.hash + location.search), inviteShown = false, welcome = false;
+  /* Beim ersten Anmelden lädt die Seite einmal neu (Konto-Daten werden getrennt). Darum den Einladungs-Hinweis merken. */
+  try { if (INVITE) sessionStorage.setItem('rs_welcome', '1'); } catch (e) {}
+  function needWelcome() { try { return sessionStorage.getItem('rs_welcome') === '1'; } catch (e) { return INVITE; } }
+  function clearWelcome() { try { sessionStorage.removeItem('rs_welcome'); } catch (e) {} }
   var sb = null, user = null, pushTimer = null, syncing = false, lastMsg = '', view = 'login';
   var configured = SUPABASE_URL.indexOf('DEIN-PROJEKT') < 0 && SUPABASE_ANON_KEY.indexOf('DEIN-ANON') < 0;
 
@@ -391,7 +395,7 @@
   /* ---------- Öffentliche API ---------- */
   window.RSAUTH = {
     open: function () { var m = $('acct-modal'); if (!m) return; m.setAttribute('data-open', 'true'); msg(''); render(); var f = m.querySelector('input'); if (f) f.focus(); },
-    close: function () { var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'false'); },
+    close: function () { clearWelcome(); welcome = false; var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'false'); },
     show: function (v) { view = v; msg(''); render(); },
     login: async function () {
       var e = val('acct-email').trim(), p = val('acct-pw'); if (!e || !p) { msg('Bitte E-Mail und Passwort eingeben.', 'warning'); return; }
@@ -424,7 +428,7 @@
       if (a !== b) { msg('Die Passwörter stimmen nicht überein.', 'warning'); return; }
       var r = await sb.auth.updateUser({ password: a });
       if (r.error) { msg(err(r.error), 'error'); return; }
-      var wasWelcome = welcome; welcome = false;
+      var wasWelcome = welcome; welcome = false; clearWelcome();
       view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync();
     },
     changePassword: async function () {
@@ -520,11 +524,11 @@
       sb.auth.onAuthStateChange(function (ev, session) {
         if (ev === 'PASSWORD_RECOVERY') { loggedIn(session); view = 'recovery'; RSAUTH.open(); }
         else if (ev === 'SIGNED_OUT') { loggedIn(null); }
-        else if (ev === 'SIGNED_IN' && INVITE && !inviteShown && session) { inviteShown = true; welcome = true; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
+        else if (ev === 'SIGNED_IN' && needWelcome() && !inviteShown && session) { inviteShown = true; welcome = true; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
         else if (ev === 'SIGNED_IN' && !user) { loggedIn(session); setTimeout(sync, 0); }
       });
       sb.auth.getSession().then(function (r) {
-        if (r.data && r.data.session && INVITE && !inviteShown) { inviteShown = true; welcome = true; loggedIn(r.data.session); view = 'recovery'; RSAUTH.open(); }
+        if (r.data && r.data.session && needWelcome() && !inviteShown) { inviteShown = true; welcome = true; loggedIn(r.data.session); view = 'recovery'; RSAUTH.open(); }
         else if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
         else loggedIn(null);
       });
