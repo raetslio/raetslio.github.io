@@ -15,7 +15,7 @@
   var SUPABASE_ANON_KEY = 'sb_publishable_BrUErzbAbLbrL2LXEPBiuQ_1ijwQtWQ';
 
   /* >>> CAPTCHA (Cloudflare Turnstile): Site Key hier eintragen. Leer = kein Captcha. <<< */
-  var TURNSTILE_SITE_KEY = '0x4AAAAAAGSlJc4Rua-I1o6g';
+  var TURNSTILE_SITE_KEY = '';
 
   var BK_IDX = 'raetsel_hefte_v2', BK_PRE = 'raetsel_heft_v2_';
   var HK = 'rs_sync_hash';
@@ -176,6 +176,7 @@
       body.innerHTML = '<p style="margin:0">Angemeldet als <b>' + esc(user.email) + '</b></p><p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
         (hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '') +
+        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
         deviceImportBtn() + backupBlock() +
         '<div class="panel-subblock"><button type="button" class="btn" onclick="RSAUTH.logout()">Abmelden</button></div>' +
         '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig. Die Kopie dieser Daten auf diesem Gerät wird ebenfalls entfernt. Die Daten, die du ohne Anmeldung auf diesem Gerät hast, bleiben erhalten.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
@@ -428,6 +429,17 @@
       var r = await sb.auth.updateUser({ password: a });
       if (r.error) { msg(err(r.error), 'error'); return; }
       $('acct-pw1').value = ''; msg('Passwort geändert.', 'success');
+    },
+    invite: async function () {
+      var e = val('acct-invite').trim(); if (!e) { msg('Bitte gib die E-Mail-Adresse der Person ein.', 'warning'); return; }
+      msg('Einladung wird gesendet …', 'info');
+      try {
+        var r = await sb.functions.invoke('invite-user', { body: { email: e } });
+        if (r.error) { msg('Die Einladung konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); return; }
+        if (!r.data || !r.data.ok) { msg((r.data && r.data.error) || 'Die Einladung konnte nicht gesendet werden.', 'error'); return; }
+        var f = $('acct-invite'); if (f) f.value = '';
+        msg('Einladung an ' + e + ' wurde gesendet.', 'success');
+      } catch (x) { msg('Keine Verbindung zum Server.', 'error'); }
     },
     logout: async function () {
       clearTimeout(pushTimer); if (user) await sync();
