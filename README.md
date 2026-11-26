@@ -10,7 +10,7 @@ Die App besteht aus **einer Quellseite, `sudoku/index.html`**. Aus ihr erzeugt `
 - Rätselheft und Verläufe: `/heft/`, `/spiele/` (Spielverlauf), `/verlauf/` (Druckverlauf)
 - Konto: `/login/`, `/konto/` (beide nicht indexierbar)
 
-Das Skript schreibt auch `sitemap.xml` neu. `/statistik/` wird **nicht** von `build-routes.py` erzeugt und ist eine eigene Datei. Nach jeder Änderung an `sudoku/index.html` muss das Skript laufen, damit alle Unterseiten gleich bleiben. Die `index.html` im Hauptordner leitet nur auf `/sudoku/` weiter, `404.html` leitet unbekannte Adressen um.
+Das Skript schreibt auch `sitemap.xml` neu. `/statistik/` wird **nicht** von `build-routes.py` erzeugt und ist eine eigene Datei. Nach jeder Änderung an `sudoku/index.html` muss das Skript laufen, damit alle Unterseiten gleich bleiben. Die `index.html` im Hauptordner ist die Startseite mit Kacheln und „Weiterspielen“ (eigene Datei, nicht von `build-routes.py` erzeugt), `404.html` leitet unbekannte Adressen um.
 
 `tools/ui-sidebar.py` war eine einmalige Umstellung auf das Seitenmenü und die Rätsel-Einstellungen (läuft idempotent auf `sudoku/index.html` und `statistik/index.html`).
 
@@ -24,7 +24,7 @@ Das Skript schreibt auch `sitemap.xml` neu. `/statistik/` wird **nicht** von `bu
 | `icons/` | Logo (SVG), App-Symbole, Favicon |
 | `tools/` | Hilfsskripte (`build-routes.py`, `ui-sidebar.py`) |
 | `supabase/functions/invite-user/` | Edge Function: Einladung per E-Mail (max. 5 pro Nutzer und Tag) |
-| `manifest.webmanifest` | Angaben für die Installation als Web-App (Start: `/sudoku/`) |
+| `manifest.webmanifest` | Angaben für die Installation als Web-App (Start: `/`) |
 | `sw.js` | Service Worker für die Offline-Nutzung (muss im Hauptordner liegen) |
 | `.github/workflows/entpacken.yml` | Entpackt eine hochgeladene `raetslio.zip` ins Repo (siehe „Aktualisieren“) |
 
@@ -43,7 +43,7 @@ Die Dateien werden **in genau dieser Reihenfolge** geladen (steht so in `sudoku/
 3. **Erweiterungen** (strikter Modus): `common.js` · `puzzles/binoxxo-logic.js` · `puzzles/labyrinth-logic.js` · `puzzles/binoxxo-online.js` · `puzzles/labyrinth-online.js` · `heft/*` (`heft-data`, `heft-texts`, `svg-helpers`, `heft-build`, `heft-ui`, `heft-polish`) · `print/print-extra.js` · `puzzles/sudoku-notes.js` · `print/pdf-export.js` · `history/*` (`print-history`, `play-history`, `share`, `extras`) · `puzzles/new-puzzles-*.js` (Logik, Online, Druck, Register für Hitori, Zahlenmauer, Magisches Quadrat) · `modes-init.js`
 4. `sidebar.js` – Seitenmenü: öffnen/schließen, Wischgesten, Tastatur
 5. `pwa.js` – meldet den Service Worker an
-6. Supabase-Bibliothek (von jsdelivr) → `account.js` – Konto, Anmeldung, Synchronisierung, Backup
+6. Supabase-Bibliothek (von jsdelivr) → `account.js` – Konto, Anmeldung, Synchronisierung
 
 Jede Datei beginnt mit einem Kopf, der erklärt, wofür sie da ist.
 
@@ -71,4 +71,8 @@ Alle Rätselseiten sind nur mit Konto nutzbar. Ohne Anmeldung leitet ein kleines
 ## Hinweise
 
 - Offline-Nutzung und Installation als App funktionieren nur über `https://` (oder `localhost`).
-- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v49`), sonst bleibt der alte Zwischenspeicher aktiv.
+- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v50`), sonst bleibt der alte Zwischenspeicher aktiv.
+
+## Leitlinie
+
+Änderungen halten sich klein und nutzen vorhandene Mechanismen (Spielverlauf, Einstellungen, Routen) statt neue Parallelstrukturen. Ein Rätsel soll in möglichst wenigen Tippen startbar sein; die Startseite und „Neues Rätsel“ stehen immer vor den Einstellungen.

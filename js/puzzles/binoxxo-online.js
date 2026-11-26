@@ -44,7 +44,7 @@ window.BX = {
   newPuzzle: function () {
     var data = null, tries = 0;
     while (!data && tries++ < 5) data = bxCreate(bx.n, bx.diff);
-    if (!data) { banner($('bx-feedback'), 'Erzeugung fehlgeschlagen – bitte erneut versuchen.', 'error'); return; }
+    if (!data) { banner($('bx-feedback'), 'Erzeugung fehlgeschlagen – bitte erneut versuchen.', 'error'); return false; }
     bx.extras = []; bx.data = data; bx.entries = data.givens.map(function (r) { return r.slice(); }); bx.revealed = false; bx.wrong = {};
     banner($('bx-feedback'), '');
     BX.render();

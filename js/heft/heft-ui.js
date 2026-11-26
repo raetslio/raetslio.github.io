@@ -162,6 +162,7 @@ window.BK = {
     else if (type === 'maze') { var m = MZ.current(); if (m) { addItem('maze', m, mazeDiff(m.n, m.h)); ok = true; } }
     else if (NXT[type]) { var cx = NXT[type].current(); if (cx) { addItem(type, JSON.parse(JSON.stringify(cx.data)), cx.diff); ok = true; } }
     if (ok) { refreshUI(); toast('Dein Rätsel wurde zum Rätselheft hinzugefügt (' + bk.items.length + ' im Heft).'); }
+    return ok;
   },
   rename: function (id, v) { var it = bk.items.filter(function (i) { return i.id === id; })[0]; if (it) { it.name = v.trim() || it.name; refreshUI(); } },
   setDiff: function (id, v) { var it = bk.items.filter(function (i) { return i.id === id; })[0]; if (it) { it.diff = +v; refreshUI(); } },

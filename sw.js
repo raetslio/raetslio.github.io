@@ -1,7 +1,7 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v49';
+const VERSION = 'raetslio-v50';
 
 /* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
 const APP_FILES = [
@@ -20,7 +20,7 @@ const APP_FILES = [
   'js/print/print-extra.js', 'js/puzzles/sudoku-notes.js', 'js/print/pdf-export.js',
   'js/history/print-history.js', 'js/history/play-history.js', 'js/history/share.js', 'js/history/extras.js',
   'js/puzzles/new-puzzles-logic.js', 'js/puzzles/new-puzzles-online.js', 'js/puzzles/new-puzzles-print.js', 'js/puzzles/new-puzzles-registry.js',
-  'js/modes-init.js', 'js/pwa.js', 'js/account.js'
+  'js/modes-init.js', 'js/pwa.js', 'js/rs-home.js', 'js/account.js'
 ];
 
 self.addEventListener('install', (event) => {

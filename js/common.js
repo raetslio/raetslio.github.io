@@ -48,14 +48,16 @@ function rsRun(btn, fn, fbId) {
     try { r = fn(); } catch (e) { rsMsg(fbId, 'Das Rätsel konnte nicht erstellt werden. Bitte versuche es noch einmal.', 'error'); return done(); }
     Promise.resolve(r).then(function (v) {
       /* Erfolg nur, wenn wirklich ein Rätsel erstellt wurde (false = abgebrochen) */
-      if (v === false) { var el = document.getElementById(fbId); if (el) el.classList.add('hidden'); }
+      if (v === false) { var el = document.getElementById(fbId); if (el && !el.classList.contains('error')) el.classList.add('hidden'); }
       else rsMsg(fbId, 'Rätsel erfolgreich erstellt.', 'success', 2500);
       done();
     }, function () { rsMsg(fbId, 'Das Rätsel konnte nicht erstellt werden. Bitte versuche es noch einmal.', 'error'); done(); });
   }, 30);
 }
 function rsAddToBook(key, fbId) {
-  try { BK.addCurrent(key); rsMsg(fbId, 'Dein Rätsel wurde zum Rätselheft hinzugefügt.', 'success', 3000); }
+  try {
+    if (BK.addCurrent(key) === false) { rsMsg(fbId, 'Es gibt noch kein Rätsel zum Hinzufügen. Erstelle zuerst eins.', 'error', 4000); return; }
+    rsMsg(fbId, 'Dein Rätsel wurde zum Rätselheft hinzugefügt.', 'success', 3000); }
   catch (e) { rsMsg(fbId, 'Das Rätsel konnte nicht zum Heft hinzugefügt werden.', 'error'); }
 }
 

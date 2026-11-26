@@ -1,12 +1,101 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
+  <base href="/">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Rätslio? – Weiterleitung</title>
-  <link rel="canonical" href="https://raetslio.github.io/sudoku/">
-  <meta http-equiv="refresh" content="0; url=/sudoku/">
-  <script>location.replace('/sudoku/' + location.search + location.hash);</script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="artifact-type" content="tool">
+  <meta name="design-style" content="haven">
+  <script>
+  /* Darstellung früh setzen (verhindert Aufblitzen): gespeicherte Wahl oder Geräteeinstellung */
+  (function () { try { var m = /^\/login\/?/.test(location.pathname) ? 'system' : (localStorage.getItem('rs_theme') || 'system'); var d = m === 'dark' || (m !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); if (d) document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {} })();
+  </script>
+  <script>
+  /* Anmeldepflicht (Teil 1): Ohne gespeicherte Anmeldung sofort zur Anmeldeseite. Die Seite bleibt bis zur Prüfung unsichtbar.
+     Die eigentliche Prüfung der Sitzung macht js/account.js. Einladungs-/Passwort-Links (#...type=...) bleiben erhalten. */
+  (function () {
+    var onLogin = /^\/login\/?(index\.html)?$/.test(location.pathname);
+    window.__rsGate = !onLogin;
+    if (onLogin) return;
+    var has = false; try { has = !!localStorage.getItem('sb-dnhjzlnbuqmyqgjxxygx-auth-token'); } catch (e) {}
+    if (!has) {
+      var next = location.pathname + location.search;
+      location.replace('/login/?next=' + encodeURIComponent(next) + location.hash);
+      return;
+    }
+    var st = document.createElement('style'); st.id = 'rs-gate-css'; st.textContent = 'html{visibility:hidden}';
+    document.head.appendChild(st);
+    window.__rsReveal = function () { var s = document.getElementById('rs-gate-css'); if (s) s.remove(); };
+    setTimeout(window.__rsReveal, 8000); /* Notausgang: gespeicherte Anmeldung vorhanden, aber Dienst nicht erreichbar */
+  })();
+  </script>
+  <title>Rätslio? — Sudoku, Suchsel, Binoxxo &amp; mehr</title>
+  <meta name="description" content="Rätslio?: Sudoku, Suchsel, Binoxxo, Labyrinth, Hitori, Zahlenmauer und Magisches Quadrat online spielen oder drucken.">
+  <link rel="canonical" href="https://raetslio.github.io/">
+  <link rel="icon" href="/icons/rl.ico?v=3" sizes="any">
+  <link rel="apple-touch-icon" href="/icons/rl-180.png?v=3">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Hanken+Grotesk:ital,wght@0,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <style>
+    .rh{max-width:960px;margin:0 auto;padding:20px 16px 40px}
+    .rh h1{font-family:Outfit,sans-serif;margin:0 0 16px}
+    .rh-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+    .rh-card{background:var(--surface-container);border:1px solid var(--outline-variant);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:12px;color:var(--on-surface);text-decoration:none}
+    .rh-card h2{margin:0;font-family:Outfit,sans-serif;font-size:1.3rem}
+    .rh-card .rh-sub{color:var(--on-surface-variant);font-size:.9rem;flex:1}
+    .rh-go{display:block;text-align:center;padding:12px;border-radius:12px;background:var(--primary);color:var(--on-primary);font-weight:600;text-decoration:none;border:0;font:inherit;cursor:pointer}
+    .rh-resume{background:var(--primary-container);color:var(--on-primary-container);margin-bottom:18px}
+    .rh-more{margin-top:18px;display:flex;gap:16px;flex-wrap:wrap}
+    .rh-more a{color:var(--primary)}
+  </style>
 </head>
-<body><p><a href="/sudoku/">Weiter zu Rätslio?</a></p></body>
+<body>
+<main class="rh">
+  <h1>Rätslio?</h1>
+  <div id="rh-resume"></div>
+  <div class="rh-grid" id="rh-grid"></div>
+  <nav class="rh-more"><a href="/heft/">Rätselheft</a><a href="/spiele/">Spielverlauf</a><a href="/statistik/">Statistik</a><a href="/konto/">Konto</a></nav>
+</main>
+<script>
+(function () {
+  var T = [
+    ['Sudoku','/sudoku/','settings-sudoku','Mittel · 9×9',{v:{'sudoku-size-input':9},g:{'sudoku-diff-segmented':1}}],
+    ['Suchsel','/suchsel/','settings-wortsuche','16×16',{v:{'ws-size-input':16}}],
+    ['Binoxxo','/binoxxo/','settings-binoxxo','Mittel · 10×10',{g:{'bx-sizes':2,'bx-diffs':1}}],
+    ['Labyrinth','/labyrinth/','settings-labyrinth','Normal · 15×15',{g:{'mz-sizes':2,'mz-hard':0}}],
+    ['Hitori','/hitori/','settings-hitori','Mittel · 7×7',{g:{'ht-sizes':2,'ht-diffs':1}}],
+    ['Zahlenmauer','/zahlenmauer/','settings-mauer','Mittel · 4',{g:{'mw-sizes':1,'mw-diffs':1}}],
+    ['Magisches Quadrat','/magisches-quadrat/','settings-magic','Mittel · 4×4',{g:{'mg-sizes':1,'mg-diffs':1}}]
+  ];
+  var PATH = {sudoku:'/sudoku/',ws:'/suchsel/',binoxxo:'/binoxxo/',maze:'/labyrinth/',hitori:'/hitori/',mauer:'/zahlenmauer/',magic:'/magisches-quadrat/'};
+  var NAME = {sudoku:'Sudoku',ws:'Suchsel',binoxxo:'Binoxxo',maze:'Labyrinth',hitori:'Hitori',mauer:'Zahlenmauer',magic:'Magisches Quadrat'};
+  var grid = document.getElementById('rh-grid');
+  T.forEach(function (t) {
+    var c = document.createElement('div'); c.className = 'rh-card';
+    c.innerHTML = '<h2></h2><div class="rh-sub">Neues Rätsel</div><a class="rh-go" href="' + t[1] + '"></a>';
+    var hasLast = false; try { hasLast = !!JSON.parse(localStorage.getItem('rs_last_settings') || '{}')[t[2]]; } catch (e) {}
+    c.querySelector('h2').textContent = t[0]; c.querySelector('a').textContent = (hasLast ? 'Zuletzt genutzt' : t[3]) + ' · Los';
+    c.querySelector('a').addEventListener('click', function () {
+      try { var last = JSON.parse(localStorage.getItem('rs_last_settings') || '{}')[t[2]];
+        localStorage.setItem('rs_quick', JSON.stringify({ id: t[2], preset: last ? null : t[4] })); } catch (e) {}
+    });
+    grid.appendChild(c);
+  });
+  try {
+    var items = (JSON.parse(localStorage.getItem('raetsel_heft_spiele') || '{}').items || []).filter(function (i) { return i.started && !i.done; });
+    var it = items[0];
+    if (it && PATH[it.type]) {
+      var r = document.createElement('a'); r.className = 'rh-card rh-resume'; r.href = PATH[it.type];
+      r.innerHTML = '<h2>Weiterspielen</h2><div></div><span class="rh-go">Öffnen</span>';
+      r.children[1].textContent = NAME[it.type] + (it.size ? ' · ' + it.size + '×' + it.size : '') + ' · ' + (it.pct || 0) + ' %';
+      r.addEventListener('click', function () { try { localStorage.setItem('rs_resume', it.id); } catch (e) {} });
+      document.getElementById('rh-resume').appendChild(r);
+    }
+  } catch (e) {}
+})();
+</script>
+<script src="js/pwa.js"></script>
+</body>
 </html>
