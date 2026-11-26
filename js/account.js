@@ -1,6 +1,6 @@
 /* ======================================================================
    Optionales Konto (Supabase)
-   Anmelden (E-Mail oder Google), Abmelden, Konto löschen, Synchronisierung von Heften,
+   Anmelden (E-Mail, Google oder GitHub), Abmelden, Konto löschen, Synchronisierung von Heften,
    Verläufen und App-Zustand, getrennte Datenbereiche pro Konto/Gerät, Backup-Export/-Import.
    Eigenständiges Skript (Objekt RSAUTH), braucht die Supabase-Bibliothek.
    ====================================================================== */
@@ -59,6 +59,26 @@
   try { if (INVITE) sessionStorage.setItem('rs_welcome', INVITE); } catch (e) {}
   function pwKind() { try { return sessionStorage.getItem('rs_welcome') || ''; } catch (e) { return INVITE; } }
   function needWelcome() { return !!pwKind(); }
+  /* Eingeladene ohne eigenes Passwort werden bei jedem Laden abgemeldet (Flag pw_set wird beim Speichern des Passworts gesetzt). */
+  function pwMissing(u) {
+    if (!u) return false;
+    var md = u.user_metadata || {}, am = u.app_metadata || {};
+    if (md.pw_set) return false;
+    if (!(u.invited_at || md.invited_by)) return false;
+    var pr = am.providers || [am.provider]; for (var i = 0; i < pr.length; i++) if (pr[i] !== 'email') return false;
+    return true;
+  }
+  function enforcePw(session) {
+    if (!session || needWelcome() || !pwMissing(session.user)) return false;
+    try { sessionStorage.setItem('rs_nopw', '1'); } catch (e) {}
+    sb.auth.signOut().catch(function () {}).then(function () { loggedIn(null); showNoPw(); });
+    return true;
+  }
+  function showNoPw() {
+    var f = null; try { f = sessionStorage.getItem('rs_nopw'); } catch (e) {} if (!f) return;
+    try { sessionStorage.removeItem('rs_nopw'); } catch (e) {}
+    view = 'forgot'; RSAUTH.open(); msg('Für dieses Konto wurde noch kein Passwort festgelegt, deshalb wurdest du abgemeldet. Fordere hier einen Link an, um dein Passwort zu setzen.', 'info');
+  }
   function showPw(session) { inviteShown = true; welcome = pwKind() === 'invite'; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
   function clearWelcome() { try { sessionStorage.removeItem('rs_welcome'); } catch (e) {} }
   var sb = null, user = null, pushTimer = null, syncing = false, lastMsg = '', view = 'login';
@@ -201,7 +221,8 @@
     body.innerHTML = '<p class="muted-note">Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') + capHtml() +
       '<button type="button" class="btn btn-primary" onclick="RSAUTH.' + (reg ? 'register' : 'login') + '()">' + (reg ? 'Konto erstellen' : 'Anmelden') + '</button>' +
       '<div class="muted-note" style="text-align:center;margin:2px 0">oder</div>' +
-      '<button type="button" class="btn" onclick="RSAUTH.google()" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.2 7-10.3 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Mit Google anmelden</button>' +
+      '<button type="button" class="btn" onclick="RSAUTH.google()" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.2 7-10.3 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Mit Google fortfahren</button>' +
+      '<button type="button" class="btn" onclick="RSAUTH.github()" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>Mit GitHub fortfahren</button>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between">' +
       '<button type="button" class="btn btn-sm" onclick="RSAUTH.show(\'' + (reg ? 'login' : 'register') + '\')">' + (reg ? 'Schon ein Konto? Anmelden' : 'Neu hier? Registrieren') + '</button>' +
       (reg ? '' : '<button type="button" class="btn btn-sm" onclick="RSAUTH.show(\'forgot\')">Passwort vergessen?</button>') + '</div>' + backupBlock();
@@ -429,14 +450,14 @@
       var a = val('acct-pw1'), b = val('acct-pw2');
       if (a.length < 8) { msg('Das Passwort muss mindestens 8 Zeichen haben.', 'warning'); return; }
       if (a !== b) { msg('Die Passwörter stimmen nicht überein.', 'warning'); return; }
-      var r = await sb.auth.updateUser({ password: a });
+      var r = await sb.auth.updateUser({ password: a, data: { pw_set: true } });
       if (r.error) { msg(err(r.error), 'error'); return; }
       var wasWelcome = welcome; welcome = false; clearWelcome();
       view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); setTimeout(checkImport, 1500);
     },
     changePassword: async function () {
       var a = val('acct-pw1'); if (a.length < 8) { msg('Das Passwort muss mindestens 8 Zeichen haben.', 'warning'); return; }
-      var r = await sb.auth.updateUser({ password: a });
+      var r = await sb.auth.updateUser({ password: a, data: { pw_set: true } });
       if (r.error) { msg(err(r.error), 'error'); return; }
       $('acct-pw1').value = ''; msg('Passwort geändert.', 'success');
     },
@@ -468,6 +489,11 @@
     google: async function () {
       msg('Weiterleitung zu Google …', 'info'); markFresh();
       var r = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname } });
+      if (r.error) { try { sessionStorage.removeItem('rs_fresh_login'); } catch (e) {} msg(err(r.error), 'error'); }
+    },
+    github: async function () {
+      msg('Weiterleitung zu GitHub …', 'info'); markFresh();
+      var r = await sb.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: location.origin + location.pathname } });
       if (r.error) { try { sessionStorage.removeItem('rs_fresh_login'); } catch (e) {} msg(err(r.error), 'error'); }
     },
     syncNow: async function () { msg(''); await sync(); },
@@ -528,12 +554,14 @@
         if (ev === 'PASSWORD_RECOVERY') { try { if (!pwKind()) sessionStorage.setItem('rs_welcome', 'recovery'); } catch (e) {} if (!inviteShown) showPw(session); }
         else if (ev === 'SIGNED_OUT') { loggedIn(null); }
         else if (ev === 'SIGNED_IN' && needWelcome() && !inviteShown && session) { showPw(session); }
+        else if (ev === 'SIGNED_IN' && enforcePw(session)) { }
         else if (ev === 'SIGNED_IN' && !user) { loggedIn(session); setTimeout(sync, 0); }
       });
       sb.auth.getSession().then(function (r) {
-        if (r.data && r.data.session && needWelcome() && !inviteShown) { showPw(r.data.session); }
+        if (r.data && r.data.session && enforcePw(r.data.session)) { }
+        else if (r.data && r.data.session && needWelcome() && !inviteShown) { showPw(r.data.session); }
         else if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
-        else loggedIn(null);
+        else { loggedIn(null); showNoPw(); }
       });
     } catch (e) { sb = null; }
   }
