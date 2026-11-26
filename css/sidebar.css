@@ -64,35 +64,38 @@ body.rs-menu-open { overflow: hidden; }
 
 .rs-drawer-head {
   display: flex; align-items: center; justify-content: space-between;
-  padding: calc(var(--space-sm) + env(safe-area-inset-top, 0px)) var(--space-md) var(--space-sm);
+  padding: calc(var(--space-xs) + env(safe-area-inset-top, 0px)) var(--space-md) var(--space-xs);
 }
 .rs-drawer-title { font-family: var(--font-headline); font-weight: 600; font-size: 1.35rem; letter-spacing: -0.02em; }
-.rs-drawer-scroll { flex: 1 1 auto; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 var(--space-sm) var(--space-md); }
+.rs-drawer-scroll { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 var(--space-sm) var(--space-xs); }
 .rs-drawer-label {
   font-family: var(--font-label); font-size: var(--label-size); font-weight: 500; letter-spacing: .04em; text-transform: uppercase;
-  color: var(--on-surface-variant); padding: var(--space-md) var(--space-sm) var(--space-xs);
+  color: var(--on-surface-variant); padding: var(--space-xs) var(--space-sm) 2px; flex: none;
 }
 .rs-drawer .nav-tabs {
   display: flex; flex-direction: column; align-items: stretch;
-  gap: 2px; margin: 0; padding: 0; border: 0;
+  flex: 1 1 auto; min-height: 0;
+  gap: 0; margin: 0; padding: 0; border: 0;
 }
 .rs-drawer .nav-tab {
-  width: 100%; min-height: 48px;
+  width: 100%;
+  flex: 1 1 auto; min-height: 34px; max-height: 44px;
   justify-content: flex-start; gap: var(--space-sm);
   padding: 0 var(--space-sm);
-  font-size: 1rem; text-align: left;
+  font-size: .95rem; text-align: left;
   border: 0; border-radius: var(--rounded-lg);
   -webkit-tap-highlight-color: transparent;
 }
-.rs-drawer .nav-tab .icon-svg { width: 22px; height: 22px; flex: none; }
+.rs-drawer .nav-tab .icon-svg { width: 20px; height: 20px; flex: none; }
 .rs-drawer .nav-tab[aria-selected="true"] { background: var(--primary-container); color: var(--on-primary-container); }
 
 .rs-drawer-foot {
   border-top: var(--hairline);
-  padding: var(--space-sm) var(--space-sm) calc(var(--space-sm) + env(safe-area-inset-bottom, 0px));
+  padding: var(--space-xs) var(--space-sm) calc(var(--space-xs) + env(safe-area-inset-bottom, 0px));
+  flex: none;
 }
 .rs-drawer .rs-account {
-  width: 100%; min-height: 56px; justify-content: flex-start; gap: var(--space-sm);
+  width: 100%; min-height: 48px; justify-content: flex-start; gap: var(--space-sm);
   padding: 0 var(--space-sm);
   background: transparent; border: 0; border-radius: var(--rounded-lg); color: var(--on-surface);
   text-align: left; font-weight: 500;
@@ -148,3 +151,22 @@ body.rs-menu-open { overflow: hidden; }
 }
 
 .rs-drawer-title .brand-mark { width: 1em; height: 1em; margin-left: 0.08em; vertical-align: -0.14em; flex: none; }
+
+/* Konto-Seite: Seite selbst bleibt stehen, nur im Kasten wird gescrollt */
+html:has(body.rs-konto) { height: 100%; overflow: hidden; overscroll-behavior: none; }
+body.rs-konto {
+  position: fixed; inset: 0;
+  display: flex; flex-direction: column;
+  overflow: hidden; overscroll-behavior: none;
+}
+body.rs-konto .app-shell { flex: none; width: 100%; padding-bottom: 0; }
+body.rs-konto #acct-modal {
+  flex: 1 1 auto; min-height: 0; width: 100%;
+  overflow: hidden;
+  padding: 0 var(--space-md) calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
+}
+body.rs-konto #acct-modal .modal-card {
+  max-height: 100%;
+  overflow-y: auto; -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}

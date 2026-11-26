@@ -1,12 +1,12 @@
 /* ======================================================================
    Konto (Supabase) – Anmeldung ist Pflicht
    Anmelden (E-Mail, Google oder GitHub), Abmelden, Konto löschen, Synchronisierung von Heften,
-   Verläufen und App-Zustand, getrennte Datenbereiche pro Konto/Gerät, Backup-Export/-Import.
+   Verläufen und App-Zustand, getrennte Datenbereiche pro Konto/Gerät.
    Eigenständiges Skript (Objekt RSAUTH), braucht die Supabase-Bibliothek.
    ====================================================================== */
 
 /* ======================================================================
-   OPTIONALES KONTO (Supabase) – Sync von Rätselständen, Heften & Druckeinstellungen
+   KONTO (Supabase, Pflicht) – Sync von Rätselständen, Heften & Druckeinstellungen
    ====================================================================== */
 (function () {
   'use strict';
@@ -380,10 +380,10 @@
     var body = $('acct-body'), t = $('acct-title'); if (!body) return;
     if (!configured) {
       t.textContent = 'Konto';
-      body.innerHTML = '<p class="muted-note">Die Anmeldung ist noch nicht eingerichtet. Trage in der Datei bei <b>SUPABASE_URL</b> und <b>SUPABASE_ANON_KEY</b> deine Projektdaten ein.</p>' + backupBlock();
+      body.innerHTML = '<p class="muted-note">Die Anmeldung ist noch nicht eingerichtet. Trage in der Datei bei <b>SUPABASE_URL</b> und <b>SUPABASE_ANON_KEY</b> deine Projektdaten ein.</p>';
       return;
     }
-    if (!sb) { body.innerHTML = '<p class="muted-note">Der Anmeldedienst konnte nicht geladen werden. Prüfe deine Internetverbindung und lade die Seite neu.' + (GATE ? '' : ' Du kannst weiter ohne Konto spielen.') + '</p>' + backupBlock(); return; }
+    if (!sb) { body.innerHTML = '<p class="muted-note">Der Anmeldedienst konnte nicht geladen werden. Prüfe deine Internetverbindung und lade die Seite neu.</p>'; return; }
     if (view === 'recovery') {
       t.textContent = welcome ? 'Willkommen bei Rätslio?' : 'Neues Passwort';
       body.innerHTML = '<p class="muted-note">' + (welcome ? 'Dein Konto ist bestätigt. Lege jetzt dein Passwort fest, damit du dich später jederzeit anmelden kannst.' : 'Wähle ein neues Passwort für dein Konto.') + '</p>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + field('acct-pw2', 'Passwort wiederholen', 'password', 'new-password') +
@@ -407,7 +407,7 @@
         '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
         themeBlock() + pwBlock + pkBlock() + methodsBlock() +
         '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
-        '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig. Die Kopie dieser Daten auf diesem Gerät wird ebenfalls entfernt. Die Daten, die du ohne Anmeldung auf diesem Gerät hast, bleiben erhalten.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
+        '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       return;
     }
     if (view === 'otp') {
@@ -436,7 +436,7 @@
       '<button type="button" class="btn" onclick="RSAUTH.github()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('github') + 'Mit GitHub fortfahren</button>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between">' +
       '<button type="button" class="btn btn-sm" onclick="RSAUTH.show(\'' + (reg ? 'login' : 'register') + '\')">' + (reg ? 'Schon ein Konto? Anmelden' : 'Neu hier? Registrieren') + '</button>' +
-      (reg ? '' : '<button type="button" class="btn btn-sm" onclick="RSAUTH.show(\'forgot\')">Passwort vergessen?</button>') + '</div>' + backupBlock();
+      (reg ? '' : '<button type="button" class="btn btn-sm" onclick="RSAUTH.show(\'forgot\')">Passwort vergessen?</button>') + '</div>';
     var pw = $('acct-pw'); if (pw) pw.addEventListener('keydown', function (e) { if (e.key === 'Enter') (reg ? RSAUTH.register : RSAUTH.login)(); });
   }
   function val(id) { var e = $(id); return e ? e.value : ''; }
@@ -463,7 +463,7 @@
     localStorage.setItem(BK_IDX, JSON.stringify({ current: cur, list: list }));
   }
 
-  /* ---------- Daten nur hinzufügen (Geräte-Übernahme & Backup-Import) ---------- */
+  /* ---------- Daten nur hinzufügen (Geräte-Übernahme) ---------- */
   function parseJ(t) { try { return JSON.parse(t); } catch (e) { return null; } }
   function hefteOf(data) {
     var out = [];
@@ -525,12 +525,6 @@
     return '<div class="panel-subblock"><span class="label">Darstellung</span><div id="acct-theme" style="display:flex;flex-wrap:wrap;gap:8px">' + opts.map(function (o) {
       return '<button type="button" class="btn btn-sm' + (cur === o[0] ? ' btn-primary' : '') + '" data-theme-opt="' + o[0] + '" aria-pressed="' + (cur === o[0]) + '" onclick="RSAUTH.setTheme(\'' + o[0] + '\')">' + o[1] + '</button>';
     }).join('') + '</div><p class="muted-note">„Gerät“ folgt der Einstellung deines Geräts.</p></div>';
-  }
-  function backupBlock() {
-    if (ON_LOGIN) return '';
-    return '<div class="panel-subblock"><span class="label">Datensicherung</span><p class="muted-note">Sichert alle Hefte und Verläufe ' + (user ? 'deines Kontos' : 'dieses Geräts') + ' in einer Datei. Beim Importieren wird nur ergänzt, nichts überschrieben.</p>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" class="btn" onclick="RSAUTH.exportBackup()">Backup exportieren</button><button type="button" class="btn" onclick="RSAUTH.pickBackup()">Backup importieren</button></div>' +
-      '<input id="acct-import-file" type="file" accept="application/json,.json" style="display:none" onchange="RSAUTH.importBackup(this)"></div>';
   }
   async function waitSync() { for (var i = 0; i < 24 && syncing; i++) await new Promise(function (r) { setTimeout(r, 250); }); await sync(); }
 
@@ -830,38 +824,6 @@
       catch (e) { msg('Das Profilbild konnte nicht entfernt werden: ' + err(e), 'error'); }
     },
     syncNow: async function () { msg(''); await sync(); },
-    exportBackup: function () {
-      var data = {};
-      for (var i = 0; i < localStorage.length; i++) {
-        var k = localStorage.key(i);
-        if (k && (k.indexOf(BK_PRE) === 0 || k === SP.verlauf.ls || k === SP.spiele.ls)) data[k] = localStorage.getItem(k);
-      }
-      var out = { app: 'Rätslio', version: 1, exported: new Date().toISOString(), owner: user ? user.email : 'Gerät', data: data };
-      var sm = summarize(data);
-      try {
-        var blob = new Blob([JSON.stringify(out)], { type: 'application/json' }), a = document.createElement('a');
-        a.href = URL.createObjectURL(blob); a.download = 'raetslio-backup-' + new Date().toISOString().slice(0, 10) + '.json';
-        document.body.appendChild(a); a.click(); a.remove(); setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-        msg('Backup gespeichert (' + sm.nH + ' Hefte, ' + sm.nV + ' Druck- und ' + sm.nS + ' Spielverlauf-Einträge).', 'success');
-      } catch (e) { msg('Backup konnte nicht erstellt werden.', 'error'); }
-    },
-    pickBackup: function () { var f = $('acct-import-file'); if (f) f.click(); },
-    importBackup: function (input) {
-      var f = input && input.files && input.files[0]; if (!f) return;
-      var rd = new FileReader();
-      rd.onload = async function () {
-        var j = parseJ(String(rd.result || '')); input.value = '';
-        if (!j || j.app !== 'Rätslio' || !j.data || typeof j.data !== 'object') { msg('Diese Datei ist kein Rätslio-Backup.', 'error'); return; }
-        var sm = summarize(j.data);
-        if (!sm.nH && !sm.nV && !sm.nS) { msg('Das Backup enthält keine Daten.', 'warning'); return; }
-        if (!confirm('Backup importieren?\n\n' + sm.nH + ' Hefte, ' + sm.nV + ' Druckverlauf- und ' + sm.nS + ' Spielverlauf-Einträge.\n\nVorhandene Daten bleiben erhalten, es wird nur ergänzt.')) return;
-        var a = addData(j.data); msg(addedText(a), 'success');
-        if (user) await waitSync();
-        setTimeout(function () { location.reload(); }, 900);
-      };
-      rd.onerror = function () { msg('Datei konnte nicht gelesen werden.', 'error'); };
-      rd.readAsText(f);
-    }
   };
 
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !ON_KONTO) { var m = $('acct-modal'); if (m && m.getAttribute('data-open') === 'true') RSAUTH.close(); } });
