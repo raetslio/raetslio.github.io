@@ -82,6 +82,7 @@
   function showPw(session) { inviteShown = true; welcome = pwKind() === 'invite'; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
   function clearWelcome() { try { sessionStorage.removeItem('rs_welcome'); } catch (e) {} }
   var sb = null, user = null, pushTimer = null, syncing = false, lastMsg = '', view = 'login';
+  var otpGate = false, otpEmail = '', otpStage = 'send';
   var configured = SUPABASE_URL.indexOf('DEIN-PROJEKT') < 0 && SUPABASE_ANON_KEY.indexOf('DEIN-ANON') < 0;
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -98,6 +99,7 @@
   var ICONS = {
     google: '<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.2 7-10.3 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>',
     github: '<svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>',
+    key: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4"/><path d="M10.5 12.5L20 3"/><path d="M17 6l3 3"/><path d="M14 9l2.5 2.5"/></svg>',
     email: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'
   };
   function provIcon(k) { return ICONS[k] || ''; }
@@ -234,6 +236,7 @@
       [/rate limit|too many/i, 'Zu viele Versuche. Bitte warte kurz und versuche es erneut.'],
       [/same password/i, 'Das neue Passwort muss sich vom alten unterscheiden.'],
       [/permission denied|row-level security|violates row/i, 'Datenbank-Berechtigung fehlt. Bitte einmal das Skript supabase-setup.sql im Supabase SQL Editor ausführen.'],
+      [/token has expired|otp_expired|invalid.*(token|otp)|otp.*invalid/i, 'Der Code ist falsch oder abgelaufen. Fordere bei Bedarf einen neuen an.'],
       [/Failed to fetch|NetworkError/i, 'Keine Verbindung zum Server.']
     ];
     for (var i = 0; i < map.length; i++) if (map[i][0].test(m)) return map[i][1];
@@ -278,10 +281,10 @@
   }
   function pkBlock() {
     if (!pkOk()) return '';
-    return '<div class="panel-subblock"><span class="label">Face ID / Fingerabdruck</span>' +
+    return '<div class="panel-subblock"><span class="label" style="display:inline-flex;align-items:center;gap:6px">' + provIcon('key') + 'Passkey (Face ID / Fingerabdruck)</span>' +
       '<p class="muted-note">Melde dich auf diesem Gerät statt mit Passwort per Face ID, Fingerabdruck oder Geräte-PIN an. Das Passwort funktioniert weiterhin.</p>' +
       '<div id="acct-passkeys"></div>' +
-      '<button type="button" class="btn" onclick="RSAUTH.passkeyAdd()">Face ID / Fingerabdruck einrichten</button></div>';
+      '<button type="button" class="btn" onclick="RSAUTH.passkeyAdd()" style="display:inline-flex;align-items:center;gap:8px">' + provIcon('key') + 'Passkey einrichten</button></div>';
   }
   function pkDate(v) { try { return new Date(v).toLocaleDateString('de-DE'); } catch (e) { return ''; } }
   async function loadPasskeys() {
@@ -296,8 +299,14 @@
           (p.created_at ? '<span class="muted-note"> · eingerichtet am ' + esc(pkDate(p.created_at)) + '</span>' : '') + '</span>' +
           '<span style="display:inline-flex;gap:6px;flex:none"><button type="button" class="btn btn-sm" onclick="RSAUTH.passkeyRename(\'' + esc(p.id) + '\')">Umbenennen</button>' +
           '<button type="button" class="btn btn-sm" onclick="RSAUTH.passkeyDelete(\'' + esc(p.id) + '\')">Löschen</button></span></div>';
-      }).join('');
+      }).join('') + (list.length ? otpToggleHtml() : '');
+      if (!list.length && otpOn()) { sb.auth.updateUser({ data: { otp_required: false } }).then(function (u) { if (u && u.data && u.data.user) user = u.data.user; }); }
     } catch (e) {}
+  }
+  function otpOn() { return !!(user && user.user_metadata && user.user_metadata.otp_required); }
+  function otpToggleHtml() {
+    return '<label style="display:flex;gap:8px;align-items:flex-start;margin:10px 0"><input type="checkbox" id="acct-otp-req" style="margin-top:3px"' + (otpOn() ? ' checked' : '') + ' onchange="RSAUTH.otpToggle(this.checked)">' +
+      '<span>Bei Anmeldung mit Passwort zusätzlich einen Code per E-Mail verlangen<span class="muted-note" style="display:block">Schützt dein Konto, falls jemand dein Passwort kennt. Gilt nicht für die Anmeldung mit Passkey, Google oder GitHub.</span></span></label>';
   }
 
   /* ---------- Modal ---------- */
@@ -352,6 +361,15 @@
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.setNewPassword()">Passwort speichern</button>';
       return;
     }
+    if (user && view === 'pksetup') {
+      t.textContent = 'Passkey einrichten';
+      body.innerHTML = '<div style="display:flex;justify-content:center;color:var(--sage,#7a9a7e)">' + provIcon('key').replace(/width="18" height="18"/, 'width="56" height="56"') + '</div>' +
+        '<p style="margin:0;text-align:center">Dein Konto ist erstellt. Möchtest du jetzt einen <b>Passkey</b> einrichten? Dann meldest du dich auf diesem Gerät mit Face ID, Fingerabdruck oder Geräte-PIN an – ohne Passwort.</p>' +
+        '<button type="button" class="btn btn-primary" onclick="RSAUTH.passkeyAdd()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('key') + 'Passkey jetzt einrichten</button>' +
+        '<button type="button" class="btn btn-sm" onclick="RSAUTH.passkeySkip()">Später</button>' +
+        '<p class="muted-note">Du kannst das auch später unter „Mein Konto“ tun. Dein Passwort funktioniert weiterhin.</p>';
+      return;
+    }
     if (user && view === 'import' && pendingImport) {
       var q = pendingImport.sm, bits = [];
       if (q.nH) bits.push(q.nH + (q.nH === 1 ? ' Heft' : ' Hefte'));
@@ -376,6 +394,16 @@
         '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig. Die Kopie dieser Daten auf diesem Gerät wird ebenfalls entfernt. Die Daten, die du ohne Anmeldung auf diesem Gerät hast, bleiben erhalten.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       return;
     }
+    if (view === 'otp') {
+      t.textContent = 'Code bestätigen';
+      body.innerHTML = otpStage === 'send'
+        ? '<p class="muted-note">Für dieses Konto ist die Anmeldung mit Passwort zusätzlich durch einen Code geschützt. Wir senden ihn an <b>' + esc(otpEmail) + '</b>.</p>' + capHtml() +
+          '<button type="button" class="btn btn-primary" onclick="RSAUTH.otpSend()">Code per E-Mail senden</button><button type="button" class="btn btn-sm" onclick="RSAUTH.otpCancel()">Abbrechen</button>'
+        : '<p class="muted-note">Gib den Code ein, den wir an <b>' + esc(otpEmail) + '</b> geschickt haben.</p>' + field('acct-otp', 'Code aus der E-Mail', 'text', 'one-time-code') +
+          '<button type="button" class="btn btn-primary" onclick="RSAUTH.otpVerify()">Anmelden</button><button type="button" class="btn btn-sm" onclick="RSAUTH.otpAgain()">Neuen Code anfordern</button><button type="button" class="btn btn-sm" onclick="RSAUTH.otpCancel()">Abbrechen</button>';
+      var oi = $('acct-otp'); if (oi) { oi.setAttribute('inputmode', 'numeric'); oi.addEventListener('keydown', function (e) { if (e.key === 'Enter') RSAUTH.otpVerify(); }); }
+      return;
+    }
     if (view === 'forgot') {
       t.textContent = 'Passwort vergessen';
       body.innerHTML = '<p class="muted-note">Wir senden dir einen Link zum Zurücksetzen per E-Mail.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + capHtml() +
@@ -387,7 +415,7 @@
     body.innerHTML = '<p class="muted-note">Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') + capHtml() +
       '<button type="button" class="btn btn-primary" onclick="RSAUTH.' + (reg ? 'register' : 'login') + '()">' + (reg ? 'Konto erstellen' : 'Anmelden') + '</button>' +
       '<div class="muted-note" style="text-align:center;margin:2px 0">oder</div>' +
-      (pkOk() ? '<button type="button" class="btn" onclick="RSAUTH.passkeyLogin()" style="display:flex;align-items:center;justify-content:center;gap:8px">Mit Face ID / Fingerabdruck anmelden</button>' : '') +
+      (pkOk() ? (reg ? '' : '<button type="button" class="btn" onclick="RSAUTH.passkeyLogin()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('key') + 'Mit Passkey anmelden</button>') : '') +
       '<button type="button" class="btn" onclick="RSAUTH.google()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('google') + 'Mit Google fortfahren</button>' +
       '<button type="button" class="btn" onclick="RSAUTH.github()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('github') + 'Mit GitHub fortfahren</button>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between">' +
@@ -467,11 +495,20 @@
   function guestSummary() { var g = guestSnap(); if (!g) return null; var sm = summarize(g); return (sm.nH || sm.nV || sm.nS) ? { snap: g, sm: sm } : null; }
   function checkImport() {
     if (!user || switching || pendingImport) return;
-    if (view === 'recovery' || needWelcome()) return; /* erst Passwort festlegen, danach die Geräte-Frage */
+    if (view === 'recovery' || view === 'pksetup' || needWelcome()) return; /* erst Passwort festlegen, danach die Geräte-Frage */
     var g = guestSummary(); if (!g) return;
     var done = null; try { done = localStorage.getItem('rs_import_dec_' + user.id); } catch (e) {}
     if (done === g.sm.sig) return;
     pendingImport = g; view = 'import'; RSAUTH.open();
+  }
+  /* Konto nur mit Passkey: nach der E-Mail-Bestätigung gleich den Passkey einrichten lassen */
+  function pkNewMail() { try { return localStorage.getItem('rs_pk_new') || ''; } catch (e) { return ''; } }
+  function checkPk() {
+    if (!user || switching || !pkNewMail()) return;
+    if (pkNewMail() !== String(user.email || '').toLowerCase()) return;
+    if (view === 'recovery' || view === 'import' || needWelcome()) return; /* nie ein anderes Fenster verdrängen */
+    if (!pkOk()) { try { localStorage.removeItem('rs_pk_new'); } catch (e) {} return; }
+    view = 'pksetup'; RSAUTH.open();
   }
   function deviceImportBtn() {
     return guestSummary() ? '<div class="panel-subblock"><span class="label">Daten dieses Geräts</span><p class="muted-note">Es gibt Hefte oder Verläufe, die du auf diesem Gerät ohne Anmeldung angelegt hast. Sie können zu deinem Konto hinzugefügt werden – nichts im Konto wird überschrieben.</p><button type="button" class="btn" onclick="RSAUTH.importAsk()">Gerätedaten übernehmen</button></div>' : '';
@@ -597,7 +634,7 @@
     try { if (user) localStorage.setItem('rs_cloud_on', '1'); else localStorage.removeItem('rs_cloud_on'); } catch (e) {}
     renderBtn(); render();
     if (user) oauthNote();
-    if (user) setTimeout(checkImport, 1200);
+    if (user) { setTimeout(checkPk, 400); setTimeout(checkImport, 1200); }
   }
 
   /* ---------- Öffentliche API ---------- */
@@ -609,8 +646,15 @@
       var e = val('acct-email').trim(), p = val('acct-pw'); if (!e || !p) { msg('Bitte E-Mail und Passwort eingeben.', 'warning'); return; }
       if (capNeed()) return;
       msg('Anmelden …', 'info');
-      var r = await sb.auth.signInWithPassword({ email: e, password: p, options: capOpt() });
+      otpGate = true; var r;
+      try { r = await sb.auth.signInWithPassword({ email: e, password: p, options: capOpt() }); } finally { otpGate = false; }
       if (r.error) { capReset(); msg(err(r.error), 'error'); return; }
+      var umd = (r.data && r.data.user && r.data.user.user_metadata) || {};
+      if (umd.otp_required) {
+        /* Passwort stimmt, aber der Code per E-Mail fehlt noch: Sitzung sofort wieder beenden */
+        try { await sb.auth.signOut({ scope: 'local' }); } catch (x) {}
+        otpEmail = e; otpStage = 'send'; capReset(); view = 'otp'; render(); msg('Passwort richtig. Jetzt noch den Code aus der E-Mail eingeben.', 'info'); return;
+      }
       markFresh(); loggedIn(r.data.session); msg('Angemeldet.', 'success'); sync();
     },
     register: async function () {
@@ -619,8 +663,9 @@
       msg('Konto wird erstellt …', 'info');
       var r = await sb.auth.signUp({ email: e, password: p, options: Object.assign({ emailRedirectTo: location.origin + location.pathname }, capOpt()) });
       if (r.error) { capReset(); msg(err(r.error), 'error'); return; }
-      if (r.data.session) { markFresh(); loggedIn(r.data.session); msg('Konto erstellt und angemeldet.', 'success'); sync(); }
-      else { view = 'login'; render(); msg('Fast geschafft: Wir haben dir eine Bestätigungsmail geschickt. Klicke auf den Link darin und melde dich dann an.', 'success'); }
+      try { localStorage.setItem('rs_pk_new', e.toLowerCase()); } catch (x) {} /* danach Passkey vorschlagen */
+      if (r.data.session) { markFresh(); loggedIn(r.data.session); sync(); }
+      else { view = 'login'; render(); msg('Fast geschafft: Wir haben dir eine Bestätigungsmail geschickt. Klicke auf den Link darin. Danach schlagen wir dir vor, einen Passkey einzurichten.', 'success'); }
     },
     forgot: async function () {
       var e = val('acct-email').trim(); if (!e) { msg('Bitte deine E-Mail-Adresse eingeben.', 'warning'); return; }
@@ -637,7 +682,7 @@
       var r = await sb.auth.updateUser({ password: a, data: { pw_set: true } });
       if (r.error) { msg(err(r.error), 'error'); return; }
       var wasWelcome = welcome; welcome = false; clearWelcome();
-      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); setTimeout(checkImport, 1500);
+      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); setTimeout(checkPk, 1200); setTimeout(checkImport, 2000);
     },
     changePassword: async function () {
       var a = val('acct-pw1'); if (a.length < 8) { msg('Das Passwort muss mindestens 8 Zeichen haben.', 'warning'); return; }
@@ -691,17 +736,44 @@
     },
     passkeyLogin: async function () {
       if (capNeed()) return;
-      msg('Face ID / Fingerabdruck wird abgefragt …', 'info');
+      msg('Passkey wird abgefragt …', 'info');
       var r; try { r = await sb.auth.signInWithPasskey(capOn() ? { options: { captchaToken: capToken } } : undefined); } catch (x) { r = { error: x }; }
       capReset();
       if (!r || r.error || !r.data || !r.data.session) { msg(pkErr(r && r.error), 'error'); return; }
       markFresh(); loggedIn(r.data.session); msg('Angemeldet.', 'success'); sync();
     },
+    otpSend: async function () {
+      if (capNeed()) return;
+      msg('Code wird gesendet …', 'info');
+      var r = await sb.auth.signInWithOtp({ email: otpEmail, options: Object.assign({ shouldCreateUser: false }, capOpt()) });
+      capReset();
+      if (r.error) { msg(err(r.error), 'error'); return; }
+      otpStage = 'verify'; render(); msg('Wir haben dir einen Code per E-Mail geschickt.', 'success');
+    },
+    otpVerify: async function () {
+      var c = val('acct-otp').replace(/\s/g, ''); if (!c) { msg('Bitte den Code aus der E-Mail eingeben.', 'warning'); return; }
+      msg('Code wird geprüft …', 'info');
+      var r = await sb.auth.verifyOtp({ email: otpEmail, token: c, type: 'email' });
+      if (r.error || !r.data || !r.data.session) { msg(err(r.error || new Error('invalid token')), 'error'); return; }
+      markFresh(); view = 'login'; loggedIn(r.data.session); msg('Angemeldet.', 'success'); sync();
+    },
+    otpAgain: function () { otpStage = 'send'; msg(''); render(); },
+    otpCancel: function () { otpEmail = ''; view = 'login'; msg(''); render(); },
+    otpToggle: async function (on) {
+      var r = await sb.auth.updateUser({ data: { otp_required: !!on } });
+      if (r.error) { msg(err(r.error), 'error'); var cb = $('acct-otp-req'); if (cb) cb.checked = !on; return; }
+      if (r.data && r.data.user) user = r.data.user;
+      msg(on ? 'Bei Anmeldung mit Passwort wird jetzt zusätzlich ein Code per E-Mail verlangt.' : 'Der zusätzliche E-Mail-Code ist ausgeschaltet.', 'success');
+    },
+    passkeySkip: function () { try { localStorage.removeItem('rs_pk_new'); } catch (e) {} view = 'login'; render(); msg('Du kannst den Passkey jederzeit unter „Mein Konto“ einrichten.', 'info'); setTimeout(checkImport, 600); },
     passkeyAdd: async function () {
-      msg('Face ID / Fingerabdruck wird eingerichtet …', 'info');
+      msg('Passkey wird eingerichtet …', 'info');
       var r; try { r = await sb.auth.registerPasskey(); } catch (x) { r = { error: x }; }
       if (!r || r.error) { msg(pkErr(r && r.error), 'error'); return; }
-      msg('Eingerichtet. Du kannst dich auf diesem Gerät jetzt mit Face ID / Fingerabdruck anmelden.', 'success'); loadPasskeys();
+      try { localStorage.removeItem('rs_pk_new'); } catch (e) {}
+      var wasSetup = view === 'pksetup'; if (wasSetup) { view = 'login'; render(); }
+      msg('Eingerichtet. Du kannst dich auf diesem Gerät jetzt mit deinem Passkey anmelden.', 'success'); loadPasskeys();
+      if (wasSetup) setTimeout(checkImport, 1500);
     },
     passkeyRename: async function (id) {
       var n = prompt('Neuer Name für diesen Zugang (z. B. „iPhone“):', ''); if (n === null) return;
@@ -754,7 +826,7 @@
     },
     importDecline: function () {
       if (pendingImport && user) { try { localStorage.setItem('rs_import_dec_' + user.id, pendingImport.sm.sig); } catch (e) {} }
-      pendingImport = null; view = 'login'; render(); msg('Die Daten dieses Geräts bleiben getrennt von deinem Konto.', 'info');
+      pendingImport = null; view = 'login'; render(); msg('Die Daten dieses Geräts bleiben getrennt von deinem Konto.', 'info'); setTimeout(checkPk, 600);
     },
     exportBackup: function () {
       var data = {};
@@ -798,6 +870,7 @@
     try {
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, experimental: { passkey: true } } });
       sb.auth.onAuthStateChange(function (ev, session) {
+        if (ev === 'SIGNED_IN' && otpGate) return; /* Passwort-Anmeldung läuft: erst nach Code-Prüfung entscheiden */
         if (ev === 'PASSWORD_RECOVERY') { try { if (!pwKind()) sessionStorage.setItem('rs_welcome', 'recovery'); } catch (e) {} if (!inviteShown) showPw(session); }
         else if (ev === 'SIGNED_OUT') { loggedIn(null); }
         else if (ev === 'SIGNED_IN' && needWelcome() && !inviteShown && session) { showPw(session); }
