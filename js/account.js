@@ -93,6 +93,31 @@
   function hash(v) { var s = canon(v), h = 5381; for (var i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return s.length + ':' + h; }
   /* Frische Anmeldung: Sync-Merkzettel dieses Geräts verwerfen, damit bei Konflikten der Stand des Kontos gewinnt */
   var freshSync = false;
+  var PROV = { email: 'E-Mail', google: 'Google', github: 'GitHub' };
+  function provName(k) { return PROV[k] || k; }
+  /* Nach der Rückkehr von Google/GitHub: War es ein bereits bestehendes Konto (Identität deutlich jünger als das Konto), wurde es verknüpft */
+  function oauthNote() {
+    var prov = null; try { prov = sessionStorage.getItem('rs_oauth_prov'); } catch (e) {}
+    if (!prov || !user) return;
+    try { sessionStorage.removeItem('rs_oauth_prov'); } catch (e) {}
+    var idn = (user.identities || []).filter(function (i) { return i.provider === prov; })[0];
+    if (!idn || !idn.created_at || !user.created_at) return;
+    if (new Date(idn.created_at) - new Date(user.created_at) > 120000) {
+      view = 'login'; RSAUTH.open();
+      setTimeout(function () { msg('Es gab bereits ein Konto mit dieser E-Mail-Adresse. Es wurde mit ' + provName(prov) + ' verknüpft – du bist in deinem bestehenden Konto angemeldet.', 'success'); }, 60);
+    }
+  }
+  function methodsBlock() {
+    var ids = (user && user.identities) || [], have = ids.map(function (i) { return i.provider; });
+    var rows = ids.map(function (i) {
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0"><span>' + provName(i.provider) + '</span>' +
+        (ids.length > 1 ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.unlink(\'' + i.provider + '\')">Trennen</button>' : '') + '</div>';
+    }).join('');
+    var add = ['google', 'github'].filter(function (k) { return have.indexOf(k) < 0; }).map(function (k) {
+      return '<button type="button" class="btn btn-sm" onclick="RSAUTH.link(\'' + k + '\')">' + provName(k) + ' verknüpfen</button>';
+    }).join(' ');
+    return '<div class="panel-subblock"><span class="label">Anmeldemethoden</span>' + rows + (add ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">' + add + '</div>' : '') + '</div>';
+  }
   function markFresh() { try { sessionStorage.setItem('rs_fresh_login', '1'); } catch (e) {} }
   function consumeFresh() {
     try {
@@ -204,6 +229,7 @@
       body.innerHTML = '<p style="margin:0">Angemeldet als <b>' + esc(user.email) + '</b></p><p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
         (hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '') +
+        methodsBlock() +
         '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
         deviceImportBtn() + backupBlock() +
         '<div class="panel-subblock"><button type="button" class="btn" onclick="RSAUTH.logout()">Abmelden</button></div>' +
@@ -413,6 +439,7 @@
     /* Lokaler Spielstand bleibt auch ohne Anmeldung erhalten */
     try { if (user) localStorage.setItem('rs_cloud_on', '1'); else localStorage.removeItem('rs_cloud_on'); } catch (e) {}
     renderBtn(); render();
+    if (user) oauthNote();
     if (user) setTimeout(checkImport, 1200);
   }
 
@@ -487,12 +514,26 @@
       await sb.auth.signOut().catch(function () {}); loggedIn(null); view = 'login'; render(); msg('Dein Konto und alle Cloud-Daten wurden gelöscht.', 'success');
     },
     google: async function () {
-      msg('Weiterleitung zu Google …', 'info'); markFresh();
+      msg('Weiterleitung zu Google …', 'info'); markFresh(); try { sessionStorage.setItem('rs_oauth_prov', 'google'); } catch (e) {}
       var r = await sb.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: location.origin + location.pathname } });
       if (r.error) { try { sessionStorage.removeItem('rs_fresh_login'); } catch (e) {} msg(err(r.error), 'error'); }
     },
+    link: async function (prov) {
+      msg('Weiterleitung zu ' + provName(prov) + ' …', 'info');
+      var r = await sb.auth.linkIdentity({ provider: prov, options: { redirectTo: location.origin + location.pathname } });
+      if (r.error) msg(/manual linking/i.test(r.error.message || '') ? 'Das Verknüpfen ist in Supabase noch nicht aktiviert (Authentication → Sign In / Providers → „Allow manual linking").' : err(r.error), 'error');
+    },
+    unlink: async function (prov) {
+      var ids = (user && user.identities) || [], idn = ids.filter(function (i) { return i.provider === prov; })[0];
+      if (!idn || ids.length < 2) { msg('Mindestens eine Anmeldemethode muss bleiben.', 'warning'); return; }
+      if (!confirm(provName(prov) + ' wirklich von deinem Konto trennen?')) return;
+      var r = await sb.auth.unlinkIdentity(idn);
+      if (r.error) { msg(err(r.error), 'error'); return; }
+      var g = await sb.auth.getUser(); if (g.data && g.data.user) user = g.data.user;
+      render(); msg(provName(prov) + ' wurde getrennt.', 'success');
+    },
     github: async function () {
-      msg('Weiterleitung zu GitHub …', 'info'); markFresh();
+      msg('Weiterleitung zu GitHub …', 'info'); markFresh(); try { sessionStorage.setItem('rs_oauth_prov', 'github'); } catch (e) {}
       var r = await sb.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: location.origin + location.pathname } });
       if (r.error) { try { sessionStorage.removeItem('rs_fresh_login'); } catch (e) {} msg(err(r.error), 'error'); }
     },
