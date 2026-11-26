@@ -146,3 +146,5 @@ body.rs-menu-open { overflow: hidden; }
 @media print {
   .rs-drawer, .rs-backdrop, #rs-menu-btn { display: none !important; }
 }
+
+.rs-drawer-title .brand-mark { width: 1em; height: 1em; margin-left: 0.08em; vertical-align: -0.14em; flex: none; }
