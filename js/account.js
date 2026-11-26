@@ -54,10 +54,12 @@
   var SP = { verlauf: { ls: 'raetsel_heft_verlauf', mod: 'HV' }, spiele: { ls: 'raetsel_heft_spiele', mod: 'GV' } };
   var $ = function (id) { return document.getElementById(id); };
   /* Einladungslink erkannt? (muss vor dem Supabase-Start gelesen werden, der die Adresse bereinigt) */
-  var INVITE = /[#&?]type=invite/.test(location.hash + location.search), inviteShown = false, welcome = false;
+  var INVITE = (/[#&?]type=(invite|recovery)/.exec(location.hash + location.search) || [])[1] || '', inviteShown = false, welcome = false;
   /* Beim ersten Anmelden lädt die Seite einmal neu (Konto-Daten werden getrennt). Darum den Einladungs-Hinweis merken. */
-  try { if (INVITE) sessionStorage.setItem('rs_welcome', '1'); } catch (e) {}
-  function needWelcome() { try { return sessionStorage.getItem('rs_welcome') === '1'; } catch (e) { return INVITE; } }
+  try { if (INVITE) sessionStorage.setItem('rs_welcome', INVITE); } catch (e) {}
+  function pwKind() { try { return sessionStorage.getItem('rs_welcome') || ''; } catch (e) { return INVITE; } }
+  function needWelcome() { return !!pwKind(); }
+  function showPw(session) { inviteShown = true; welcome = pwKind() === 'invite'; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
   function clearWelcome() { try { sessionStorage.removeItem('rs_welcome'); } catch (e) {} }
   var sb = null, user = null, pushTimer = null, syncing = false, lastMsg = '', view = 'login';
   var configured = SUPABASE_URL.indexOf('DEIN-PROJEKT') < 0 && SUPABASE_ANON_KEY.indexOf('DEIN-ANON') < 0;
@@ -277,6 +279,7 @@
   function guestSummary() { var g = guestSnap(); if (!g) return null; var sm = summarize(g); return (sm.nH || sm.nV || sm.nS) ? { snap: g, sm: sm } : null; }
   function checkImport() {
     if (!user || switching || pendingImport) return;
+    if (view === 'recovery' || needWelcome()) return; /* erst Passwort festlegen, danach die Geräte-Frage */
     var g = guestSummary(); if (!g) return;
     var done = null; try { done = localStorage.getItem('rs_import_dec_' + user.id); } catch (e) {}
     if (done === g.sm.sig) return;
@@ -429,7 +432,7 @@
       var r = await sb.auth.updateUser({ password: a });
       if (r.error) { msg(err(r.error), 'error'); return; }
       var wasWelcome = welcome; welcome = false; clearWelcome();
-      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync();
+      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); setTimeout(checkImport, 1500);
     },
     changePassword: async function () {
       var a = val('acct-pw1'); if (a.length < 8) { msg('Das Passwort muss mindestens 8 Zeichen haben.', 'warning'); return; }
@@ -522,13 +525,13 @@
     try {
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
       sb.auth.onAuthStateChange(function (ev, session) {
-        if (ev === 'PASSWORD_RECOVERY') { loggedIn(session); view = 'recovery'; RSAUTH.open(); }
+        if (ev === 'PASSWORD_RECOVERY') { try { if (!pwKind()) sessionStorage.setItem('rs_welcome', 'recovery'); } catch (e) {} if (!inviteShown) showPw(session); }
         else if (ev === 'SIGNED_OUT') { loggedIn(null); }
-        else if (ev === 'SIGNED_IN' && needWelcome() && !inviteShown && session) { inviteShown = true; welcome = true; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
+        else if (ev === 'SIGNED_IN' && needWelcome() && !inviteShown && session) { showPw(session); }
         else if (ev === 'SIGNED_IN' && !user) { loggedIn(session); setTimeout(sync, 0); }
       });
       sb.auth.getSession().then(function (r) {
-        if (r.data && r.data.session && needWelcome() && !inviteShown) { inviteShown = true; welcome = true; loggedIn(r.data.session); view = 'recovery'; RSAUTH.open(); }
+        if (r.data && r.data.session && needWelcome() && !inviteShown) { showPw(r.data.session); }
         else if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
         else loggedIn(null);
       });
