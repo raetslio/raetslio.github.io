@@ -613,3 +613,51 @@ input, select, textarea { font-size: 16px; }
 
 /* Spielfelder: wie bisher seitlich scrollbar, wo sie breiter als der Bildschirm sind */
 .board-viewport, .bx-wrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+/* ======================================================================
+   Feinschliff: Animationen, Icons, Dunkelmodus, Ladezustand, Barrierefreiheit
+   ====================================================================== */
+:root { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
+
+/* Einheitliche Icons */
+.icon-svg { flex: none; stroke-linecap: round; stroke-linejoin: round; }
+
+/* Saubere Animationen */
+@keyframes rsFade { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rsPop { from { opacity: 0; transform: translateY(10px) scale(.98); } to { opacity: 1; transform: none; } }
+@keyframes rsSpin { to { transform: rotate(360deg); } }
+.modal-backdrop[data-open="true"] { animation: rsFade .18s var(--ease-out, ease-out); }
+.modal-backdrop[data-open="true"] .modal-card { animation: rsPop .24s var(--ease-out, ease-out); }
+.feedback-banner:not(.hidden) { animation: rsFade .2s var(--ease-out, ease-out); }
+.btn { transition: background-color var(--dur-micro, 120ms) var(--ease-out, ease-out), color var(--dur-micro, 120ms) var(--ease-out, ease-out), transform var(--dur-micro, 120ms) var(--ease-out, ease-out), opacity var(--dur-micro, 120ms) ease; }
+.btn:active:not(:disabled) { transform: scale(.98); }
+
+/* Ladezustand: Knopf zeigt Drehung, bleibt aber lesbar */
+.btn[aria-busy="true"] { cursor: progress; opacity: .85; }
+.btn[aria-busy="true"] .icon-svg { animation: rsSpin .8s linear infinite; }
+
+/* Dunkelmodus: Vorschau-Beschriftungen */
+:root[data-theme="dark"] .bk-thumb span { color: #ddd; background: rgba(0,0,0,.6); }
+
+/* Barrierefreiheit */
+.rs-skip { position: fixed; left: 12px; top: -64px; z-index: 2000; padding: 10px 16px; border-radius: 10px; background: var(--primary); color: var(--on-primary, #fff); font-weight: 600; text-decoration: none; transition: top .15s ease; }
+.rs-skip:focus { top: calc(8px + env(safe-area-inset-top, 0px)); }
+main:focus { outline: none; }
+
+/* Bestätigungsdialog */
+.rs-confirm .modal-card { max-width: 420px; gap: var(--space-sm); }
+.rs-confirm h2 { margin: 0; }
+.rs-confirm p { margin: 0 0 var(--space-sm); line-height: 1.45; }
+.rs-confirm-actions { display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.rs-confirm-actions .btn { min-width: 110px; }
+.btn.rs-danger { background-color: var(--error); border-color: var(--error); color: var(--background); font-weight: 600; }
+.btn.rs-danger:hover:not(:disabled) { background-color: var(--error); filter: brightness(1.08); }
+#rs-confirm { z-index: 1100; }
+
+@media (prefers-reduced-motion: reduce) {
+  .modal-backdrop[data-open="true"], .modal-backdrop[data-open="true"] .modal-card, .feedback-banner:not(.hidden) { animation: none; }
+  .btn:active:not(:disabled) { transform: none; }
+  .btn[aria-busy="true"] .icon-svg { animation-duration: 2.4s; }
+  .rs-skip { transition: none; }
+}

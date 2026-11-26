@@ -736,7 +736,7 @@
     unlink: async function (prov) {
       var ids = (user && user.identities) || [], idn = ids.filter(function (i) { return i.provider === prov; })[0];
       if (!idn || ids.length < 2) { msg('Mindestens eine Anmeldemethode muss bleiben.', 'warning'); return; }
-      if (!confirm(provName(prov) + ' wirklich von deinem Konto trennen?')) return;
+      if (!(await rsConfirm(provName(prov) + ' wirklich von deinem Konto trennen? Du kannst dich dann nicht mehr damit anmelden.', { title: 'Anmeldemethode trennen', ok: 'Trennen', danger: true }))) return;
       var r = await sb.auth.unlinkIdentity(idn);
       if (r.error) { msg(err(r.error), 'error'); return; }
       var g = await sb.auth.getUser(); if (g.data && g.data.user) user = g.data.user;
@@ -791,7 +791,7 @@
       msg('Name geändert.', 'success'); loadPasskeys();
     },
     passkeyDelete: async function (id) {
-      if (!confirm('Diesen Face-ID-/Fingerabdruck-Zugang wirklich löschen?')) return;
+      if (!(await rsConfirm('Diesen Face-ID-/Fingerabdruck-Zugang wirklich löschen? Das lässt sich nicht rückgängig machen.', { title: 'Zugang löschen', ok: 'Löschen', danger: true }))) return;
       var r; try { r = await sb.auth.passkey.delete({ passkeyId: id }); } catch (x) { r = { error: x }; }
       if (r && r.error) { msg(pkErr(r.error), 'error'); return; }
       msg('Zugang gelöscht.', 'success'); loadPasskeys();
