@@ -3,7 +3,7 @@
 <head>
   <base href="/">
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="artifact-type" content="tool">
   <meta name="design-style" content="haven">
   <script>
@@ -60,18 +60,16 @@
   <link rel="stylesheet" href="css/board.css">
   <link rel="stylesheet" href="css/modals.css">
   <link rel="stylesheet" href="css/extensions.css">
+  <link rel="stylesheet" href="css/sidebar.css">
   <script src="js/host-fallback.js"></script>
 </head>
 <body>
-  <div class="app-shell">
-    <header class="site-header">
-      <div class="brand-block">
-        <h1 class="headline" aria-label="Rätslio?">Rätslio<svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><rect width="512" height="512" rx="112" fill="#3c5a6e"/><g fill="none" stroke="#e2e9ee" stroke-opacity="0.28" stroke-width="6" stroke-linecap="round"><rect x="86" y="86" width="340" height="340" rx="26"/><path d="M199.3 86v340M312.7 86v340M86 199.3h340M86 312.7h340"/></g><path d="M190 204C190 150 226 120 262 120C300 120 330 146 330 184C330 226 288 240 270 264C262 276 262 290 262 308" fill="none" stroke="#ffffff" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/><circle cx="262" cy="376" r="30" fill="#d9946e"/></svg></h1>
-        <p class="caption-sage">Rätsel direkt spielen, als Arbeitsblatt drucken oder zum fertigen Rätselheft zusammenstellen</p>
-      </div>
-
-      <div class="header-controls">
+  <div id="rs-backdrop" class="rs-backdrop" aria-hidden="true"></div>
+  <aside id="rs-drawer" class="rs-drawer" aria-label="Hauptmenü" aria-hidden="true">
+    <div class="rs-drawer-head"><span class="rs-drawer-title">Rätslio?</span><button type="button" id="rs-menu-close" class="rs-icon-btn" aria-label="Menü schließen"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="rs-drawer-scroll">
         <nav class="nav-tabs" aria-label="Rätselmodus wählen">
+          <div class="rs-drawer-label">Rätselarten</div>
           <button type="button" id="tab-sudoku" class="nav-tab" aria-selected="true" onclick="switchMode('sudoku')">
             <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
             Sudoku
@@ -81,31 +79,96 @@
             Suchsel
           </button>
           <button type="button" id="tab-binoxxo" class="nav-tab" aria-selected="false" onclick="switchMode('binoxxo')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg> Binoxxo</button>
-          <button type="button" id="tab-labyrinth" class="nav-tab" aria-selected="false" onclick="switchMode('labyrinth')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3h18v18H3zM3 9h12v6M9 15v6M15 3v6"/></svg> Labyrinth</button>
           <button type="button" id="tab-hitori" class="nav-tab" aria-selected="false" onclick="switchMode('hitori')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/><rect x="12" y="12" width="8" height="8" fill="currentColor" stroke="none"/></svg> Hitori</button>
-          <button type="button" id="tab-mauer" class="nav-tab" aria-selected="false" onclick="switchMode('mauer')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 20h18M5 20v-5h6v5M13 20v-5h6v5M8 15v-5h8v5M11 10V5h2v5"/></svg> Zahlenmauer</button>
           <button type="button" id="tab-magic" class="nav-tab" aria-selected="false" onclick="switchMode('magic')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg> Magisches Quadrat</button>
+          <button type="button" id="tab-mauer" class="nav-tab" aria-selected="false" onclick="switchMode('mauer')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 20h18M5 20v-5h6v5M13 20v-5h6v5M8 15v-5h8v5M11 10V5h2v5"/></svg> Zahlenmauer</button>
+          <button type="button" id="tab-labyrinth" class="nav-tab" aria-selected="false" onclick="switchMode('labyrinth')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3h18v18H3zM3 9h12v6M9 15v6M15 3v6"/></svg> Labyrinth</button>
+          <div class="rs-drawer-label">Sammlungen</div>
           <button type="button" id="tab-heft" class="nav-tab" aria-selected="false" onclick="switchMode('heft')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 8h8M8 12h8"/></svg> Rätselheft</button>
           <button type="button" id="tab-spiele" class="nav-tab" aria-selected="false" onclick="switchMode('spiele')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 4l12 8-12 8z"/></svg> Spielverlauf</button>
           <button type="button" id="tab-verlauf" class="nav-tab" aria-selected="false" onclick="switchMode('verlauf')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg> Druckverlauf</button>
         </nav>
-
-        <button type="button" id="btn-open-print" class="btn btn-primary" onclick="openPrintModal()">
-          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-          Druckfenster &amp; Export
-        </button>
-
-
-        <button type="button" id="btn-account" class="btn" onclick="RSAUTH.open()" title="Mein Konto: Rätselstände, Hefte und Einstellungen auf allen Geräten">
+    </div>
+    <div class="rs-drawer-foot">
+        <button type="button" id="btn-account" class="btn rs-account" onclick="RSAUTH.open()" title="Mein Konto: Rätselstände, Hefte und Einstellungen auf allen Geräten">
           <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
           <span id="account-label">Anmelden</span>
+        </button>
+    </div>
+  </aside>
+  <div class="app-shell">
+    <header class="site-header">
+      <button type="button" id="rs-menu-btn" class="rs-icon-btn" aria-label="Menü öffnen" aria-expanded="false" aria-controls="rs-drawer"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h10"/></svg></button>
+      <div class="brand-block">
+        <h1 class="headline" aria-label="Rätslio?">Rätslio<svg class="brand-mark" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><rect width="512" height="512" rx="112" fill="#3c5a6e"/><g fill="none" stroke="#e2e9ee" stroke-opacity="0.28" stroke-width="6" stroke-linecap="round"><rect x="86" y="86" width="340" height="340" rx="26"/><path d="M199.3 86v340M312.7 86v340M86 199.3h340M86 312.7h340"/></g><path d="M190 204C190 150 226 120 262 120C300 120 330 146 330 184C330 226 288 240 270 264C262 276 262 290 262 308" fill="none" stroke="#ffffff" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/><circle cx="262" cy="376" r="30" fill="#d9946e"/></svg></h1>
+        <p class="caption-sage">Rätsel direkt spielen, als Arbeitsblatt drucken oder zum fertigen Rätselheft zusammenstellen</p>
+      </div>
+      <div class="header-controls">
+        <button type="button" id="btn-open-print" class="btn btn-primary" aria-label="Druckfenster &amp; Export" onclick="openPrintModal()">
+          <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          <span class="rs-print-label">Druckfenster &amp; Export</span>
         </button>
       </div>
     </header>
 
     <!-- SUDOKU VIEW -->
-    <main id="view-sudoku" class="page-grid">
+    <main id="view-sudoku" class="page-grid rs-single">
       <div class="main-column">
+        <details class="panel rs-settings" id="settings-sudoku"><summary><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Rätsel-Einstellungen</span><svg class="rs-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+          <div class="rs-settings-body">
+          <aside class="side-column" aria-label="Sudoku-Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Raster &amp; <strong>Schwierigkeit</strong></h2>
+
+          <div class="field-group">
+            <span class="field-label">Schnellauswahl Rastergröße</span>
+            <div class="chip-group" id="sudoku-size-presets">
+              <button type="button" class="chip-btn" data-size="4" onclick="selectSudokuPreset(4)">4×4</button>
+              <button type="button" class="chip-btn" data-size="9" aria-pressed="true" onclick="selectSudokuPreset(9)">9×9</button>
+              <button type="button" class="chip-btn" data-size="16" onclick="selectSudokuPreset(16)">16×16</button>
+              <button type="button" class="chip-btn" data-size="20" onclick="selectSudokuPreset(20)">20×20</button>
+              <button type="button" class="chip-btn" data-size="25" onclick="selectSudokuPreset(25)">25×25</button>
+              <button type="button" class="chip-btn" data-size="36" onclick="selectSudokuPreset(36)">36×36</button>
+              <button type="button" class="chip-btn" data-size="40" onclick="selectSudokuPreset(40)">40×40</button>
+            </div>
+          </div>
+
+          <div class="field-group">
+            <label class="field-label" for="sudoku-size-input">
+              <span>Benutzerdefinierte Größe (4 bis 55)</span>
+              <span id="sudoku-subgrid-preview">Blöcke: 3×3</span>
+            </label>
+            <div class="input-row">
+              <input id="sudoku-size-input" class="input-control" type="number" min="4" max="55" value="9" oninput="onSudokuSizeInput(this.value)">
+              <button type="button" class="btn btn-primary" onclick="requestSudokuGeneration()">Erstellen</button>
+            </div>
+            <div id="sudoku-prime-note" class="feedback-banner warning feedback-banner-compact hidden"></div>
+          </div>
+
+          <div class="field-group">
+            <span class="field-label">Schwierigkeitsgrad</span>
+            <div class="segmented" id="sudoku-diff-segmented" role="group" aria-label="Schwierigkeitsgrad">
+              <button type="button" class="seg-btn" data-diff="leicht" aria-pressed="true" onclick="setSudokuDifficulty('leicht')">Leicht</button>
+              <button type="button" class="seg-btn" data-diff="mittel" aria-pressed="false" onclick="setSudokuDifficulty('mittel')">Mittel</button>
+              <button type="button" class="seg-btn" data-diff="schwer" aria-pressed="false" onclick="setSudokuDifficulty('schwer')">Schwer</button>
+              <button type="button" class="seg-btn" data-diff="experte" aria-pressed="false" onclick="setSudokuDifficulty('experte')">Experte</button>
+            </div>
+            <span id="sudoku-diff-hint" class="label">Ca. 62 % vorgegebene Zahlen</span>
+          </div>
+
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('sudoku')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+          </div>
+        </details>
+
 
         <section class="panel" aria-label="Interaktives Sudoku-Spielfeld">
           <div class="board-topbar">
@@ -165,110 +228,14 @@
           <ol id="sudoku-rules-list" class="rules-list"></ol>
         </section>
       </div>
-
-      <aside class="side-column" aria-label="Sudoku-Einstellungen">
-        <section class="panel panel-stack">
-          <h2 class="section-title">Raster &amp; <strong>Schwierigkeit</strong></h2>
-
-          <div class="field-group">
-            <span class="field-label">Schnellauswahl Rastergröße</span>
-            <div class="chip-group" id="sudoku-size-presets">
-              <button type="button" class="chip-btn" data-size="4" onclick="selectSudokuPreset(4)">4×4</button>
-              <button type="button" class="chip-btn" data-size="9" aria-pressed="true" onclick="selectSudokuPreset(9)">9×9</button>
-              <button type="button" class="chip-btn" data-size="16" onclick="selectSudokuPreset(16)">16×16</button>
-              <button type="button" class="chip-btn" data-size="20" onclick="selectSudokuPreset(20)">20×20</button>
-              <button type="button" class="chip-btn" data-size="25" onclick="selectSudokuPreset(25)">25×25</button>
-              <button type="button" class="chip-btn" data-size="36" onclick="selectSudokuPreset(36)">36×36</button>
-              <button type="button" class="chip-btn" data-size="40" onclick="selectSudokuPreset(40)">40×40</button>
-            </div>
-          </div>
-
-          <div class="field-group">
-            <label class="field-label" for="sudoku-size-input">
-              <span>Benutzerdefinierte Größe (4 bis 55)</span>
-              <span id="sudoku-subgrid-preview">Blöcke: 3×3</span>
-            </label>
-            <div class="input-row">
-              <input id="sudoku-size-input" class="input-control" type="number" min="4" max="55" value="9" oninput="onSudokuSizeInput(this.value)">
-              <button type="button" class="btn btn-primary" onclick="requestSudokuGeneration()">Erstellen</button>
-            </div>
-            <div id="sudoku-prime-note" class="feedback-banner warning feedback-banner-compact hidden"></div>
-          </div>
-
-          <div class="field-group">
-            <span class="field-label">Schwierigkeitsgrad</span>
-            <div class="segmented" id="sudoku-diff-segmented" role="group" aria-label="Schwierigkeitsgrad">
-              <button type="button" class="seg-btn" data-diff="leicht" aria-pressed="true" onclick="setSudokuDifficulty('leicht')">Leicht</button>
-              <button type="button" class="seg-btn" data-diff="mittel" aria-pressed="false" onclick="setSudokuDifficulty('mittel')">Mittel</button>
-              <button type="button" class="seg-btn" data-diff="schwer" aria-pressed="false" onclick="setSudokuDifficulty('schwer')">Schwer</button>
-              <button type="button" class="seg-btn" data-diff="experte" aria-pressed="false" onclick="setSudokuDifficulty('experte')">Experte</button>
-            </div>
-            <span id="sudoku-diff-hint" class="label">Ca. 62 % vorgegebene Zahlen</span>
-          </div>
-
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('sudoku')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
-        </section>
-      </aside>
     </main>
 
     <!-- SUCHSEL (WORTSUCHE) VIEW -->
-    <main id="view-wortsuche" class="page-grid hidden">
+    <main id="view-wortsuche" class="page-grid rs-single hidden">
       <div class="main-column">
-
-        <section class="panel" aria-label="Interaktives Suchsel-Gitter">
-          <div class="board-topbar">
-            <div class="board-meta"><span id="ws-diff-tag" class="tag">–</span><span id="ws-count-tag" class="stat-pill">0 / 0 Wörter gefunden</span><span id="timer-ws" class="stat-pill" title="Zeit">00:00</span></div>
-            <div class="zoom-bar">
-              <label for="ws-zoom-slider">Zellengröße:</label>
-              <input id="ws-zoom-slider" type="range" min="20" max="46" value="32" oninput="setWsCellZoom(this.value)">
-              <span id="ws-zoom-val" class="stat-pill">32 px</span>
-            </div>
-          </div>
-
-          <div id="ws-feedback" class="feedback-banner info hidden" role="status" aria-live="polite">
-            <span id="ws-feedback-text"></span>
-          </div>
-
-          <div class="board-viewport" id="ws-viewport">
-            <div class="board-center-wrap">
-              <div id="ws-stage" class="ws-stage">
-                <svg id="ws-svg-overlay" class="ws-svg-overlay" aria-hidden="true"></svg>
-                <div id="ws-grid" class="ws-grid" role="grid" aria-label="Suchsel-Buchstabengitter"></div>
-              </div>
-            </div>
-          </div>
-
-          <div class="ws-wordlist" id="ws-wordlist" aria-label="Zu suchende Wörter"></div>
-
-          <div class="board-actions">
-            <button type="button" id="btn-ws-reveal" class="btn btn-primary" onclick="toggleWsSolution()">
-              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
-              Lösung anzeigen
-            </button>
-            <button type="button" class="btn" onclick="resetWsProgress()">Eingaben leeren</button>
-            <button type="button" class="btn btn-sage" onclick="generateWordSearch()">
-              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              Neu mischen
-            </button>
-          </div>
-        </section>
-        <section class="panel rules-strip" aria-labelledby="ws-rules-heading">
-          <div class="rules-header">
-            <h2 id="ws-rules-heading" class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
-            <span id="ws-rule-badge" class="tag">16×16 · Umlaute direkt</span>
-          </div>
-          <ol id="ws-rules-list" class="rules-list"></ol>
-        </section>
-      </div>
-
-      <aside class="side-column" aria-label="Suchsel-Einstellungen">
+        <details class="panel rs-settings" id="settings-wortsuche"><summary><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Rätsel-Einstellungen</span><svg class="rs-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+          <div class="rs-settings-body">
+          <aside class="side-column" aria-label="Suchsel-Einstellungen">
         <section class="panel panel-stack">
           <h2 class="section-title">Wörter &amp; <strong>Optionen</strong></h2>
 
@@ -336,10 +303,86 @@
           </div>
         </section>
       </aside>
+          </div>
+        </details>
+
+
+        <section class="panel" aria-label="Interaktives Suchsel-Gitter">
+          <div class="board-topbar">
+            <div class="board-meta"><span id="ws-diff-tag" class="tag">–</span><span id="ws-count-tag" class="stat-pill">0 / 0 Wörter gefunden</span><span id="timer-ws" class="stat-pill" title="Zeit">00:00</span></div>
+            <div class="zoom-bar">
+              <label for="ws-zoom-slider">Zellengröße:</label>
+              <input id="ws-zoom-slider" type="range" min="20" max="46" value="32" oninput="setWsCellZoom(this.value)">
+              <span id="ws-zoom-val" class="stat-pill">32 px</span>
+            </div>
+          </div>
+
+          <div id="ws-feedback" class="feedback-banner info hidden" role="status" aria-live="polite">
+            <span id="ws-feedback-text"></span>
+          </div>
+
+          <div class="board-viewport" id="ws-viewport">
+            <div class="board-center-wrap">
+              <div id="ws-stage" class="ws-stage">
+                <svg id="ws-svg-overlay" class="ws-svg-overlay" aria-hidden="true"></svg>
+                <div id="ws-grid" class="ws-grid" role="grid" aria-label="Suchsel-Buchstabengitter"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="ws-wordlist" id="ws-wordlist" aria-label="Zu suchende Wörter"></div>
+
+          <div class="board-actions">
+            <button type="button" id="btn-ws-reveal" class="btn btn-primary" onclick="toggleWsSolution()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z"/><circle cx="12" cy="12" r="3"/></svg>
+              Lösung anzeigen
+            </button>
+            <button type="button" class="btn" onclick="resetWsProgress()">Eingaben leeren</button>
+            <button type="button" class="btn btn-sage" onclick="generateWordSearch()">
+              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+              Neu mischen
+            </button>
+          </div>
+        </section>
+        <section class="panel rules-strip" aria-labelledby="ws-rules-heading">
+          <div class="rules-header">
+            <h2 id="ws-rules-heading" class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="ws-rule-badge" class="tag">16×16 · Umlaute direkt</span>
+          </div>
+          <ol id="ws-rules-list" class="rules-list"></ol>
+        </section>
+      </div>
     </main>
     <!-- BINOXXO VIEW -->
-    <main id="view-binoxxo" class="page-grid hidden">
+    <main id="view-binoxxo" class="page-grid rs-single hidden">
       <div class="main-column">
+        <details class="panel rs-settings" id="settings-binoxxo"><summary><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Rätsel-Einstellungen</span><svg class="rs-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+          <div class="rs-settings-body">
+          <aside class="side-column" aria-label="Binoxxo-Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Raster &amp; <strong>Schwierigkeit</strong></h2>
+          <div class="field-group">
+            <span class="field-label">Rastergröße</span>
+            <div class="chip-group" id="bx-sizes"></div>
+          </div>
+          <div class="field-group">
+            <span class="field-label">Schwierigkeitsgrad</span>
+            <div class="segmented" id="bx-diffs"></div>
+            <span class="label">Je schwerer, desto weniger Vorgaben.</span>
+          </div>
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('binoxxo')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+          </div>
+        </details>
+
         <section class="panel" aria-label="Interaktives Binoxxo-Spielfeld">
           <div class="board-topbar"><div class="board-meta"><span id="bx-diff-tag" class="tag">–</span><span id="bx-progress-stat" class="stat-pill">–</span><span id="timer-binoxxo" class="stat-pill" title="Zeit">00:00</span></div></div>
           <div id="bx-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
@@ -366,16 +409,23 @@
           </ol>
         </section>
       </div>
-      <aside class="side-column" aria-label="Binoxxo-Einstellungen">
+    </main>
+
+    <!-- HITORI VIEW -->
+    <main id="view-hitori" class="page-grid rs-single hidden">
+      <div class="main-column">
+        <details class="panel rs-settings" id="settings-hitori"><summary><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Rätsel-Einstellungen</span><svg class="rs-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+          <div class="rs-settings-body">
+          <aside class="side-column" aria-label="Interaktives Hitori-Spielfeld – Einstellungen">
         <section class="panel panel-stack">
           <h2 class="section-title">Raster &amp; <strong>Schwierigkeit</strong></h2>
           <div class="field-group">
             <span class="field-label">Rastergröße</span>
-            <div class="chip-group" id="bx-sizes"></div>
+            <div class="chip-group" id="ht-sizes"></div>
           </div>
           <div class="field-group">
             <span class="field-label">Schwierigkeitsgrad</span>
-            <div class="segmented" id="bx-diffs"></div>
+            <div class="segmented" id="ht-diffs"></div>
             <span class="label">Je schwerer, desto weniger Vorgaben.</span>
           </div>
           <div class="panel-subblock">
@@ -383,16 +433,14 @@
             <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
             <div style="display:flex;flex-direction:column;gap:8px">
               <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('binoxxo')">Zum Rätselheft hinzufügen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('hitori')">Zum Rätselheft hinzufügen</button>
             </div>
           </div>
         </section>
       </aside>
-    </main>
+          </div>
+        </details>
 
-    <!-- HITORI VIEW -->
-    <main id="view-hitori" class="page-grid hidden">
-      <div class="main-column">
         <section class="panel" aria-label="Interaktives Hitori-Spielfeld">
           <div class="board-topbar"><div class="board-meta"><span id="ht-diff-tag" class="tag">–</span><span id="ht-progress-stat" class="stat-pill">–</span><span id="timer-hitori" class="stat-pill" title="Zeit">00:00</span></div></div>
           <div id="ht-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
@@ -418,16 +466,23 @@
           </ol>
         </section>
       </div>
-      <aside class="side-column" aria-label="Interaktives Hitori-Spielfeld – Einstellungen">
+    </main>
+
+    <!-- MAGIC VIEW -->
+    <main id="view-magic" class="page-grid rs-single hidden">
+      <div class="main-column">
+        <details class="panel rs-settings" id="settings-magic"><summary><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Rätsel-Einstellungen</span><svg class="rs-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+          <div class="rs-settings-body">
+          <aside class="side-column" aria-label="Interaktives Magisches Quadrat – Einstellungen">
         <section class="panel panel-stack">
-          <h2 class="section-title">Raster &amp; <strong>Schwierigkeit</strong></h2>
+          <h2 class="section-title">Größe &amp; <strong>Schwierigkeit</strong></h2>
           <div class="field-group">
             <span class="field-label">Rastergröße</span>
-            <div class="chip-group" id="ht-sizes"></div>
+            <div class="chip-group" id="mg-sizes"></div>
           </div>
           <div class="field-group">
             <span class="field-label">Schwierigkeitsgrad</span>
-            <div class="segmented" id="ht-diffs"></div>
+            <div class="segmented" id="mg-diffs"></div>
             <span class="label">Je schwerer, desto weniger Vorgaben.</span>
           </div>
           <div class="panel-subblock">
@@ -435,16 +490,14 @@
             <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
             <div style="display:flex;flex-direction:column;gap:8px">
               <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('hitori')">Zum Rätselheft hinzufügen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('magic')">Zum Rätselheft hinzufügen</button>
             </div>
           </div>
         </section>
       </aside>
-    </main>
+          </div>
+        </details>
 
-    <!-- MAGIC VIEW -->
-    <main id="view-magic" class="page-grid hidden">
-      <div class="main-column">
         <section class="panel" aria-label="Interaktives Magisches Quadrat">
           <div class="board-topbar"><div class="board-meta"><span id="mg-diff-tag" class="tag">–</span><span id="mg-progress-stat" class="stat-pill">–</span><span id="timer-magic" class="stat-pill" title="Zeit">00:00</span></div></div>
           <div id="mg-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
@@ -471,60 +524,14 @@
           </ol>
         </section>
       </div>
-      <aside class="side-column" aria-label="Interaktives Magisches Quadrat – Einstellungen">
-        <section class="panel panel-stack">
-          <h2 class="section-title">Größe &amp; <strong>Schwierigkeit</strong></h2>
-          <div class="field-group">
-            <span class="field-label">Rastergröße</span>
-            <div class="chip-group" id="mg-sizes"></div>
-          </div>
-          <div class="field-group">
-            <span class="field-label">Schwierigkeitsgrad</span>
-            <div class="segmented" id="mg-diffs"></div>
-            <span class="label">Je schwerer, desto weniger Vorgaben.</span>
-          </div>
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('magic')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
-        </section>
-      </aside>
     </main>
 
     <!-- MAUER VIEW -->
-    <main id="view-mauer" class="page-grid hidden">
+    <main id="view-mauer" class="page-grid rs-single hidden">
       <div class="main-column">
-        <section class="panel" aria-label="Interaktive Zahlenmauer">
-          <div class="board-topbar"><div class="board-meta"><span id="mw-diff-tag" class="tag">–</span><span id="mw-progress-stat" class="stat-pill">–</span><span id="timer-mauer" class="stat-pill" title="Zeit">00:00</span></div></div>
-          <div id="mw-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
-          <p id="mw-oprule" class="muted-note" style="text-align:center;margin:0 0 8px"></p>
-          <div id="mw-wrap" class="nw-wrap"></div>
-          <div id="mw-pad" class="nx-pad" aria-label="Zahlenfeld"></div>
-          <div class="btn-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
-            <button type="button" class="btn btn-primary" onclick="MW.check()">Prüfen</button>
-            <button type="button" class="btn" onclick="MW.hint()">Tipp</button>
-            <button type="button" class="btn btn-sage" onclick="MW.reveal()">Lösung anzeigen</button>
-            <button type="button" class="btn" onclick="MW.clear()">Eingaben leeren</button>
-            <button type="button" class="btn" onclick="MW.newPuzzle()">Neues Rätsel</button>
-          </div>
-        </section>
-        <section class="panel rules-strip">
-          <div class="rules-header">
-            <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
-            <span id="mw-badge" class="tag"></span>
-          </div>
-          <ol class="rules-list">
-            <li>Jeder Stein ist durch die gewählte Rechenart mit den <b>zwei Steinen direkt darunter</b> verbunden.</li>
-            <li><b>Plus:</b> Summe · <b>Minus:</b> Unterschied (große minus kleine Zahl) · <b>Mal:</b> Produkt · <b>Geteilt:</b> große durch kleine Zahl, ohne Rest.</li>
-            <li>Berechne die leeren Steine – von unten nach oben oder durch Umkehren der Rechnung auch von oben nach unten. Pfeiltasten wechseln den Stein. Am Handy nutzt du das Zahlenfeld unter dem Rätsel.</li>
-          </ol>
-        </section>
-      </div>
-      <aside class="side-column" aria-label="Interaktive Zahlenmauer – Einstellungen">
+        <details class="panel rs-settings" id="settings-mauer"><summary><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Rätsel-Einstellungen</span><svg class="rs-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+          <div class="rs-settings-body">
+          <aside class="side-column" aria-label="Interaktive Zahlenmauer – Einstellungen">
         <section class="panel panel-stack">
           <h2 class="section-title">Rechenart, Größe &amp; <strong>Schwierigkeit</strong></h2>
           <div class="field-group">
@@ -551,11 +558,64 @@
           </div>
         </section>
       </aside>
+          </div>
+        </details>
+
+        <section class="panel" aria-label="Interaktive Zahlenmauer">
+          <div class="board-topbar"><div class="board-meta"><span id="mw-diff-tag" class="tag">–</span><span id="mw-progress-stat" class="stat-pill">–</span><span id="timer-mauer" class="stat-pill" title="Zeit">00:00</span></div></div>
+          <div id="mw-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <p id="mw-oprule" class="muted-note" style="text-align:center;margin:0 0 8px"></p>
+          <div id="mw-wrap" class="nw-wrap"></div>
+          <div id="mw-pad" class="nx-pad" aria-label="Zahlenfeld"></div>
+          <div class="btn-row" style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
+            <button type="button" class="btn btn-primary" onclick="MW.check()">Prüfen</button>
+            <button type="button" class="btn" onclick="MW.hint()">Tipp</button>
+            <button type="button" class="btn btn-sage" onclick="MW.reveal()">Lösung anzeigen</button>
+            <button type="button" class="btn" onclick="MW.clear()">Eingaben leeren</button>
+            <button type="button" class="btn" onclick="MW.newPuzzle()">Neues Rätsel</button>
+          </div>
+        </section>
+        <section class="panel rules-strip">
+          <div class="rules-header">
+            <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
+            <span id="mw-badge" class="tag"></span>
+          </div>
+          <ol class="rules-list">
+            <li>Jeder Stein ist durch die gewählte Rechenart mit den <b>zwei Steinen direkt darunter</b> verbunden.</li>
+            <li><b>Plus:</b> Summe · <b>Minus:</b> Unterschied (große minus kleine Zahl) · <b>Mal:</b> Produkt · <b>Geteilt:</b> große durch kleine Zahl, ohne Rest.</li>
+            <li>Berechne die leeren Steine – von unten nach oben oder durch Umkehren der Rechnung auch von oben nach unten. Pfeiltasten wechseln den Stein. Am Handy nutzt du das Zahlenfeld unter dem Rätsel.</li>
+          </ol>
+        </section>
+      </div>
     </main>
 
     <!-- LABYRINTH VIEW -->
-    <main id="view-labyrinth" class="page-grid hidden">
+    <main id="view-labyrinth" class="page-grid rs-single hidden">
       <div class="main-column">
+        <details class="panel rs-settings" id="settings-labyrinth"><summary><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h9M17 7h3M4 17h3M11 17h9"/><circle cx="15" cy="7" r="2"/><circle cx="9" cy="17" r="2"/></svg><span>Rätsel-Einstellungen</span><svg class="rs-chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></summary>
+          <div class="rs-settings-body">
+          <aside class="side-column" aria-label="Labyrinth-Einstellungen">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Größe &amp; <strong>Schwierigkeit</strong></h2>
+          <div class="field-group">
+            <span class="field-label">Größe (Felder pro Seite)</span>
+            <div class="chip-group" id="mz-sizes"></div>
+            <span class="field-label" style="margin-top:8px">Labyrinth-Typ</span><div class="chip-group" id="mz-hard"></div><span class="label">Extrem: sehr viele Sackgassen und ein langer, verwinkelter Lösungsweg.</span>
+            <span id="mz-diff-hint" class="label"></span>
+          </div>
+          <div class="panel-subblock">
+            <span class="label">Arbeitsblatt &amp; Heft</span>
+            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
+            <div style="display:flex;flex-direction:column;gap:8px">
+              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
+              <button type="button" class="btn" onclick="BK.addCurrent('labyrinth')">Zum Rätselheft hinzufügen</button>
+            </div>
+          </div>
+        </section>
+      </aside>
+          </div>
+        </details>
+
         <section class="panel" aria-label="Interaktives Labyrinth">
           <div class="board-topbar"><div class="board-meta"><span id="mz-diff-tag" class="tag">–</span><span id="mz-progress-stat" class="stat-pill">–</span><span id="timer-maze" class="stat-pill" title="Zeit">00:00</span></div></div>
           <div id="mz-feedback" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
@@ -586,25 +646,6 @@
           </ol>
         </section>
       </div>
-      <aside class="side-column" aria-label="Labyrinth-Einstellungen">
-        <section class="panel panel-stack">
-          <h2 class="section-title">Größe &amp; <strong>Schwierigkeit</strong></h2>
-          <div class="field-group">
-            <span class="field-label">Größe (Felder pro Seite)</span>
-            <div class="chip-group" id="mz-sizes"></div>
-            <span class="field-label" style="margin-top:8px">Labyrinth-Typ</span><div class="chip-group" id="mz-hard"></div><span class="label">Extrem: sehr viele Sackgassen und ein langer, verwinkelter Lösungsweg.</span>
-            <span id="mz-diff-hint" class="label"></span>
-          </div>
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('labyrinth')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
-        </section>
-      </aside>
     </main>
 
     <!-- RÄTSELHEFT VIEW -->
@@ -1002,6 +1043,7 @@
       <div id="acct-body" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
     </div>
   </div>
+  <script src="js/sidebar.js"></script>
   <script src="js/pwa.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="js/account.js"></script>
