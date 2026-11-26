@@ -1,0 +1,62 @@
+/* Rätslio – Feinschliff: Rätselheft, Dark Mode, iPhone, Druck */
+
+/* Dark Mode: Seitenvorschau und Zoom bleiben hell wie Papier, Rahmen weich */
+:root[data-theme="dark"] .bk-thumb { border-color: var(--outline-variant); box-shadow: 0 2px 10px rgba(0,0,0,.5); }
+:root[data-theme="dark"] .bk-zoom > div { box-shadow: 0 8px 40px rgba(0,0,0,.6); }
+:root[data-theme="dark"] .bk-item { border-bottom-color: var(--outline-variant); }
+:root[data-theme="dark"] .bk-swatch { box-shadow: 0 0 0 1px rgba(255,255,255,.25); }
+
+/* Einheitliche Seitenverwaltung: Griff, Hover, Ziehen */
+.bk-item { background: transparent; border-radius: 10px; transition: background-color .15s ease, box-shadow .15s ease, transform .15s ease; }
+.bk-item[draggable="true"]:hover { background: color-mix(in srgb, var(--primary) 6%, transparent); }
+.bk-item .no { cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; border-radius: 8px; line-height: 2rem; min-height: 2rem; }
+.bk-item .no:active { cursor: grabbing; }
+.bk-item.bk-dragging { opacity: .45; transform: scale(.985); }
+.bk-item.bk-over-top { box-shadow: 0 -3px 0 0 var(--primary); }
+.bk-item.bk-over-bottom { box-shadow: 0 3px 0 0 var(--primary); }
+.bk-item.bk-moved { animation: bkFlash .7s ease-out; }
+@keyframes bkFlash { from { background: color-mix(in srgb, var(--primary) 22%, transparent); } to { background: transparent; } }
+.bk-item .btn-sm { min-width: 36px; min-height: 36px; display: inline-flex; align-items: center; justify-content: center; }
+
+/* Vorschau: weiches Einblenden, Seitenzahl, klare Auswahl */
+.bk-thumbs { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
+.bk-thumb { border-radius: 4px; overflow: hidden; animation: rsFade .25s ease-out both; transition: transform .15s ease, box-shadow .15s ease; }
+@media (hover: hover) { .bk-thumb:hover { transform: translateY(-2px); } }
+.bk-thumb:focus-visible { outline: 3px solid var(--primary); outline-offset: 2px; }
+.bk-thumb span { border-radius: 3px; font-weight: 600; }
+.bk-thumb.bk-spread { overflow: hidden; }
+.bk-zoom { animation: rsFade .18s ease-out; -webkit-tap-highlight-color: transparent; }
+.bk-zoom > div { animation: rsPop .22s ease-out; }
+.bk-zoom { padding: calc(16px + env(safe-area-inset-top, 0px)) calc(16px + env(safe-area-inset-right, 0px)) calc(16px + env(safe-area-inset-bottom, 0px)) calc(16px + env(safe-area-inset-left, 0px)); }
+
+/* Ladeanimation für Vorschau */
+.bk-thumbs.bk-loading { position: relative; min-height: 120px; opacity: .55; transition: opacity .15s ease; }
+.bk-thumbs.bk-loading::after { content: ""; position: absolute; left: 50%; top: 40px; width: 28px; height: 28px; margin-left: -14px; border: 3px solid var(--outline-variant); border-top-color: var(--primary); border-radius: 50%; animation: rsSpin .8s linear infinite; }
+
+/* iPhone: kein Zoomen beim Tippen, große Ziele, Platz für Notch/Home-Balken */
+@media (max-width: 720px) {
+  input.input-control, select.select-control, textarea.textarea-control, .bk-item select, .bk-item input { font-size: 16px; }
+  .bk-item { grid-template-columns: 2.4rem minmax(0, 1fr) auto; row-gap: 6px; padding: 10px 4px; }
+  .bk-item > span:nth-child(4) { display: none; }
+  .bk-item .meta { grid-column: 1 / -1; margin-top: 0; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .bk-item .meta select { max-width: 100%; }
+  .bk-thumbs { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+  .bk-swatch { width: 36px; height: 36px; }
+  .bk-group > summary { min-height: 44px; display: flex; align-items: center; }
+  body { -webkit-text-size-adjust: 100%; }
+}
+@media (hover: none) { .btn, .seg-btn, .bk-swatch { -webkit-tap-highlight-color: transparent; } }
+
+/* Druck: exakte Seiten, keine Umbrüche, Farben erhalten */
+@media print {
+  .print-page-sheet, .print-sheet-l { break-after: page; page-break-after: always; break-inside: avoid; page-break-inside: avoid; overflow: hidden; margin: 0; }
+  .print-page-sheet:last-child, .print-sheet-l:last-child { break-after: auto; page-break-after: auto; }
+  .print-page-sheet svg, .print-sheet-l svg { display: block; max-width: 100%; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .bk-item, .bk-thumb, .bk-zoom { display: none !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bk-item, .bk-thumb, .bk-zoom, .bk-zoom > div { animation: none !important; transition: none !important; }
+  .bk-thumbs.bk-loading::after { animation-duration: 2.4s; }
+}
