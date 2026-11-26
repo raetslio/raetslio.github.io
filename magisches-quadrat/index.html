@@ -10,6 +10,25 @@
   /* Darstellung früh setzen (verhindert Aufblitzen): gespeicherte Wahl oder Geräteeinstellung */
   (function () { try { var m = localStorage.getItem('rs_theme') || 'system'; var d = m === 'dark' || (m !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); if (d) document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {} })();
   </script>
+  <script>
+  /* Anmeldepflicht (Teil 1): Ohne gespeicherte Anmeldung sofort zur Anmeldeseite. Die Seite bleibt bis zur Prüfung unsichtbar.
+     Die eigentliche Prüfung der Sitzung macht js/account.js. Einladungs-/Passwort-Links (#...type=...) bleiben erhalten. */
+  (function () {
+    var onLogin = /^\/login\/?(index\.html)?$/.test(location.pathname);
+    window.__rsGate = !onLogin;
+    if (onLogin) return;
+    var has = false; try { has = !!localStorage.getItem('sb-dnhjzlnbuqmyqgjxxygx-auth-token'); } catch (e) {}
+    if (!has) {
+      var next = location.pathname + location.search;
+      location.replace('/login/?next=' + encodeURIComponent(next) + location.hash);
+      return;
+    }
+    var st = document.createElement('style'); st.id = 'rs-gate-css'; st.textContent = 'html{visibility:hidden}';
+    document.head.appendChild(st);
+    window.__rsReveal = function () { var s = document.getElementById('rs-gate-css'); if (s) s.remove(); };
+    setTimeout(window.__rsReveal, 8000); /* Notausgang: gespeicherte Anmeldung vorhanden, aber Dienst nicht erreichbar */
+  })();
+  </script>
   <title>Magisches Quadrat — Rätslio?</title>
   <meta name="description" content="Magische Quadrate online lösen und drucken: Alle Zeilen, Spalten und Diagonalen ergeben dieselbe Summe.">
   <link rel="canonical" href="https://raetslio.github.io/magisches-quadrat/">
@@ -977,7 +996,7 @@
     <div class="modal-card" style="max-width:440px">
       <div class="modal-header">
         <h2 id="acct-title" class="section-title" style="margin:0">Konto</h2>
-        <button type="button" class="btn btn-sm" onclick="RSAUTH.close()" aria-label="Schließen">Schließen</button>
+        <button type="button" id="acct-close" class="btn btn-sm" onclick="RSAUTH.close()" aria-label="Schließen">Schließen</button>
       </div>
       <div id="acct-msg" class="feedback-banner info hidden" role="status" aria-live="polite" style="margin:0"></div>
       <div id="acct-body" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>

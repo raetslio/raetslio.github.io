@@ -28,6 +28,16 @@ def build(slug, name, desc):
     s = re.sub(r'<meta property="og:title" content="[^"]*">', lambda m: f'<meta property="og:title" content="{html.escape(name, quote=True)} — Rätslio?">\n  <meta property="og:url" content="{url}">', s, count=1)
     s = re.sub(r'<meta property="og:description" content="[^"]*">', lambda m: f'<meta property="og:description" content="{e}">', s, count=1)
     return s
+# Anmeldeseite /login/: gleiche Seite, aber nur das Anmeldefenster sichtbar (Klasse rs-login), nicht indexierbar
+def build_login():
+    s = build('sudoku', 'Anmelden', 'Bitte melde dich bei Rätslio? an oder registriere dich.')
+    s = s.replace('<title>Rätslio? — Sudoku, Suchsel, Binoxxo, Labyrinth, Hitori, Zahlenmauer, Magisches Quadrat &amp; Rätselheft</title>', '<title>Anmelden — Rätslio?</title>')
+    s = re.sub(r'\s*<link rel="canonical"[^>]*>', '', s)
+    s = re.sub(r'\s*<meta property="og:url"[^>]*>', '', s)
+    s = s.replace('<meta charset="UTF-8">', '<meta charset="UTF-8">\n  <meta name="robots" content="noindex, nofollow">', 1)
+    s = s.replace('<body>', '<body class="rs-login">', 1)
+    return s
+pathlib.Path('login').mkdir(exist_ok=True); pathlib.Path('login/index.html').write_text(build_login(), encoding='utf-8')
 for slug, (name, desc) in ROUTES.items():
     d = pathlib.Path(slug); d.mkdir(exist_ok=True); (d/'index.html').write_text(build(slug, name, desc), encoding='utf-8')
 # sitemap.xml

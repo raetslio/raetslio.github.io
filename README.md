@@ -14,6 +14,10 @@ Sie läuft ohne Build-Schritt: Dateien auf einen Webserver legen (oder `index.ht
 | `manifest.webmanifest` | Angaben für die Installation als Web-App |
 | `sw.js` | Service Worker für die Offline-Nutzung (muss im Hauptordner liegen) |
 
+## Anmeldepflicht
+
+Alle Rätselseiten sind nur mit Konto nutzbar. Ohne Anmeldung leitet ein kleines Skript im Kopf jeder Seite (und `js/account.js`) auf `/login/` um; nach der Anmeldung geht es zur ursprünglichen Seite zurück (`?next=`). `/login/` wird wie die anderen Unterseiten von `tools/build-routes.py` erzeugt. Abschalten: in `js/account.js` `GATE = false` setzen (und den Block „Anmeldepflicht (Teil 1)“ im Kopf von `sudoku/index.html` entfernen). In Supabase muss `https://raetslio.github.io/login/` unter *Authentication → URL Configuration → Redirect URLs* erlaubt sein.
+
 ## Stile (`css/`)
 
 `tokens.css` (Farben, Schriften, Abstände, Dunkelmodus) → `base.css` (Grundlagen, Kopfzeile) → `components.css` (Schaltflächen, Panels, Formulare) → `board.css` (Spielfelder) → `modals.css` (Fenster, Druckansicht) → `extensions.css` (Binoxxo, Labyrinth, neue Rätselarten, Heft, Verläufe)

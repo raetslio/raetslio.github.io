@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /spiele/
 Disallow: /verlauf/
+Disallow: /login/
 
 Sitemap: https://raetslio.github.io/sitemap.xml

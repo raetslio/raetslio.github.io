@@ -75,15 +75,36 @@
     return true;
   }
   function showNoPw() {
-    var f = null; try { f = sessionStorage.getItem('rs_nopw'); } catch (e) {} if (!f) return;
+    if (GATE && !ON_LOGIN) return; var f = null; try { f = sessionStorage.getItem('rs_nopw'); } catch (e) {} if (!f) return;
     try { sessionStorage.removeItem('rs_nopw'); } catch (e) {}
     view = 'forgot'; RSAUTH.open(); msg('Für dieses Konto wurde noch kein Passwort festgelegt, deshalb wurdest du abgemeldet. Fordere hier einen Link an, um dein Passwort zu setzen.', 'info');
   }
-  function showPw(session) { inviteShown = true; welcome = pwKind() === 'invite'; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
+  function showPw(session) { inviteShown = true; welcome = pwKind() === 'invite'; view = 'recovery'; loggedIn(session); view = 'recovery'; RSAUTH.open(); }
   function clearWelcome() { try { sessionStorage.removeItem('rs_welcome'); } catch (e) {} }
   var sb = null, user = null, pushTimer = null, syncing = false, lastMsg = '', view = 'login';
   var otpGate = false, otpEmail = '', otpStage = 'send';
   var configured = SUPABASE_URL.indexOf('DEIN-PROJEKT') < 0 && SUPABASE_ANON_KEY.indexOf('DEIN-ANON') < 0;
+
+  /* ---------- Anmeldepflicht ---------- */
+  var ON_LOGIN = /^\/login\/?(index\.html)?$/.test(location.pathname);
+  var GATE = true; /* true = ohne Anmeldung kein Zugriff auf die Rätselseiten */
+  function nextUrl() {
+    var n = '/sudoku/', q = null;
+    try { q = new URLSearchParams(location.search).get('next'); if (q) sessionStorage.setItem('rs_next', q); else q = sessionStorage.getItem('rs_next'); } catch (e) {}
+    if (q && q.charAt(0) === '/' && q.charAt(1) !== '/' && q.indexOf('/login') !== 0) n = q;
+    return n;
+  }
+  function toLogin() {
+    if (!GATE || ON_LOGIN) return;
+    location.replace('/login/?next=' + encodeURIComponent(location.pathname + location.search) + location.hash);
+  }
+  function toApp() { if (ON_LOGIN) { var n = nextUrl(); try { sessionStorage.removeItem('rs_next'); } catch (e) {} location.replace(n); } }
+  function reveal() { if (typeof window.__rsReveal === 'function') window.__rsReveal(); }
+  function lockModal() {
+    if (!ON_LOGIN) return;
+    var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'true');
+    var c = $('acct-close'); if (c) c.style.display = 'none';
+  }
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
   function canon(v) {
@@ -197,7 +218,7 @@
     loggedIn(null); view = 'login'; showGone();
   }
   function showGone() {
-    var f = null; try { f = sessionStorage.getItem('rs_gone'); } catch (e) {} if (!f) return;
+    if (GATE && !ON_LOGIN) return; var f = null; try { f = sessionStorage.getItem('rs_gone'); } catch (e) {} if (!f) return;
     try { sessionStorage.removeItem('rs_gone'); } catch (e) {}
     view = 'login'; RSAUTH.open(); setTimeout(function () { msg('Dein Konto existiert nicht mehr, deshalb wurdest du abgemeldet.', 'warning'); }, 60);
   }
@@ -354,7 +375,7 @@
       body.innerHTML = '<p class="muted-note">Die Anmeldung ist noch nicht eingerichtet. Trage in der Datei bei <b>SUPABASE_URL</b> und <b>SUPABASE_ANON_KEY</b> deine Projektdaten ein.</p><p class="muted-note">Ohne Konto funktioniert alles wie bisher – die Anmeldung ist freiwillig.</p>' + backupBlock();
       return;
     }
-    if (!sb) { body.innerHTML = '<p class="muted-note">Der Anmeldedienst konnte nicht geladen werden. Prüfe deine Internetverbindung und lade die Seite neu. Du kannst weiter ohne Konto spielen.</p>' + backupBlock(); return; }
+    if (!sb) { body.innerHTML = '<p class="muted-note">Der Anmeldedienst konnte nicht geladen werden. Prüfe deine Internetverbindung und lade die Seite neu.' + (GATE ? '' : ' Du kannst weiter ohne Konto spielen.') + '</p>' + backupBlock(); return; }
     if (view === 'recovery') {
       t.textContent = welcome ? 'Willkommen bei Rätslio?' : 'Neues Passwort';
       body.innerHTML = '<p class="muted-note">' + (welcome ? 'Dein Konto ist bestätigt. Lege jetzt dein Passwort fest, damit du dich später jederzeit anmelden kannst.' : 'Wähle ein neues Passwort für dein Konto.') + '</p>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + field('acct-pw2', 'Passwort wiederholen', 'password', 'new-password') +
@@ -412,7 +433,7 @@
     }
     var reg = view === 'register';
     t.textContent = reg ? 'Registrieren' : 'Anmelden';
-    body.innerHTML = '<p class="muted-note">Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') + capHtml() +
+    body.innerHTML = '<p class="muted-note">' + (GATE ? 'Bitte melde dich an oder registriere dich, um Rätslio? zu nutzen. Deine Rätselstände, Hefte und Arbeitsblätter sind dann auf allen Geräten verfügbar.' : 'Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.') + '</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') + capHtml() +
       '<button type="button" class="btn btn-primary" onclick="RSAUTH.' + (reg ? 'register' : 'login') + '()">' + (reg ? 'Konto erstellen' : 'Anmelden') + '</button>' +
       '<div class="muted-note" style="text-align:center;margin:2px 0">oder</div>' +
       (pkOk() ? (reg ? '' : '<button type="button" class="btn" onclick="RSAUTH.passkeyLogin()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('key') + 'Mit Passkey anmelden</button>') : '') +
@@ -633,14 +654,17 @@
     /* Lokaler Spielstand bleibt auch ohne Anmeldung erhalten */
     try { if (user) localStorage.setItem('rs_cloud_on', '1'); else localStorage.removeItem('rs_cloud_on'); } catch (e) {}
     renderBtn(); render();
-    if (user) oauthNote();
-    if (user) { setTimeout(checkPk, 400); setTimeout(checkImport, 1200); }
+    if (!user) { toLogin(); return; }
+    reveal();
+    if (ON_LOGIN) { if (view !== 'recovery' && !(needWelcome() && !inviteShown)) toApp(); return; }
+    oauthNote();
+    setTimeout(checkPk, 400); setTimeout(checkImport, 1200);
   }
 
   /* ---------- Öffentliche API ---------- */
   window.RSAUTH = {
-    open: function () { var m = $('acct-modal'); if (!m) return; m.setAttribute('data-open', 'true'); msg(''); render(); var f = m.querySelector('input'); if (f) f.focus(); },
-    close: function () { clearWelcome(); welcome = false; var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'false'); },
+    open: function () { var m = $('acct-modal'); if (!m) return; if (GATE && !ON_LOGIN && !user) { toLogin(); return; } m.setAttribute('data-open', 'true'); msg(''); render(); var f = m.querySelector('input'); if (f) f.focus(); },
+    close: function () { if (ON_LOGIN) return; clearWelcome(); welcome = false; var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'false'); },
     show: function (v) { view = v; msg(''); render(); },
     login: async function () {
       var e = val('acct-email').trim(), p = val('acct-pw'); if (!e || !p) { msg('Bitte E-Mail und Passwort eingeben.', 'warning'); return; }
@@ -682,7 +706,7 @@
       var r = await sb.auth.updateUser({ password: a, data: { pw_set: true } });
       if (r.error) { msg(err(r.error), 'error'); return; }
       var wasWelcome = welcome; welcome = false; clearWelcome();
-      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); setTimeout(checkPk, 1200); setTimeout(checkImport, 2000);
+      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); if (ON_LOGIN) { setTimeout(toApp, 900); return; } setTimeout(checkPk, 1200); setTimeout(checkImport, 2000);
     },
     changePassword: async function () {
       var a = val('acct-pw1'); if (a.length < 8) { msg('Das Passwort muss mindestens 8 Zeichen haben.', 'warning'); return; }
@@ -865,7 +889,8 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = $('acct-modal'); if (m && m.getAttribute('data-open') === 'true') RSAUTH.close(); } });
 
   /* ---------- Start ---------- */
-  renderBtn();
+  if (ON_LOGIN) nextUrl(); /* Ziel merken, falls die Anmeldung über Google/GitHub die Seite verlässt */
+  renderBtn(); lockModal();
   if (configured && window.supabase) {
     try {
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, experimental: { passkey: true } } });
@@ -884,5 +909,10 @@
         else { loggedIn(null); showNoPw(); showGone(); }
       });
     } catch (e) { sb = null; }
+  }
+  /* Dienst nicht verfügbar: mit gespeicherter Anmeldung offline weiterspielen, sonst zur Anmeldeseite */
+  if (!sb) {
+    var hasTok = false; try { hasTok = !!localStorage.getItem('sb-dnhjzlnbuqmyqgjxxygx-auth-token'); } catch (e) {}
+    if (hasTok && !ON_LOGIN) reveal(); else if (!ON_LOGIN) toLogin(); else { lockModal(); render(); }
   }
 })();

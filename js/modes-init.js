@@ -93,7 +93,7 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
     setMeta('meta[property="og:description"]', 'content', x[1]);
     if (slug) { var u = 'https://raetslio.github.io/' + slug + '/'; setMeta('link[rel="canonical"]', 'href', u); setMeta('meta[property="og:url"]', 'content', u); }
   }
-  var web = /^https?:$/.test(location.protocol);
+  var web = /^https?:$/.test(location.protocol) && !/^\/login\/?/.test(location.pathname);
   function pathMode() { var p = location.pathname.replace(/index\.html$/, '').split('/').filter(Boolean); return p.length ? (SLUGS[p[p.length - 1]] || null) : null; }
   var routeMode = pathMode(), inner = window.switchMode, fromPop = false;
   window.switchMode = function (m) {

@@ -291,3 +291,7 @@
     height: 296mm;
   }
 }
+
+/* Anmeldeseite (/login/): nur das Anmeldefenster zeigen */
+body.rs-login > *:not(#acct-modal):not(script):not(style) { display: none !important; }
+body.rs-login #acct-modal { background: var(--bg, var(--surface, #f6f4ef)); }
