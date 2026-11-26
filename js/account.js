@@ -118,10 +118,13 @@
   var avatarCustom = null, nameCustom = '';
   function nmKey() { return 'rs_name_' + (user ? user.id : ''); }
   function avKey() { return 'rs_avatar_' + (user ? user.id : ''); }
-  function loadAvatarCache() { avatarCustom = null; nameCustom = ''; try { if (user) { avatarCustom = localStorage.getItem(avKey()) || null; nameCustom = localStorage.getItem(nmKey()) || ''; } } catch (e) {} }
-  function displayName() { var md = (user && user.user_metadata) || {}; return nameCustom || md.full_name || md.name || (user ? user.email : ''); }
+  function loadAvatarCache() { avatarCustom = null; nameCustom = ''; try { if (user) { var cv = localStorage.getItem(avKey()); avatarCustom = cv === 'none' ? '' : (cv || null); nameCustom = localStorage.getItem(nmKey()) || ''; } } catch (e) {} }
+  function setAvCache(v) { try { if (v === null || v === undefined) localStorage.removeItem(avKey()); else localStorage.setItem(avKey(), v === '' ? 'none' : v); } catch (e) {} }
+  /* Kein Name aus dem Google-/GitHub-Konto: nur eigener Anzeigename, sonst E-Mail */
+  function displayName() { return nameCustom || (user ? user.email : ''); }
   function avatarUrl() {
     if (avatarCustom) return avatarCustom;
+    if (avatarCustom === '') return ''; /* Bild bewusst entfernt: auch kein Google-/GitHub-Bild */
     var md = (user && user.user_metadata) || {};
     return md.avatar_url || md.picture || '';
   }
@@ -148,13 +151,13 @@
     });
   }
   async function saveProfile(av, nm) {
-    var r = (av || nm)
-      ? await sb.from('user_data').upsert({ user_id: user.id, k: 'profile', v: { avatar: av || null, name: nm || '' }, updated_at: new Date().toISOString() })
+    var r = (av !== null || nm)
+      ? await sb.from('user_data').upsert({ user_id: user.id, k: 'profile', v: { avatar: av, name: nm || '' }, updated_at: new Date().toISOString() })
       : await sb.from('user_data').delete().eq('k', 'profile');
     if (r.error) throw r.error;
-    avatarCustom = av || null; nameCustom = nm || '';
+    avatarCustom = av; nameCustom = nm || '';
+    setAvCache(av);
     try {
-      if (av) localStorage.setItem(avKey(), av); else localStorage.removeItem(avKey());
       if (nm) localStorage.setItem(nmKey(), nm); else localStorage.removeItem(nmKey());
     } catch (e) {}
     renderBtn(); render();
@@ -163,8 +166,8 @@
   function profileBlock() {
     return '<div style="display:flex;align-items:center;gap:14px">' + avatarHtml(64) +
       '<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div style="overflow-wrap:anywhere"><b>' + esc(displayName()) + '</b><div class="muted-note">' + esc(user.email) + '</div></div>' +
-      '<div style="display:flex;flex-wrap:wrap;gap:6px"><button type="button" class="btn btn-sm" onclick="RSAUTH.pickAvatar()">' + (avatarCustom ? 'Bild ändern' : 'Profilbild festlegen') + '</button>' +
-      (avatarCustom ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.removeAvatar()">Entfernen</button>' : '') + '</div></div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px"><button type="button" class="btn btn-sm" onclick="RSAUTH.pickAvatar()">' + (avatarUrl() ? 'Bild ändern' : 'Profilbild festlegen') + '</button>' +
+      (avatarUrl() ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.removeAvatar()">Entfernen</button>' : '') + '</div></div>' +
       '<input id="acct-avatar-file" type="file" accept="image/*" style="display:none" onchange="RSAUTH.setAvatar(this)"></div>' +
       '<div class="field-group"><label class="field-label" for="acct-name">Anzeigename</label><div style="display:flex;gap:8px"><input id="acct-name" class="input-control" type="text" maxlength="40" autocomplete="nickname" placeholder="' + esc(user.email.split('@')[0]) + '" value="' + esc(nameCustom) + '" style="flex:1;min-width:0"><button type="button" class="btn" onclick="RSAUTH.saveName()">Speichern</button></div></div>';
   }
@@ -456,8 +459,8 @@
       if (!aliveChecked && !(await checkAlive())) { syncing = false; return; }
       var remote = {}; res.data.forEach(function (r) { remote[r.k] = r.v; });
       if ('profile' in remote) {
-        var pa = remote.profile && remote.profile.avatar || null, pn = remote.profile && remote.profile.name || ''; delete remote.profile;
-        if (pa !== avatarCustom || pn !== nameCustom) { avatarCustom = pa; nameCustom = pn; try { if (pa) localStorage.setItem(avKey(), pa); else localStorage.removeItem(avKey()); if (pn) localStorage.setItem(nmKey(), pn); else localStorage.removeItem(nmKey()); } catch (e) {} renderBtn(); var ab = $('acct-body'); if (ab && user && view !== 'import' && !ab.contains(document.activeElement)) render(); }
+        var pa = remote.profile && remote.profile.avatar != null ? remote.profile.avatar : null, pn = remote.profile && remote.profile.name || ''; delete remote.profile;
+        if (pa !== avatarCustom || pn !== nameCustom) { avatarCustom = pa; nameCustom = pn; setAvCache(pa); try { if (pn) localStorage.setItem(nmKey(), pn); else localStorage.removeItem(nmKey()); } catch (e) {} renderBtn(); var ab = $('acct-body'); if (ab && user && view !== 'import' && !ab.contains(document.activeElement)) render(); }
       }
       var local = localHefts(), app = await localApp();
       if (!app && typeof window.saveStateToHost === 'function') { try { await window.saveStateToHost(); app = await localApp(); } catch (e) {} }
@@ -670,7 +673,7 @@
       catch (e) { msg('Das Profilbild konnte nicht gespeichert werden: ' + err(e), 'error'); }
     },
     removeAvatar: async function () {
-      try { await saveAvatar(null); msg('Profilbild entfernt.', 'success'); }
+      try { await saveAvatar(''); msg('Profilbild entfernt.', 'success'); }
       catch (e) { msg('Das Profilbild konnte nicht entfernt werden: ' + err(e), 'error'); }
     },
     syncNow: async function () { msg(''); await sync(); },
