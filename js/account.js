@@ -261,6 +261,45 @@
     }
   }
 
+  /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
+  function pkOk() {
+    try { return !!(window.PublicKeyCredential && sb && sb.auth && typeof sb.auth.signInWithPasskey === 'function' && typeof sb.auth.registerPasskey === 'function'); } catch (e) { return false; }
+  }
+  function pkErr(e) {
+    var n = (e && e.name) || '', c = (e && e.code) || '', m = (e && e.message) || '';
+    if (n === 'NotAllowedError' || n === 'AbortError' || /not allowed|cancel|abort|timed out/i.test(m)) return 'Abgebrochen. Du kannst es erneut versuchen oder dich mit Passwort anmelden.';
+    if (c === 'passkey_disabled') return 'Face ID / Fingerabdruck ist in Supabase noch nicht aktiviert (Authentication → Passkeys).';
+    if (c === 'too_many_passkeys') return 'Du hast die maximale Anzahl an Passkeys erreicht. Lösche zuerst einen alten.';
+    if (c === 'webauthn_credential_exists') return 'Dieses Gerät ist bereits für dein Konto eingerichtet.';
+    if (c === 'webauthn_credential_not_found') return 'Auf diesem Gerät wurde kein passender Passkey gefunden. Melde dich mit Passwort an und richte ihn im Konto ein.';
+    if (c === 'webauthn_challenge_expired') return 'Die Abfrage ist abgelaufen. Bitte versuche es erneut.';
+    if (c === 'email_not_confirmed') return 'Bitte bestätige zuerst deine E-Mail-Adresse.';
+    return err(e);
+  }
+  function pkBlock() {
+    if (!pkOk()) return '';
+    return '<div class="panel-subblock"><span class="label">Face ID / Fingerabdruck</span>' +
+      '<p class="muted-note">Melde dich auf diesem Gerät statt mit Passwort per Face ID, Fingerabdruck oder Geräte-PIN an. Das Passwort funktioniert weiterhin.</p>' +
+      '<div id="acct-passkeys"></div>' +
+      '<button type="button" class="btn" onclick="RSAUTH.passkeyAdd()">Face ID / Fingerabdruck einrichten</button></div>';
+  }
+  function pkDate(v) { try { return new Date(v).toLocaleDateString('de-DE'); } catch (e) { return ''; } }
+  async function loadPasskeys() {
+    var box = $('acct-passkeys'); if (!box || !user || !pkOk()) return;
+    try {
+      var r = await sb.auth.passkey.list();
+      if (r.error) { box.innerHTML = ''; return; }
+      var list = Array.isArray(r.data) ? r.data : ((r.data && r.data.passkeys) || []);
+      box = $('acct-passkeys'); if (!box) return;
+      box.innerHTML = list.map(function (p) {
+        return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0"><span style="overflow-wrap:anywhere;min-width:0">' + esc(p.friendly_name || 'Passkey') +
+          (p.created_at ? '<span class="muted-note"> · eingerichtet am ' + esc(pkDate(p.created_at)) + '</span>' : '') + '</span>' +
+          '<span style="display:inline-flex;gap:6px;flex:none"><button type="button" class="btn btn-sm" onclick="RSAUTH.passkeyRename(\'' + esc(p.id) + '\')">Umbenennen</button>' +
+          '<button type="button" class="btn btn-sm" onclick="RSAUTH.passkeyDelete(\'' + esc(p.id) + '\')">Löschen</button></span></div>';
+      }).join('');
+    } catch (e) {}
+  }
+
   /* ---------- Modal ---------- */
   function field(id, label, type, ac, ph) {
     return '<div class="field-group"><label class="field-label" for="' + id + '">' + label + '</label><input id="' + id + '" class="input-control" type="' + type + '" autocomplete="' + ac + '"' + (ph ? ' placeholder="' + ph + '"' : '') + '></div>';
@@ -298,7 +337,7 @@
   function capNeed() { if (capOn() && !capToken) { msg('Bitte bestätige zuerst das Captcha.', 'warning'); return true; } return false; }
   function capOpt() { return capOn() ? { captchaToken: capToken } : {}; }
 
-  function render() { renderBody(); if (!user) capInit(); }
+  function render() { renderBody(); if (!user) capInit(); else loadPasskeys(); }
   function renderBody() {
     var body = $('acct-body'), t = $('acct-title'); if (!body) return;
     if (!configured) {
@@ -333,7 +372,7 @@
         '<button type="button" class="btn" onclick="RSAUTH.logout()">Abmelden</button>' +
         deviceImportBtn() + backupBlock() +
         '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
-        pwBlock + methodsBlock() +
+        pkBlock() + pwBlock + methodsBlock() +
         '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig. Die Kopie dieser Daten auf diesem Gerät wird ebenfalls entfernt. Die Daten, die du ohne Anmeldung auf diesem Gerät hast, bleiben erhalten.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       return;
     }
@@ -348,6 +387,7 @@
     body.innerHTML = '<p class="muted-note">Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') + capHtml() +
       '<button type="button" class="btn btn-primary" onclick="RSAUTH.' + (reg ? 'register' : 'login') + '()">' + (reg ? 'Konto erstellen' : 'Anmelden') + '</button>' +
       '<div class="muted-note" style="text-align:center;margin:2px 0">oder</div>' +
+      (pkOk() ? '<button type="button" class="btn" onclick="RSAUTH.passkeyLogin()" style="display:flex;align-items:center;justify-content:center;gap:8px">Mit Face ID / Fingerabdruck anmelden</button>' : '') +
       '<button type="button" class="btn" onclick="RSAUTH.google()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('google') + 'Mit Google fortfahren</button>' +
       '<button type="button" class="btn" onclick="RSAUTH.github()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('github') + 'Mit GitHub fortfahren</button>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between">' +
@@ -649,6 +689,33 @@
       var g = await sb.auth.getUser(); if (g.data && g.data.user) user = g.data.user;
       render(); msg(provName(prov) + ' wurde getrennt.', 'success');
     },
+    passkeyLogin: async function () {
+      if (capNeed()) return;
+      msg('Face ID / Fingerabdruck wird abgefragt …', 'info');
+      var r; try { r = await sb.auth.signInWithPasskey(capOn() ? { options: { captchaToken: capToken } } : undefined); } catch (x) { r = { error: x }; }
+      capReset();
+      if (!r || r.error || !r.data || !r.data.session) { msg(pkErr(r && r.error), 'error'); return; }
+      markFresh(); loggedIn(r.data.session); msg('Angemeldet.', 'success'); sync();
+    },
+    passkeyAdd: async function () {
+      msg('Face ID / Fingerabdruck wird eingerichtet …', 'info');
+      var r; try { r = await sb.auth.registerPasskey(); } catch (x) { r = { error: x }; }
+      if (!r || r.error) { msg(pkErr(r && r.error), 'error'); return; }
+      msg('Eingerichtet. Du kannst dich auf diesem Gerät jetzt mit Face ID / Fingerabdruck anmelden.', 'success'); loadPasskeys();
+    },
+    passkeyRename: async function (id) {
+      var n = prompt('Neuer Name für diesen Zugang (z. B. „iPhone“):', ''); if (n === null) return;
+      n = n.trim().slice(0, 120); if (!n) return;
+      var r; try { r = await sb.auth.passkey.update({ passkeyId: id, friendlyName: n }); } catch (x) { r = { error: x }; }
+      if (r && r.error) { msg(pkErr(r.error), 'error'); return; }
+      msg('Name geändert.', 'success'); loadPasskeys();
+    },
+    passkeyDelete: async function (id) {
+      if (!confirm('Diesen Face-ID-/Fingerabdruck-Zugang wirklich löschen?')) return;
+      var r; try { r = await sb.auth.passkey.delete({ passkeyId: id }); } catch (x) { r = { error: x }; }
+      if (r && r.error) { msg(pkErr(r.error), 'error'); return; }
+      msg('Zugang gelöscht.', 'success'); loadPasskeys();
+    },
     github: async function () {
       msg('Weiterleitung zu GitHub …', 'info'); markFresh(); try { sessionStorage.setItem('rs_oauth_prov', 'github'); } catch (e) {}
       var r = await sb.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: location.origin + location.pathname } });
@@ -729,7 +796,7 @@
   renderBtn();
   if (configured && window.supabase) {
     try {
-      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true } });
+      sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, experimental: { passkey: true } } });
       sb.auth.onAuthStateChange(function (ev, session) {
         if (ev === 'PASSWORD_RECOVERY') { try { if (!pwKind()) sessionStorage.setItem('rs_welcome', 'recovery'); } catch (e) {} if (!inviteShown) showPw(session); }
         else if (ev === 'SIGNED_OUT') { loggedIn(null); }
