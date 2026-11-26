@@ -660,13 +660,7 @@ function checkSudoku() {
   var clearWrongBtn = document.getElementById('btn-clear-wrong');
   if (clearWrongBtn) clearWrongBtn.classList.toggle('hidden', wrongCount === 0);
 
-  if (wrongCount === 0 && remaining === 0) {
-    showSudokuFeedback(`Perfekt! Alle ${correctCount} Felder sind korrekt gelöst.`, 'success');
-  } else if (wrongCount > 0) {
-    showSudokuFeedback(`${wrongCount} falsche Eingabe(n) markiert, ${correctCount} richtig, noch ${remaining} Felder offen.`, 'error');
-  } else {
-    showSudokuFeedback(`Alle bisherigen ${correctCount} Eingaben sind richtig — noch ${remaining} Felder offen.`, 'info');
-  }
+  rsCheck('sudoku-feedback', wrongCount, remaining, wrongCount === 0 && remaining === 0);
 }
 
 function clearWrongSudokuCells() {

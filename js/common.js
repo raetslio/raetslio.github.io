@@ -30,3 +30,38 @@ function banner(el, msg, kind) {
   el.className = 'feedback-banner ' + (kind || 'info');
   el.textContent = msg;
 }
+
+/* Einheitliche Rückmeldung bei Aktionen (alle Rätselarten) */
+function rsMsg(id, msg, kind, ms) {
+  var el = document.getElementById(id); if (!el) return;
+  var t = el.querySelector('span') || el;
+  el.className = 'feedback-banner ' + (kind || 'info'); t.textContent = msg;
+  clearTimeout(el._rsT); if (ms) el._rsT = setTimeout(function () { el.classList.add('hidden'); }, ms);
+}
+function rsRun(btn, fn, fbId) {
+  if (btn.disabled) return;
+  var old = btn.innerHTML; btn.disabled = true; btn.setAttribute('aria-busy', 'true');
+  rsMsg(fbId, 'Rätsel wird erstellt …', 'info');
+  function done() { btn.disabled = false; btn.removeAttribute('aria-busy'); btn.innerHTML = old; }
+  setTimeout(function () {
+    var r;
+    try { r = fn(); } catch (e) { rsMsg(fbId, 'Das Rätsel konnte nicht erstellt werden. Bitte versuche es noch einmal.', 'error'); return done(); }
+    Promise.resolve(r).then(function (v) {
+      /* Erfolg nur, wenn wirklich ein Rätsel erstellt wurde (false = abgebrochen) */
+      if (v === false) { var el = document.getElementById(fbId); if (el) el.classList.add('hidden'); }
+      else rsMsg(fbId, 'Rätsel erfolgreich erstellt.', 'success', 2500);
+      done();
+    }, function () { rsMsg(fbId, 'Das Rätsel konnte nicht erstellt werden. Bitte versuche es noch einmal.', 'error'); done(); });
+  }, 30);
+}
+function rsAddToBook(key, fbId) {
+  try { BK.addCurrent(key); rsMsg(fbId, 'Dein Rätsel wurde zum Rätselheft hinzugefügt.', 'success', 3000); }
+  catch (e) { rsMsg(fbId, 'Das Rätsel konnte nicht zum Heft hinzugefügt werden.', 'error'); }
+}
+
+/* Einheitliche Prüf-Rückmeldung für alle Rätselarten */
+function rsCheck(id, wrong, empty, solved, hint, detail) {
+  if (solved) return rsMsg(id, 'Alle Einträge sind korrekt. Das Rätsel ist gelöst!', 'success');
+  if (wrong) return rsMsg(id, (wrong === 1 ? '1 Fehler' : wrong + ' Fehler') + ' (rot markiert).' + (empty ? ' Noch ' + empty + ' offen.' : '') + (detail ? ' ' + detail : ''), 'error');
+  rsMsg(id, hint || ('Alle bisherigen Einträge sind korrekt – noch ' + empty + ' offen.'), 'info');
+}

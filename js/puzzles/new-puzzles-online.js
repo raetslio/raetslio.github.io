@@ -86,13 +86,11 @@ window.HT = {
     if (ht.revealed) return; ht.st[r][c] = v; HT.render();
     var cell = $('ht-grid').querySelector('[data-r="' + r + '"][data-c="' + c + '"]'); if (cell) cell.focus();
     var a = htAnalyze(ht.data.grid, ht.st, ht.n);
-    banner($('ht-feedback'), a.solved ? 'Geschafft! Das Hitori ist richtig gelöst.' : '', 'success');
+    banner($('ht-feedback'), a.solved ? 'Alle Einträge sind korrekt. Das Rätsel ist gelöst!' : '', 'success');
   },
   check: function () {
     if (ht.revealed) return; var a = htAnalyze(ht.data.grid, ht.st, ht.n);
-    if (a.solved) banner($('ht-feedback'), 'Geschafft! Das Hitori ist richtig gelöst.', 'success');
-    else if (a.nConf) banner($('ht-feedback'), 'Es gibt noch Widersprüche (rot markiert): doppelte sichtbare Zahlen in einer Zeile oder Spalte oder sich berührende schwarze Felder.', 'error');
-    else banner($('ht-feedback'), 'Bisher kein Widerspruch, aber die sichtbaren Felder hängen noch nicht alle zusammen.', 'info');
+    rsCheck('ht-feedback', a.nConf, 0, a.solved, 'Bisher kein Fehler – die sichtbaren Felder hängen aber noch nicht alle zusammen.', a.nConf ? 'Doppelte sichtbare Zahlen oder sich berührende schwarze Felder.' : '');
   },
   hint: function () {
     if (ht.revealed) return; var opts = [];
@@ -146,14 +144,11 @@ window.NXMG = {
     function put(k, v) { var e = g.querySelector('[data-k="' + k + '"]'); if (!e) return; e.textContent = v === null ? '' : v; e.className = 'nx-sum' + (v === null ? '' : v === a.M ? ' ok' : ' bad'); }
     for (var i = 0; i < n; i++) { put('r' + i, a.rowS[i]); put('c' + i, a.colS[i]); } put('d1', a.d1);
     $('mg-info').innerHTML = 'Magische Zahl: <b>' + a.M + '</b> · Diagonale ↘ ' + (a.d1 === null ? '–' : a.d1) + ' · Diagonale ↗ ' + (a.d2 === null ? '–' : a.d2);
-    if (announce) banner($('mg-feedback'), a.solved ? 'Geschafft! Das magische Quadrat ist richtig gelöst.' : '', 'success');
+    if (announce) banner($('mg-feedback'), a.solved ? 'Alle Einträge sind korrekt. Das Rätsel ist gelöst!' : '', 'success');
   },
   check: function () {
     if (mg.revealed) return; var a = mgAnalyze(mg.entries, mg.n);
-    if (a.solved) banner($('mg-feedback'), 'Geschafft! Das magische Quadrat ist richtig gelöst.', 'success');
-    else if (a.nConf) banner($('mg-feedback'), 'Es gibt Widersprüche (rot markiert): doppelte Zahlen oder Zahlen außerhalb von 1 bis ' + (mg.n * mg.n) + '.', 'error');
-    else if (a.badLines) banner($('mg-feedback'), 'Mindestens eine vollständige Zeile, Spalte oder Diagonale hat nicht die Summe ' + a.M + ' (rot in den Summen).' + (a.empty ? ' Noch ' + a.empty + ' Felder leer.' : ''), 'error');
-    else banner($('mg-feedback'), 'Bisher alles stimmig – noch ' + a.empty + ' Felder offen.', 'info');
+    rsCheck('mg-feedback', a.nConf || a.badLines, a.empty, a.solved, null, a.nConf ? 'Doppelte Zahlen oder Zahlen außerhalb von 1 bis ' + (mg.n * mg.n) + '.' : 'Eine Zeile, Spalte oder Diagonale hat nicht die Summe ' + a.M + '.');
   },
   hint: function () {
     if (mg.revealed) return; var opts = [];
@@ -216,13 +211,11 @@ window.MW = {
   refresh: function (announce) {
     var a = mwAnalyze(mw.op, mwVals());
     for (var i = 0; i < mw.n; i++) for (var j = 0; j <= i; j++) mw.els[i][j].classList.toggle('conflict', !mw.revealed && !!a.conf[i + ',' + j]);
-    if (announce) banner($('mw-feedback'), a.solved ? 'Geschafft! Die Zahlenmauer ist richtig gelöst.' : '', 'success');
+    if (announce) banner($('mw-feedback'), a.solved ? 'Alle Einträge sind korrekt. Das Rätsel ist gelöst!' : '', 'success');
   },
   check: function () {
     if (mw.revealed) return; var a = mwAnalyze(mw.op, mw.entries);
-    if (a.solved) banner($('mw-feedback'), 'Geschafft! Die Zahlenmauer ist richtig gelöst.', 'success');
-    else if (a.nConf) banner($('mw-feedback'), 'Mindestens ein Stein passt nicht zu den beiden darunter (rot markiert).' + (a.empty ? ' Noch ' + a.empty + ' Steine leer.' : ''), 'error');
-    else banner($('mw-feedback'), 'Bisher stimmt alles – noch ' + a.empty + ' Steine offen.', 'info');
+    rsCheck('mw-feedback', a.nConf, a.empty, a.solved, null, 'Ein Stein passt nicht zu den beiden darunter.');
   },
   hint: function () {
     if (mw.revealed) return; var opts = [];

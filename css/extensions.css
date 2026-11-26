@@ -584,3 +584,30 @@
   grid-template-columns:1fr 1fr;
   gap:8px;
 }
+
+/* ===== Einheitliche Bedienung (alle Rätselarten, mobil zuerst) ===== */
+html, body { overflow-x: clip; max-width: 100%; }
+.panel, .main-column, .side-column { min-width: 0; }
+.btn { white-space: normal; min-height: 44px; text-align: center; touch-action: manipulation; }
+.btn:active:not(:disabled) { transform: scale(.98); }
+.btn[aria-busy="true"] { opacity: .6; }
+input, select, textarea { font-size: 16px; }
+.input-control, .seg-btn, .chip-btn { min-height: 44px; }
+.muted-note, .label { font-size: .78rem; line-height: 1.35; }
+.rs-actionbar { display: flex; flex-direction: column; gap: 10px; margin: var(--space-md) 0; }
+.rs-primary { width: 100%; min-height: 54px; font-size: 1.05rem; font-weight: 700; border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.rs-secondary { display: grid; grid-template-columns: 1fr; gap: 10px; }
+.rs-secondary .btn { border-radius: 12px; font-size: .9rem; }
+.board-actions .btn { flex: 1 1 140px; }
+.feedback-banner { overflow-wrap: anywhere; }
+@media (max-width: 720px) {
+  .rs-actionbar { position: sticky; bottom: 0; z-index: 20; margin: 0 calc(-1 * var(--space-md)); padding: 10px var(--space-md) calc(10px + env(safe-area-inset-bottom)); background: color-mix(in srgb, var(--surface, #fff) 88%, transparent); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); border-top: var(--hairline); }
+  /* Dialoge als iOS-Sheet von unten */
+  .modal-backdrop { align-items: flex-end; padding: 0; }
+  .modal-card { max-width: 100%; border-radius: 20px 20px 0 0; max-height: 90dvh; padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom)); }
+  .modal-card::before { content: ""; align-self: center; width: 36px; height: 5px; border-radius: 3px; background: var(--outline-variant, #c7c7cc); margin-bottom: -4px; }
+  .print-layout { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* Spielfelder: wie bisher seitlich scrollbar, wo sie breiter als der Bildschirm sind */
+.board-viewport, .bx-wrap { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }

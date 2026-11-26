@@ -154,15 +154,6 @@
             </div>
             <span id="sudoku-diff-hint" class="label">Ca. 62 % vorgegebene Zahlen</span>
           </div>
-
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('sudoku')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
         </section>
       </aside>
           </div>
@@ -213,12 +204,17 @@
               Lösung anzeigen
             </button>
             <button type="button" class="btn" onclick="resetSudokuEntries(this)">Eingaben leeren</button>
-            <button type="button" class="btn" onclick="requestSudokuGeneration()">
-              <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-              Neues Rätsel
-            </button>
           </div>
         </section>
+        <div class="rs-actionbar" role="group" aria-label="Rätsel-Aktionen">
+          <button type="button" class="btn btn-primary rs-primary" onclick="rsRun(this,function(){return requestSudokuGeneration()},'sudoku-feedback')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>
+            Neues Rätsel
+          </button>
+          <div class="rs-secondary">
+            <button type="button" class="btn" onclick="rsAddToBook('sudoku','sudoku-feedback')">Zum Heft hinzufügen</button>
+          </div>
+        </div>
         <section class="panel rules-strip" aria-labelledby="sudoku-rules-heading">
           <div class="rules-header">
             <h2 id="sudoku-rules-heading" class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
@@ -290,16 +286,6 @@
               <span class="toggle-track"><span class="toggle-thumb"></span></span>
             </span>
           </label>
-
-          <button type="button" class="btn btn-primary" onclick="generateWordSearch()">Neues Rätsel</button>
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('ws')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
         </section>
       </aside>
           </div>
@@ -343,6 +329,15 @@
             </button>
           </div>
         </section>
+                <div class="rs-actionbar" role="group" aria-label="Rätsel-Aktionen">
+          <button type="button" class="btn btn-primary rs-primary" onclick="rsRun(this,function(){return generateWordSearch()},'ws-feedback')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>
+            Neues Rätsel
+          </button>
+          <div class="rs-secondary">
+            <button type="button" class="btn" onclick="rsAddToBook('ws','ws-feedback')">Zum Heft hinzufügen</button>
+          </div>
+        </div>
         <section class="panel rules-strip" aria-labelledby="ws-rules-heading">
           <div class="rules-header">
             <h2 id="ws-rules-heading" class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
@@ -369,14 +364,6 @@
             <div class="segmented" id="bx-diffs"></div>
             <span class="label">Je schwerer, desto weniger Vorgaben.</span>
           </div>
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('binoxxo')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
         </section>
       </aside>
           </div>
@@ -391,9 +378,17 @@
             <button type="button" class="btn" onclick="BX.hint()">Tipp</button>
             <button type="button" class="btn btn-sage" onclick="BX.reveal()">Lösung anzeigen</button>
             <button type="button" class="btn" onclick="BX.clear()">Eingaben leeren</button>
-            <button type="button" class="btn" onclick="BX.newPuzzle()">Neues Rätsel</button>
           </div>
         </section>
+                <div class="rs-actionbar" role="group" aria-label="Rätsel-Aktionen">
+          <button type="button" class="btn btn-primary rs-primary" onclick="rsRun(this,function(){return BX.newPuzzle()},'bx-feedback')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>
+            Neues Rätsel
+          </button>
+          <div class="rs-secondary">
+            <button type="button" class="btn" onclick="rsAddToBook('binoxxo','bx-feedback')">Zum Heft hinzufügen</button>
+          </div>
+        </div>
         <section class="panel rules-strip">
           <div class="rules-header">
             <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
@@ -427,14 +422,6 @@
             <div class="segmented" id="ht-diffs"></div>
             <span class="label">Je schwerer, desto weniger Vorgaben.</span>
           </div>
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('hitori')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
         </section>
       </aside>
           </div>
@@ -449,9 +436,17 @@
             <button type="button" class="btn" onclick="HT.hint()">Tipp</button>
             <button type="button" class="btn btn-sage" onclick="HT.reveal()">Lösung anzeigen</button>
             <button type="button" class="btn" onclick="HT.clear()">Eingaben leeren</button>
-            <button type="button" class="btn" onclick="HT.newPuzzle()">Neues Rätsel</button>
           </div>
         </section>
+                <div class="rs-actionbar" role="group" aria-label="Rätsel-Aktionen">
+          <button type="button" class="btn btn-primary rs-primary" onclick="rsRun(this,function(){return HT.newPuzzle()},'ht-feedback')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>
+            Neues Rätsel
+          </button>
+          <div class="rs-secondary">
+            <button type="button" class="btn" onclick="rsAddToBook('hitori','ht-feedback')">Zum Heft hinzufügen</button>
+          </div>
+        </div>
         <section class="panel rules-strip">
           <div class="rules-header">
             <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
@@ -484,14 +479,6 @@
             <div class="segmented" id="mg-diffs"></div>
             <span class="label">Je schwerer, desto weniger Vorgaben.</span>
           </div>
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('magic')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
         </section>
       </aside>
           </div>
@@ -508,9 +495,17 @@
             <button type="button" class="btn" onclick="NXMG.hint()">Tipp</button>
             <button type="button" class="btn btn-sage" onclick="NXMG.reveal()">Lösung anzeigen</button>
             <button type="button" class="btn" onclick="NXMG.clear()">Eingaben leeren</button>
-            <button type="button" class="btn" onclick="NXMG.newPuzzle()">Neues Rätsel</button>
           </div>
         </section>
+                <div class="rs-actionbar" role="group" aria-label="Rätsel-Aktionen">
+          <button type="button" class="btn btn-primary rs-primary" onclick="rsRun(this,function(){return NXMG.newPuzzle()},'mg-feedback')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>
+            Neues Rätsel
+          </button>
+          <div class="rs-secondary">
+            <button type="button" class="btn" onclick="rsAddToBook('magic','mg-feedback')">Zum Heft hinzufügen</button>
+          </div>
+        </div>
         <section class="panel rules-strip">
           <div class="rules-header">
             <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
@@ -547,14 +542,6 @@
             <div class="segmented" id="mw-diffs"></div>
             <span class="label">Je schwerer, desto größere Zahlen und weniger Vorgaben.</span>
           </div>
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('mauer')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
         </section>
       </aside>
           </div>
@@ -571,9 +558,17 @@
             <button type="button" class="btn" onclick="MW.hint()">Tipp</button>
             <button type="button" class="btn btn-sage" onclick="MW.reveal()">Lösung anzeigen</button>
             <button type="button" class="btn" onclick="MW.clear()">Eingaben leeren</button>
-            <button type="button" class="btn" onclick="MW.newPuzzle()">Neues Rätsel</button>
           </div>
         </section>
+                <div class="rs-actionbar" role="group" aria-label="Rätsel-Aktionen">
+          <button type="button" class="btn btn-primary rs-primary" onclick="rsRun(this,function(){return MW.newPuzzle()},'mw-feedback')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>
+            Neues Rätsel
+          </button>
+          <div class="rs-secondary">
+            <button type="button" class="btn" onclick="rsAddToBook('mauer','mw-feedback')">Zum Heft hinzufügen</button>
+          </div>
+        </div>
         <section class="panel rules-strip">
           <div class="rules-header">
             <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>
@@ -602,14 +597,6 @@
             <span class="field-label" style="margin-top:8px">Labyrinth-Typ</span><div class="chip-group" id="mz-hard"></div><span class="label">Extrem: sehr viele Sackgassen und ein langer, verwinkelter Lösungsweg.</span>
             <span id="mz-diff-hint" class="label"></span>
           </div>
-          <div class="panel-subblock">
-            <span class="label">Arbeitsblatt &amp; Heft</span>
-            <p class="muted-note">Arbeitsblatt und Lösung druckst du über die Druckvorschau – oder du nimmst das Rätsel in dein Rätselheft auf.</p>
-            <div style="display:flex;flex-direction:column;gap:8px">
-              <button type="button" class="btn btn-sage" onclick="openPrintModal()">Druckvorschau öffnen</button>
-              <button type="button" class="btn" onclick="BK.addCurrent('labyrinth')">Zum Rätselheft hinzufügen</button>
-            </div>
-          </div>
         </section>
       </aside>
           </div>
@@ -630,9 +617,17 @@
           <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:var(--space-md);justify-content:center">
             <button type="button" class="btn btn-sage" onclick="MZ.reveal()">Lösung anzeigen</button>
             <button type="button" class="btn" onclick="MZ.restart()">Eingaben leeren</button>
-            <button type="button" class="btn" onclick="MZ.newPuzzle()">Neues Rätsel</button>
           </div>
         </section>
+                <div class="rs-actionbar" role="group" aria-label="Rätsel-Aktionen">
+          <button type="button" class="btn btn-primary rs-primary" onclick="rsRun(this,function(){return MZ.newPuzzle()},'mz-feedback')">
+            <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M23 4v6h-6M1 20v-6h6"/><path d="M3.5 9a9 9 0 0 1 14.9-3.4L23 10M1 14l4.6 4.4A9 9 0 0 0 20.5 15"/></svg>
+            Neues Rätsel
+          </button>
+          <div class="rs-secondary">
+            <button type="button" class="btn" onclick="rsAddToBook('labyrinth','mz-feedback')">Zum Heft hinzufügen</button>
+          </div>
+        </div>
         <section class="panel rules-strip">
           <div class="rules-header">
             <h2 class="section-title">Spielregeln &amp; <strong>Bedienung</strong></h2>

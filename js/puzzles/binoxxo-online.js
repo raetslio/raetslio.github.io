@@ -80,9 +80,7 @@ window.BX = {
       if (v < 0) empty++; else if (v !== bx.data.solution[r][c]) { wrong++; bx.wrong[r + ',' + c] = 1; }
     }
     BX.render();
-    if (!wrong && !empty) banner($('bx-feedback'), 'Geschafft! Das Binoxxo ist richtig gelöst.', 'success');
-    else if (wrong) banner($('bx-feedback'), wrong + (wrong === 1 ? ' Feld ist' : ' Felder sind') + ' falsch (rot markiert).' + (empty ? ' Noch ' + empty + ' leer.' : ''), 'error');
-    else banner($('bx-feedback'), 'Bisher alles richtig – noch ' + empty + ' Felder offen.', 'info');
+    rsCheck('bx-feedback', wrong, empty, !wrong && !empty);
   },
   reveal: function () { bx.revealed = !bx.revealed; bx.wrong = {}; BX.render(); banner($('bx-feedback'), bx.revealed ? 'Lösung wird angezeigt.' : '', 'info'); },
   clear: function () { bx.entries = bx.data.givens.map(function (r) { return r.slice(); }); bx.revealed = false; bx.wrong = {}; banner($('bx-feedback'), ''); BX.render(); },
