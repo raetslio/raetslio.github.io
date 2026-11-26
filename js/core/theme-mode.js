@@ -18,7 +18,7 @@ function applyTheme(themeName) {
     root.removeAttribute('data-theme');
   }
   try { localStorage.setItem('rs_theme', mode); } catch (e) {}
-  var names = { system: 'System', light: 'Hell', dark: 'Dunkel' };
+  var names = { system: 'Gerät', light: 'Hell', dark: 'Dunkel' };
   var btn = document.getElementById('btn-theme-toggle');
   var sun = document.getElementById('icon-theme-sun');
   var moon = document.getElementById('icon-theme-moon');

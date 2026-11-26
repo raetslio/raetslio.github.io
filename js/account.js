@@ -115,9 +115,11 @@
   }
 
   /* ---------- Profilbild ---------- */
-  var avatarCustom = null;
+  var avatarCustom = null, nameCustom = '';
+  function nmKey() { return 'rs_name_' + (user ? user.id : ''); }
   function avKey() { return 'rs_avatar_' + (user ? user.id : ''); }
-  function loadAvatarCache() { avatarCustom = null; try { if (user) avatarCustom = localStorage.getItem(avKey()) || null; } catch (e) {} }
+  function loadAvatarCache() { avatarCustom = null; nameCustom = ''; try { if (user) { avatarCustom = localStorage.getItem(avKey()) || null; nameCustom = localStorage.getItem(nmKey()) || ''; } } catch (e) {} }
+  function displayName() { var md = (user && user.user_metadata) || {}; return nameCustom || md.full_name || md.name || (user ? user.email : ''); }
   function avatarUrl() {
     if (avatarCustom) return avatarCustom;
     var md = (user && user.user_metadata) || {};
@@ -145,21 +147,26 @@
       img.src = url;
     });
   }
-  async function saveAvatar(dataUrl) {
-    var r = dataUrl
-      ? await sb.from('user_data').upsert({ user_id: user.id, k: 'profile', v: { avatar: dataUrl }, updated_at: new Date().toISOString() })
+  async function saveProfile(av, nm) {
+    var r = (av || nm)
+      ? await sb.from('user_data').upsert({ user_id: user.id, k: 'profile', v: { avatar: av || null, name: nm || '' }, updated_at: new Date().toISOString() })
       : await sb.from('user_data').delete().eq('k', 'profile');
     if (r.error) throw r.error;
-    avatarCustom = dataUrl || null;
-    try { if (dataUrl) localStorage.setItem(avKey(), dataUrl); else localStorage.removeItem(avKey()); } catch (e) {}
+    avatarCustom = av || null; nameCustom = nm || '';
+    try {
+      if (av) localStorage.setItem(avKey(), av); else localStorage.removeItem(avKey());
+      if (nm) localStorage.setItem(nmKey(), nm); else localStorage.removeItem(nmKey());
+    } catch (e) {}
     renderBtn(); render();
   }
+  function saveAvatar(dataUrl) { return saveProfile(dataUrl, nameCustom); }
   function profileBlock() {
     return '<div style="display:flex;align-items:center;gap:14px">' + avatarHtml(64) +
-      '<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div style="overflow-wrap:anywhere"><b>' + esc(user.email) + '</b><div class="muted-note">Angemeldet</div></div>' +
+      '<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div style="overflow-wrap:anywhere"><b>' + esc(displayName()) + '</b><div class="muted-note">' + esc(user.email) + '</div></div>' +
       '<div style="display:flex;flex-wrap:wrap;gap:6px"><button type="button" class="btn btn-sm" onclick="RSAUTH.pickAvatar()">' + (avatarCustom ? 'Bild ändern' : 'Profilbild festlegen') + '</button>' +
       (avatarCustom ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.removeAvatar()">Entfernen</button>' : '') + '</div></div>' +
-      '<input id="acct-avatar-file" type="file" accept="image/*" style="display:none" onchange="RSAUTH.setAvatar(this)"></div>';
+      '<input id="acct-avatar-file" type="file" accept="image/*" style="display:none" onchange="RSAUTH.setAvatar(this)"></div>' +
+      '<div class="field-group"><label class="field-label" for="acct-name">Anzeigename</label><div style="display:flex;gap:8px"><input id="acct-name" class="input-control" type="text" maxlength="40" autocomplete="nickname" placeholder="' + esc(user.email.split('@')[0]) + '" value="' + esc(nameCustom) + '" style="flex:1;min-width:0"><button type="button" class="btn" onclick="RSAUTH.saveName()">Speichern</button></div></div>';
   }
 
   /* ---------- Konto existiert nicht mehr (z. B. in Supabase gelöscht) ---------- */
@@ -238,7 +245,7 @@
   /* ---------- Header-Button ---------- */
   function renderBtn() {
     var b = $('btn-account'), l = $('account-label'); if (!b || !l) return;
-    l.textContent = user ? (user.email.length > 18 ? user.email.slice(0, 16) + '…' : user.email) : 'Anmelden';
+    var dn = user ? displayName() : ''; l.textContent = user ? (dn.length > 18 ? dn.slice(0, 16) + '…' : dn) : 'Anmelden';
     b.classList.toggle('btn-sage', !!user);
     var svg = b.querySelector('svg.icon-svg'), img = $('account-avatar-btn'), u = user ? avatarUrl() : '';
     if (u) {
@@ -426,8 +433,15 @@
   function deviceImportBtn() {
     return guestSummary() ? '<div class="panel-subblock"><span class="label">Daten dieses Geräts</span><p class="muted-note">Es gibt Hefte oder Verläufe, die du auf diesem Gerät ohne Anmeldung angelegt hast. Sie können zu deinem Konto hinzugefügt werden – nichts im Konto wird überschrieben.</p><button type="button" class="btn" onclick="RSAUTH.importAsk()">Gerätedaten übernehmen</button></div>' : '';
   }
+  function themeBlock() {
+    var cur = (window.appState && appState.theme) || 'system';
+    var opts = [['system', 'Gerät'], ['light', 'Hell'], ['dark', 'Dunkel']];
+    return '<div class="panel-subblock"><span class="label">Darstellung</span><div id="acct-theme" style="display:flex;flex-wrap:wrap;gap:8px">' + opts.map(function (o) {
+      return '<button type="button" class="btn btn-sm' + (cur === o[0] ? ' btn-primary' : '') + '" data-theme-opt="' + o[0] + '" aria-pressed="' + (cur === o[0]) + '" onclick="RSAUTH.setTheme(\'' + o[0] + '\')">' + o[1] + '</button>';
+    }).join('') + '</div><p class="muted-note">„Gerät“ folgt der Einstellung deines Geräts.</p></div>';
+  }
   function backupBlock() {
-    return '<div class="panel-subblock"><span class="label">Datensicherung</span><p class="muted-note">Sichert alle Hefte und Verläufe ' + (user ? 'deines Kontos' : 'dieses Geräts') + ' in einer Datei. Beim Importieren wird nur ergänzt, nichts überschrieben.</p>' +
+    return themeBlock() + '<div class="panel-subblock"><span class="label">Datensicherung</span><p class="muted-note">Sichert alle Hefte und Verläufe ' + (user ? 'deines Kontos' : 'dieses Geräts') + ' in einer Datei. Beim Importieren wird nur ergänzt, nichts überschrieben.</p>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" class="btn" onclick="RSAUTH.exportBackup()">Backup exportieren</button><button type="button" class="btn" onclick="RSAUTH.pickBackup()">Backup importieren</button></div>' +
       '<input id="acct-import-file" type="file" accept="application/json,.json" style="display:none" onchange="RSAUTH.importBackup(this)"></div>';
   }
@@ -442,8 +456,8 @@
       if (!aliveChecked && !(await checkAlive())) { syncing = false; return; }
       var remote = {}; res.data.forEach(function (r) { remote[r.k] = r.v; });
       if ('profile' in remote) {
-        var pa = remote.profile && remote.profile.avatar || null; delete remote.profile;
-        if (pa !== avatarCustom) { avatarCustom = pa; try { if (pa) localStorage.setItem(avKey(), pa); else localStorage.removeItem(avKey()); } catch (e) {} renderBtn(); var ab = $('acct-body'); if (ab && user && view !== 'import' && !ab.contains(document.activeElement)) render(); }
+        var pa = remote.profile && remote.profile.avatar || null, pn = remote.profile && remote.profile.name || ''; delete remote.profile;
+        if (pa !== avatarCustom || pn !== nameCustom) { avatarCustom = pa; nameCustom = pn; try { if (pa) localStorage.setItem(avKey(), pa); else localStorage.removeItem(avKey()); if (pn) localStorage.setItem(nmKey(), pn); else localStorage.removeItem(nmKey()); } catch (e) {} renderBtn(); var ab = $('acct-body'); if (ab && user && view !== 'import' && !ab.contains(document.activeElement)) render(); }
       }
       var local = localHefts(), app = await localApp();
       if (!app && typeof window.saveStateToHost === 'function') { try { await window.saveStateToHost(); app = await localApp(); } catch (e) {} }
@@ -636,6 +650,17 @@
       msg('Weiterleitung zu GitHub …', 'info'); markFresh(); try { sessionStorage.setItem('rs_oauth_prov', 'github'); } catch (e) {}
       var r = await sb.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: location.origin + location.pathname } });
       if (r.error) { try { sessionStorage.removeItem('rs_fresh_login'); } catch (e) {} msg(err(r.error), 'error'); }
+    },
+    saveName: async function () {
+      var n = val('acct-name').trim().replace(/\s+/g, ' ').slice(0, 40);
+      try { msg('Name wird gespeichert …', 'info'); await saveProfile(avatarCustom, n); msg(n ? 'Anzeigename gespeichert.' : 'Anzeigename entfernt.', 'success'); }
+      catch (e) { msg('Der Name konnte nicht gespeichert werden: ' + err(e), 'error'); }
+    },
+    setTheme: function (m) {
+      if (typeof applyTheme !== 'function') return;
+      applyTheme(m); if (typeof schedulePersist === 'function') schedulePersist();
+      var box = $('acct-theme'); if (!box) return;
+      Array.prototype.forEach.call(box.querySelectorAll('button'), function (b) { var on = b.getAttribute('data-theme-opt') === m; b.classList.toggle('btn-primary', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); });
     },
     pickAvatar: function () { var f = $('acct-avatar-file'); if (f) f.click(); },
     setAvatar: async function (input) {
