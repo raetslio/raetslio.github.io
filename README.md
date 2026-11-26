@@ -10,7 +10,7 @@ Die App besteht aus **einer Quellseite, `sudoku/index.html`**. Aus ihr erzeugt `
 - Rätselheft und Verläufe: `/heft/`, `/spiele/` (Spielverlauf), `/verlauf/` (Druckverlauf)
 - Konto: `/login/`, `/konto/` (beide nicht indexierbar)
 
-Das Skript schreibt auch `sitemap.xml` neu. `/statistik/` wird **nicht** von `build-routes.py` erzeugt und ist eine eigene Datei. Nach jeder Änderung an `sudoku/index.html` muss das Skript laufen, damit alle Unterseiten gleich bleiben. Die `index.html` im Hauptordner ist die Startseite mit Kacheln und „Weiterspielen“ (eigene Datei, nicht von `build-routes.py` erzeugt), `404.html` leitet unbekannte Adressen um.
+Das Skript schreibt auch `sitemap.xml` neu. `/statistik/` wird **nicht** von `build-routes.py` erzeugt und ist eine eigene Datei. Nach jeder Änderung an `sudoku/index.html` muss das Skript laufen, damit alle Unterseiten gleich bleiben. Die `index.html` im Hauptordner leitet nur auf `/sudoku/` weiter, `404.html` leitet unbekannte Adressen um.
 
 `tools/ui-sidebar.py` war eine einmalige Umstellung auf das Seitenmenü und die Rätsel-Einstellungen (läuft idempotent auf `sudoku/index.html` und `statistik/index.html`).
 
@@ -24,7 +24,7 @@ Das Skript schreibt auch `sitemap.xml` neu. `/statistik/` wird **nicht** von `bu
 | `icons/` | Logo (SVG), App-Symbole, Favicon |
 | `tools/` | Hilfsskripte (`build-routes.py`, `ui-sidebar.py`) |
 | `supabase/functions/invite-user/` | Edge Function: Einladung per E-Mail (max. 5 pro Nutzer und Tag) |
-| `manifest.webmanifest` | Angaben für die Installation als Web-App (Start: `/`) |
+| `manifest.webmanifest` | Angaben für die Installation als Web-App (Start: `/sudoku/`) |
 | `sw.js` | Service Worker für die Offline-Nutzung (muss im Hauptordner liegen) |
 | `.github/workflows/entpacken.yml` | Entpackt eine hochgeladene `raetslio.zip` ins Repo (siehe „Aktualisieren“) |
 
@@ -75,4 +75,4 @@ Alle Rätselseiten sind nur mit Konto nutzbar. Ohne Anmeldung leitet ein kleines
 
 ## Leitlinie
 
-Änderungen halten sich klein und nutzen vorhandene Mechanismen (Spielverlauf, Einstellungen, Routen) statt neue Parallelstrukturen. Ein Rätsel soll in möglichst wenigen Tippen startbar sein; die Startseite und „Neues Rätsel“ stehen immer vor den Einstellungen.
+Änderungen halten sich klein und nutzen vorhandene Mechanismen (Spielverlauf, Einstellungen, Routen) statt neue Parallelstrukturen. Ein Rätsel soll in möglichst wenigen Tippen startbar sein; „Neues Rätsel“ steht immer vor den Einstellungen.
