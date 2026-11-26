@@ -93,10 +93,12 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
     setMeta('meta[property="og:description"]', 'content', x[1]);
     if (slug) { var u = 'https://raetslio.github.io/' + slug + '/'; setMeta('link[rel="canonical"]', 'href', u); setMeta('meta[property="og:url"]', 'content', u); }
   }
-  var web = /^https?:$/.test(location.protocol) && !/^\/login\/?/.test(location.pathname);
+  var web = /^https?:$/.test(location.protocol) && !/^\/(login|konto)\/?/.test(location.pathname);
   function pathMode() { var p = location.pathname.replace(/index\.html$/, '').split('/').filter(Boolean); return p.length ? (SLUGS[p[p.length - 1]] || null) : null; }
   var routeMode = pathMode(), inner = window.switchMode, fromPop = false;
+  var onKonto = /^\/konto\/?(index\.html)?$/.test(location.pathname), started = false;
   window.switchMode = function (m) {
+    if (onKonto && started && ROUTES[m]) { location.href = '/' + ROUTES[m] + '/'; return; } /* Konto-Seite: Menü führt zur gewählten Seite */
     if (!window.__rsInit && routeMode) m = routeMode;
     inner(m);
     updateMeta(m);
@@ -111,4 +113,6 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
   });
   /* Start: Adresse hat Vorrang vor dem zuletzt gespeicherten Modus */
   if (window.__rsInit) window.switchMode(routeMode || window.appState.mode || 'sudoku');
+  started = true;
+  if (onKonto) { Array.prototype.forEach.call(document.querySelectorAll('.nav-tab'), function (t) { t.setAttribute('aria-selected', 'false'); }); }
 })();

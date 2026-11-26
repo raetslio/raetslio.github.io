@@ -3,5 +3,6 @@ Allow: /
 Disallow: /spiele/
 Disallow: /verlauf/
 Disallow: /login/
+Disallow: /konto/
 
 Sitemap: https://raetslio.github.io/sitemap.xml

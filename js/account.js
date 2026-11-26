@@ -87,6 +87,7 @@
 
   /* ---------- Anmeldepflicht ---------- */
   var ON_LOGIN = /^\/login\/?(index\.html)?$/.test(location.pathname);
+  var ON_KONTO = /^\/konto\/?(index\.html)?$/.test(location.pathname); /* eigene Konto-Seite */
   var GATE = true; /* true = ohne Anmeldung kein Zugriff auf die Rätselseiten */
   function nextUrl() {
     var n = '/sudoku/', q = null;
@@ -100,10 +101,16 @@
   }
   function toApp() { if (ON_LOGIN) { var n = nextUrl(); try { sessionStorage.removeItem('rs_next'); } catch (e) {} location.replace(n); } }
   function reveal() { if (typeof window.__rsReveal === 'function') window.__rsReveal(); }
+  function backUrl() {
+    var b = null; try { b = sessionStorage.getItem('rs_konto_back'); } catch (e) {}
+    if (!b) { try { var r = new URL(document.referrer); if (r.origin === location.origin) b = r.pathname + r.search; } catch (e) {} }
+    return (b && b.charAt(0) === '/' && b.charAt(1) !== '/' && !/^\/(login|konto)\//.test(b)) ? b : '/sudoku/';
+  }
   function lockModal() {
-    if (!ON_LOGIN) return;
+    if (!ON_LOGIN && !ON_KONTO) return;
     var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'true');
-    var c = $('acct-close'); if (c) c.style.display = 'none';
+    var c = $('acct-close');
+    if (c) c.style.display = 'none'; /* Konto-Seite hat das Menü zum Wechseln */
   }
 
   function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
@@ -118,6 +125,7 @@
   var PROV = { email: 'E-Mail', google: 'Google', github: 'GitHub' };
   function provName(k) { return PROV[k] || k; }
   var ICONS = {
+    logout: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>',
     google: '<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.2 7-10.3 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>',
     github: '<svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>',
     key: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="7.5" cy="15.5" r="4"/><path d="M10.5 12.5L20 3"/><path d="M17 6l3 3"/><path d="M14 9l2.5 2.5"/></svg>',
@@ -391,27 +399,15 @@
         '<p class="muted-note">Du kannst das auch später unter „Mein Konto“ tun. Dein Passwort funktioniert weiterhin.</p>';
       return;
     }
-    if (user && view === 'import' && pendingImport) {
-      var q = pendingImport.sm, bits = [];
-      if (q.nH) bits.push(q.nH + (q.nH === 1 ? ' Heft' : ' Hefte'));
-      if (q.nV) bits.push(q.nV + ' Druckverlauf-' + (q.nV === 1 ? 'Eintrag' : 'Einträge'));
-      if (q.nS) bits.push(q.nS + ' Spielverlauf-' + (q.nS === 1 ? 'Eintrag' : 'Einträge'));
-      t.textContent = 'Daten dieses Geräts übernehmen?';
-      body.innerHTML = '<p style="margin:0">Auf diesem Gerät gibt es Daten, die du ohne Anmeldung angelegt hast: <b>' + esc(bits.join(', ')) + '</b>.</p>' +
-        '<p class="muted-note">Wenn du sie übernimmst, werden sie nur zu deinem Konto <b>hinzugefügt</b>. Nichts in deinem Konto wird überschrieben oder gelöscht.</p>' +
-        '<button type="button" class="btn btn-primary" onclick="RSAUTH.importAccept()">Zum Konto hinzufügen</button>' +
-        '<button type="button" class="btn" onclick="RSAUTH.importDecline()">Nicht übernehmen</button>';
-      return;
-    }
     if (user) {
       t.textContent = 'Mein Konto';
       var pwBlock = hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '';
       body.innerHTML = profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
-        '<button type="button" class="btn" onclick="RSAUTH.logout()">Abmelden</button>' +
-        deviceImportBtn() + backupBlock() +
+        '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
+        themeBlock() + pkBlock() + pwBlock + methodsBlock() +
         '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
-        pkBlock() + pwBlock + methodsBlock() +
+        backupBlock() +
         '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig. Die Kopie dieser Daten auf diesem Gerät wird ebenfalls entfernt. Die Daten, die du ohne Anmeldung auf diesem Gerät hast, bleiben erhalten.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       return;
     }
@@ -514,14 +510,7 @@
   var pendingImport = null;
   function guestSnap() { return parseJ(localStorage.getItem(NS_PRE + 'guest')); }
   function guestSummary() { var g = guestSnap(); if (!g) return null; var sm = summarize(g); return (sm.nH || sm.nV || sm.nS) ? { snap: g, sm: sm } : null; }
-  function checkImport() {
-    if (!user || switching || pendingImport) return;
-    if (view === 'recovery' || view === 'pksetup' || needWelcome()) return; /* erst Passwort festlegen, danach die Geräte-Frage */
-    var g = guestSummary(); if (!g) return;
-    var done = null; try { done = localStorage.getItem('rs_import_dec_' + user.id); } catch (e) {}
-    if (done === g.sm.sig) return;
-    pendingImport = g; view = 'import'; RSAUTH.open();
-  }
+  function checkImport() { /* Konto ist Pflicht: keine Nachfrage mehr zur Übernahme von Gerätedaten */ }
   /* Konto nur mit Passkey: nach der E-Mail-Bestätigung gleich den Passkey einrichten lassen */
   function pkNewMail() { try { return localStorage.getItem('rs_pk_new') || ''; } catch (e) { return ''; } }
   function checkPk() {
@@ -530,9 +519,6 @@
     if (view === 'recovery' || view === 'import' || needWelcome()) return; /* nie ein anderes Fenster verdrängen */
     if (!pkOk()) { try { localStorage.removeItem('rs_pk_new'); } catch (e) {} return; }
     view = 'pksetup'; RSAUTH.open();
-  }
-  function deviceImportBtn() {
-    return guestSummary() ? '<div class="panel-subblock"><span class="label">Daten dieses Geräts</span><p class="muted-note">Es gibt Hefte oder Verläufe, die du auf diesem Gerät ohne Anmeldung angelegt hast. Sie können zu deinem Konto hinzugefügt werden – nichts im Konto wird überschrieben.</p><button type="button" class="btn" onclick="RSAUTH.importAsk()">Gerätedaten übernehmen</button></div>' : '';
   }
   function themeBlock() {
     var cur = (window.appState && appState.theme) || 'system';
@@ -543,7 +529,7 @@
   }
   function backupBlock() {
     if (ON_LOGIN) return '';
-    return themeBlock() + '<div class="panel-subblock"><span class="label">Datensicherung</span><p class="muted-note">Sichert alle Hefte und Verläufe ' + (user ? 'deines Kontos' : 'dieses Geräts') + ' in einer Datei. Beim Importieren wird nur ergänzt, nichts überschrieben.</p>' +
+    return '<div class="panel-subblock"><span class="label">Datensicherung</span><p class="muted-note">Sichert alle Hefte und Verläufe ' + (user ? 'deines Kontos' : 'dieses Geräts') + ' in einer Datei. Beim Importieren wird nur ergänzt, nichts überschrieben.</p>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" class="btn" onclick="RSAUTH.exportBackup()">Backup exportieren</button><button type="button" class="btn" onclick="RSAUTH.pickBackup()">Backup importieren</button></div>' +
       '<input id="acct-import-file" type="file" accept="application/json,.json" style="display:none" onchange="RSAUTH.importBackup(this)"></div>';
   }
@@ -664,8 +650,12 @@
 
   /* ---------- Öffentliche API ---------- */
   window.RSAUTH = {
-    open: function () { var m = $('acct-modal'); if (!m) return; if (GATE && !ON_LOGIN && !user) { toLogin(); return; } m.setAttribute('data-open', 'true'); msg(''); render(); var f = m.querySelector('input'); if (f) f.focus(); },
-    close: function () { if (ON_LOGIN) return; clearWelcome(); welcome = false; var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'false'); },
+    open: function () {
+      var m = $('acct-modal'); if (!m) return; if (GATE && !ON_LOGIN && !user) { toLogin(); return; }
+      /* Eingeloggt: „Mein Konto“ ist eine eigene Seite. Einrichtungs-Schritte (Passkey, Passwort) bleiben Fenster. */
+      if (user && !ON_KONTO && !ON_LOGIN && view === 'login') { try { sessionStorage.setItem('rs_konto_back', location.pathname + location.search); } catch (e) {} location.href = '/konto/'; return; }
+       m.setAttribute('data-open', 'true'); msg(''); render(); var f = m.querySelector('input'); if (f) f.focus(); },
+    close: function () { if (ON_LOGIN) return; if (ON_KONTO && view === 'login') { location.href = backUrl(); return; } clearWelcome(); welcome = false; var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'false'); },
     show: function (v) { view = v; msg(''); render(); },
     login: async function () {
       var e = val('acct-email').trim(), p = val('acct-pw'); if (!e || !p) { msg('Bitte E-Mail und Passwort eingeben.', 'warning'); return; }
@@ -841,18 +831,6 @@
       catch (e) { msg('Das Profilbild konnte nicht entfernt werden: ' + err(e), 'error'); }
     },
     syncNow: async function () { msg(''); await sync(); },
-    importAsk: function () { var g = guestSummary(); if (!g) { msg('Auf diesem Gerät gibt es keine Daten zum Übernehmen.', 'info'); return; } pendingImport = g; view = 'import'; render(); },
-    importAccept: async function () {
-      if (!pendingImport || !user) return;
-      var a = addData(pendingImport.snap);
-      try { localStorage.setItem('rs_import_dec_' + user.id, pendingImport.sm.sig); } catch (e) {}
-      pendingImport = null; view = 'login'; render(); msg(addedText(a), 'success');
-      await waitSync(); setTimeout(function () { location.reload(); }, 700);
-    },
-    importDecline: function () {
-      if (pendingImport && user) { try { localStorage.setItem('rs_import_dec_' + user.id, pendingImport.sm.sig); } catch (e) {} }
-      pendingImport = null; view = 'login'; render(); msg('Die Daten dieses Geräts bleiben getrennt von deinem Konto.', 'info'); setTimeout(checkPk, 600);
-    },
     exportBackup: function () {
       var data = {};
       for (var i = 0; i < localStorage.length; i++) {
@@ -887,7 +865,7 @@
     }
   };
 
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = $('acct-modal'); if (m && m.getAttribute('data-open') === 'true') RSAUTH.close(); } });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !ON_KONTO) { var m = $('acct-modal'); if (m && m.getAttribute('data-open') === 'true') RSAUTH.close(); } });
 
   /* ---------- Start ---------- */
   if (ON_LOGIN) { /* Anmeldeseite: Darstellung immer „Gerät“, gespeicherte Wahl bleibt unberührt */

@@ -38,6 +38,16 @@ def build_login():
     s = s.replace('<body>', '<body class="rs-login">', 1)
     return s
 pathlib.Path('login').mkdir(exist_ok=True); pathlib.Path('login/index.html').write_text(build_login(), encoding='utf-8')
+# Konto-Seite /konto/: gleiche Seite, nur das Konto-Fenster sichtbar (Klasse rs-konto), nicht indexierbar
+def build_konto():
+    s = build('sudoku', 'Mein Konto', 'Dein Konto bei Rätslio?: Profil, Anmeldung, Einladungen und Datensicherung.')
+    s = s.replace('<title>Rätslio? — Sudoku, Suchsel, Binoxxo, Labyrinth, Hitori, Zahlenmauer, Magisches Quadrat &amp; Rätselheft</title>', '<title>Mein Konto — Rätslio?</title>')
+    s = re.sub(r'\s*<link rel="canonical"[^>]*>', '', s)
+    s = re.sub(r'\s*<meta property="og:url"[^>]*>', '', s)
+    s = s.replace('<meta charset="UTF-8">', '<meta charset="UTF-8">\n  <meta name="robots" content="noindex, nofollow">', 1)
+    s = s.replace('<body>', '<body class="rs-konto">', 1)
+    return s
+pathlib.Path('konto').mkdir(exist_ok=True); pathlib.Path('konto/index.html').write_text(build_konto(), encoding='utf-8')
 for slug, (name, desc) in ROUTES.items():
     d = pathlib.Path(slug); d.mkdir(exist_ok=True); (d/'index.html').write_text(build(slug, name, desc), encoding='utf-8')
 # sitemap.xml
