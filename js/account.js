@@ -95,6 +95,12 @@
   var freshSync = false;
   var PROV = { email: 'E-Mail', google: 'Google', github: 'GitHub' };
   function provName(k) { return PROV[k] || k; }
+  var ICONS = {
+    google: '<svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.2 7-10.3 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>',
+    github: '<svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>',
+    email: '<svg width="18" height="18" viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>'
+  };
+  function provIcon(k) { return ICONS[k] || ''; }
   /* Nach der Rückkehr von Google/GitHub: War es ein bereits bestehendes Konto (Identität deutlich jünger als das Konto), wurde es verknüpft */
   function oauthNote() {
     var prov = null; try { prov = sessionStorage.getItem('rs_oauth_prov'); } catch (e) {}
@@ -107,14 +113,90 @@
       setTimeout(function () { msg('Es gab bereits ein Konto mit dieser E-Mail-Adresse. Es wurde mit ' + provName(prov) + ' verknüpft – du bist in deinem bestehenden Konto angemeldet.', 'success'); }, 60);
     }
   }
+
+  /* ---------- Profilbild ---------- */
+  var avatarCustom = null;
+  function avKey() { return 'rs_avatar_' + (user ? user.id : ''); }
+  function loadAvatarCache() { avatarCustom = null; try { if (user) avatarCustom = localStorage.getItem(avKey()) || null; } catch (e) {} }
+  function avatarUrl() {
+    if (avatarCustom) return avatarCustom;
+    var md = (user && user.user_metadata) || {};
+    return md.avatar_url || md.picture || '';
+  }
+  function avatarHtml(size) {
+    var u = avatarUrl(), st = 'width:' + size + 'px;height:' + size + 'px;border-radius:50%;flex:none;';
+    if (u) return '<img src="' + esc(u) + '" alt="Profilbild" referrerpolicy="no-referrer" style="' + st + 'object-fit:cover;background:var(--surface-variant,#ddd)">';
+    var ch = user && user.email ? user.email.charAt(0).toUpperCase() : '?';
+    return '<span aria-hidden="true" style="' + st + 'display:inline-flex;align-items:center;justify-content:center;background:var(--sage,#7a9a7e);color:#fff;font-weight:600;font-size:' + Math.round(size * 0.45) + 'px">' + esc(ch) + '</span>';
+  }
+  function resizeImage(file) {
+    return new Promise(function (resolve, reject) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        try {
+          var S = 192, c = document.createElement('canvas'); c.width = c.height = S;
+          var side = Math.min(img.width, img.height), sx = (img.width - side) / 2, sy = (img.height - side) / 2;
+          var ctx = c.getContext('2d'); ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, S, S);
+          ctx.drawImage(img, sx, sy, side, side, 0, 0, S, S);
+          URL.revokeObjectURL(url); resolve(c.toDataURL('image/jpeg', 0.85));
+        } catch (e) { reject(e); }
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); reject(new Error('bad image')); };
+      img.src = url;
+    });
+  }
+  async function saveAvatar(dataUrl) {
+    var r = dataUrl
+      ? await sb.from('user_data').upsert({ user_id: user.id, k: 'profile', v: { avatar: dataUrl }, updated_at: new Date().toISOString() })
+      : await sb.from('user_data').delete().eq('k', 'profile');
+    if (r.error) throw r.error;
+    avatarCustom = dataUrl || null;
+    try { if (dataUrl) localStorage.setItem(avKey(), dataUrl); else localStorage.removeItem(avKey()); } catch (e) {}
+    renderBtn(); render();
+  }
+  function profileBlock() {
+    return '<div style="display:flex;align-items:center;gap:14px">' + avatarHtml(64) +
+      '<div style="display:flex;flex-direction:column;gap:6px;min-width:0"><div style="overflow-wrap:anywhere"><b>' + esc(user.email) + '</b><div class="muted-note">Angemeldet</div></div>' +
+      '<div style="display:flex;flex-wrap:wrap;gap:6px"><button type="button" class="btn btn-sm" onclick="RSAUTH.pickAvatar()">' + (avatarCustom ? 'Bild ändern' : 'Profilbild festlegen') + '</button>' +
+      (avatarCustom ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.removeAvatar()">Entfernen</button>' : '') + '</div></div>' +
+      '<input id="acct-avatar-file" type="file" accept="image/*" style="display:none" onchange="RSAUTH.setAvatar(this)"></div>';
+  }
+
+  /* ---------- Konto existiert nicht mehr (z. B. in Supabase gelöscht) ---------- */
+  var aliveChecked = false;
+  async function checkAlive() {
+    if (!sb || !user) return true;
+    try {
+      var r = await sb.auth.getUser();
+      if (!r.error) { aliveChecked = true; return true; }
+      var st = r.error.status, code = r.error.code || '', m = r.error.message || '';
+      if (st === 401 || st === 403 || st === 404 || /user_not_found|session_not_found|bad_jwt/i.test(code) || /does not exist|user not found|session.*not.*found|invalid jwt/i.test(m)) {
+        await accountGone(); return false;
+      }
+    } catch (e) {}
+    return true;
+  }
+  async function accountGone() {
+    try { sessionStorage.setItem('rs_gone', '1'); } catch (e) {}
+    discardOwner = user ? user.id : null;
+    try { if (user) { localStorage.removeItem(HK + '_' + user.id); localStorage.removeItem('rs_avatar_' + user.id); } } catch (e) {}
+    clearTimeout(pushTimer);
+    try { await sb.auth.signOut({ scope: 'local' }); } catch (e) {}
+    loggedIn(null); view = 'login'; showGone();
+  }
+  function showGone() {
+    var f = null; try { f = sessionStorage.getItem('rs_gone'); } catch (e) {} if (!f) return;
+    try { sessionStorage.removeItem('rs_gone'); } catch (e) {}
+    view = 'login'; RSAUTH.open(); setTimeout(function () { msg('Dein Konto existiert nicht mehr, deshalb wurdest du abgemeldet.', 'warning'); }, 60);
+  }
   function methodsBlock() {
     var ids = (user && user.identities) || [], have = ids.map(function (i) { return i.provider; });
     var rows = ids.map(function (i) {
-      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0"><span>' + provName(i.provider) + '</span>' +
+      return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0"><span style="display:inline-flex;align-items:center;gap:8px">' + provIcon(i.provider) + provName(i.provider) + '</span>' +
         (ids.length > 1 ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.unlink(\'' + i.provider + '\')">Trennen</button>' : '') + '</div>';
     }).join('');
     var add = ['google', 'github'].filter(function (k) { return have.indexOf(k) < 0; }).map(function (k) {
-      return '<button type="button" class="btn btn-sm" onclick="RSAUTH.link(\'' + k + '\')">' + provName(k) + ' verknüpfen</button>';
+      return '<button type="button" class="btn btn-sm" onclick="RSAUTH.link(\'' + k + '\')" style="display:inline-flex;align-items:center;gap:6px">' + provIcon(k) + provName(k) + ' verknüpfen</button>';
     }).join(' ');
     return '<div class="panel-subblock"><span class="label">Anmeldemethoden</span>' + rows + (add ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">' + add + '</div>' : '') + '</div>';
   }
@@ -158,6 +240,15 @@
     var b = $('btn-account'), l = $('account-label'); if (!b || !l) return;
     l.textContent = user ? (user.email.length > 18 ? user.email.slice(0, 16) + '…' : user.email) : 'Anmelden';
     b.classList.toggle('btn-sage', !!user);
+    var svg = b.querySelector('svg.icon-svg'), img = $('account-avatar-btn'), u = user ? avatarUrl() : '';
+    if (u) {
+      if (!img) { img = document.createElement('img'); img.id = 'account-avatar-btn'; img.alt = ''; img.referrerPolicy = 'no-referrer'; img.style.cssText = 'width:20px;height:20px;border-radius:50%;object-fit:cover;flex:none'; b.insertBefore(img, l); }
+      if (img.getAttribute('src') !== u) img.src = u;
+      if (svg) svg.style.display = 'none';
+    } else {
+      if (img) img.remove();
+      if (svg) svg.style.display = '';
+    }
   }
 
   /* ---------- Modal ---------- */
@@ -226,13 +317,13 @@
     }
     if (user) {
       t.textContent = 'Mein Konto';
-      body.innerHTML = '<p style="margin:0">Angemeldet als <b>' + esc(user.email) + '</b></p><p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
+      var pwBlock = hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '';
+      body.innerHTML = profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
-        (hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '') +
-        methodsBlock() +
-        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
+        '<button type="button" class="btn" onclick="RSAUTH.logout()">Abmelden</button>' +
         deviceImportBtn() + backupBlock() +
-        '<div class="panel-subblock"><button type="button" class="btn" onclick="RSAUTH.logout()">Abmelden</button></div>' +
+        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
+        pwBlock + methodsBlock() +
         '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig. Die Kopie dieser Daten auf diesem Gerät wird ebenfalls entfernt. Die Daten, die du ohne Anmeldung auf diesem Gerät hast, bleiben erhalten.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       return;
     }
@@ -247,8 +338,8 @@
     body.innerHTML = '<p class="muted-note">Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') + capHtml() +
       '<button type="button" class="btn btn-primary" onclick="RSAUTH.' + (reg ? 'register' : 'login') + '()">' + (reg ? 'Konto erstellen' : 'Anmelden') + '</button>' +
       '<div class="muted-note" style="text-align:center;margin:2px 0">oder</div>' +
-      '<button type="button" class="btn" onclick="RSAUTH.google()" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.6 5.9c4.5-4.2 7-10.3 7-17.6z"/><path fill="#FBBC05" d="M10.5 28.7A14.5 14.5 0 0 1 9.5 24c0-1.6.3-3.2.8-4.7l-7.9-6.1A24 24 0 0 0 0 24c0 3.9.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.6-5.9c-2.1 1.4-4.9 2.3-8.3 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg>Mit Google fortfahren</button>' +
-      '<button type="button" class="btn" onclick="RSAUTH.github()" style="display:flex;align-items:center;justify-content:center;gap:8px"><svg width="18" height="18" viewBox="0 0 16 16" aria-hidden="true" fill="currentColor"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>Mit GitHub fortfahren</button>' +
+      '<button type="button" class="btn" onclick="RSAUTH.google()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('google') + 'Mit Google fortfahren</button>' +
+      '<button type="button" class="btn" onclick="RSAUTH.github()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('github') + 'Mit GitHub fortfahren</button>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px;justify-content:space-between">' +
       '<button type="button" class="btn btn-sm" onclick="RSAUTH.show(\'' + (reg ? 'login' : 'register') + '\')">' + (reg ? 'Schon ein Konto? Anmelden' : 'Neu hier? Registrieren') + '</button>' +
       (reg ? '' : '<button type="button" class="btn btn-sm" onclick="RSAUTH.show(\'forgot\')">Passwort vergessen?</button>') + '</div>' + backupBlock();
@@ -348,7 +439,12 @@
     var needReload = false;
     try {
       var res = await sb.from('user_data').select('k,v,updated_at'); if (res.error) throw res.error;
+      if (!aliveChecked && !(await checkAlive())) { syncing = false; return; }
       var remote = {}; res.data.forEach(function (r) { remote[r.k] = r.v; });
+      if ('profile' in remote) {
+        var pa = remote.profile && remote.profile.avatar || null; delete remote.profile;
+        if (pa !== avatarCustom) { avatarCustom = pa; try { if (pa) localStorage.setItem(avKey(), pa); else localStorage.removeItem(avKey()); } catch (e) {} renderBtn(); var ab = $('acct-body'); if (ab && user && view !== 'import' && !ab.contains(document.activeElement)) render(); }
+      }
       var local = localHefts(), app = await localApp();
       if (!app && typeof window.saveStateToHost === 'function') { try { await window.saveStateToHost(); app = await localApp(); } catch (e) {} }
       if (app) local.appstate = app;
@@ -402,7 +498,11 @@
           syncing = false; location.reload(); return;
         }
       }
-    } catch (e) { setStatus('Synchronisierung fehlgeschlagen: ' + err(e)); }
+    } catch (e) {
+      freshSync = false; syncing = false;
+      if (await checkAlive()) setStatus('Synchronisierung fehlgeschlagen: ' + err(e));
+      return;
+    }
     freshSync = false; syncing = false;
   }
   function schedulePush() {
@@ -435,7 +535,7 @@
   function loggedIn(session) {
     user = session ? session.user : null;
     if (ensureNamespace()) return;
-    consumeFresh();
+    consumeFresh(); loadAvatarCache();
     /* Lokaler Spielstand bleibt auch ohne Anmeldung erhalten */
     try { if (user) localStorage.setItem('rs_cloud_on', '1'); else localStorage.removeItem('rs_cloud_on'); } catch (e) {}
     renderBtn(); render();
@@ -537,6 +637,17 @@
       var r = await sb.auth.signInWithOAuth({ provider: 'github', options: { redirectTo: location.origin + location.pathname } });
       if (r.error) { try { sessionStorage.removeItem('rs_fresh_login'); } catch (e) {} msg(err(r.error), 'error'); }
     },
+    pickAvatar: function () { var f = $('acct-avatar-file'); if (f) f.click(); },
+    setAvatar: async function (input) {
+      var f = input && input.files && input.files[0]; if (!f) return; input.value = '';
+      if (!/^image\//.test(f.type)) { msg('Bitte wähle eine Bilddatei aus.', 'warning'); return; }
+      try { msg('Profilbild wird gespeichert …', 'info'); await saveAvatar(await resizeImage(f)); msg('Profilbild gespeichert.', 'success'); }
+      catch (e) { msg('Das Profilbild konnte nicht gespeichert werden: ' + err(e), 'error'); }
+    },
+    removeAvatar: async function () {
+      try { await saveAvatar(null); msg('Profilbild entfernt.', 'success'); }
+      catch (e) { msg('Das Profilbild konnte nicht entfernt werden: ' + err(e), 'error'); }
+    },
     syncNow: async function () { msg(''); await sync(); },
     importAsk: function () { var g = guestSummary(); if (!g) { msg('Auf diesem Gerät gibt es keine Daten zum Übernehmen.', 'info'); return; } pendingImport = g; view = 'import'; render(); },
     importAccept: async function () {
@@ -602,7 +713,7 @@
         if (r.data && r.data.session && enforcePw(r.data.session)) { }
         else if (r.data && r.data.session && needWelcome() && !inviteShown) { showPw(r.data.session); }
         else if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
-        else { loggedIn(null); showNoPw(); }
+        else { loggedIn(null); showNoPw(); showGone(); }
       });
     } catch (e) { sb = null; }
   }
