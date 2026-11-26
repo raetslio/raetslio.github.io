@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Einmalige Umstellung der Oberfläche (Seitenmenü, Rätsel-Einstellungen). Läuft auf sudoku/index.html und statistik/index.html.
+"""Einmalige Umstellung der Oberfläche (Seitenmenü, Rätsel-Einstellungen). Läuft auf sudoku/index.html.
 Danach tools/build-routes.py ausführen. Idempotent: bereits umgestellte Dateien werden übersprungen."""
 import re, pathlib
 
@@ -50,5 +50,5 @@ def run(path):
         s = s[:mm.start()] + mm.group(1) + ' rs-single' + (mm.group(2) or '') + mm.group(3) + det + s[mm.end():]
     p.write_text(s, encoding='utf-8'); print('ok', path)
 
-for f in ('sudoku/index.html', 'statistik/index.html'):
+for f in ('sudoku/index.html',):
     run(f)

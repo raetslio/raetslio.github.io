@@ -4,21 +4,22 @@ Rätslio? ist eine statische Web-App (GitHub Pages, `https://raetslio.github.io/
 
 ## Seitenaufbau
 
-Die App besteht aus **einer Quellseite, `sudoku/index.html`**. Aus ihr erzeugt `python3 tools/build-routes.py` (Aufruf im Hauptordner) für jede Unterseite einen Ordner mit eigener `index.html`, eigenem Titel und eigener Beschreibung:
+Die App besteht aus **einer gemeinsamen Oberfläche `app-body.html`** (Markup und Skript-Reihenfolge, wird von jeder Seite per Skript eingebunden) und **einer Kopf-Vorlage `sudoku/index.html`** (Meta, Stile, Lade-Skript). Aus ihr erzeugt `python3 tools/build-routes.py` (Aufruf im Hauptordner) für jede Unterseite einen Ordner mit eigener `index.html`, eigenem Titel und eigener Beschreibung:
 
 - Rätselarten: `/sudoku/`, `/suchsel/`, `/binoxxo/`, `/labyrinth/`, `/hitori/`, `/zahlenmauer/`, `/magisches-quadrat/`
 - Rätselheft und Verläufe: `/heft/`, `/spiele/` (Spielverlauf), `/verlauf/` (Druckverlauf)
 - Konto: `/login/`, `/konto/` (beide nicht indexierbar)
 
-Das Skript schreibt auch `sitemap.xml` neu. `/statistik/` wird **nicht** von `build-routes.py` erzeugt und ist eine eigene Datei. Nach jeder Änderung an `sudoku/index.html` muss das Skript laufen, damit alle Unterseiten gleich bleiben. Die `index.html` im Hauptordner leitet nur auf `/sudoku/` weiter, `404.html` leitet unbekannte Adressen um.
+Das Skript schreibt auch `sitemap.xml` neu. Nach jeder Änderung an `sudoku/index.html` muss das Skript laufen, damit alle Unterseiten gleich bleiben. Die `index.html` im Hauptordner leitet nur auf `/sudoku/` weiter, `404.html` leitet unbekannte Adressen um.
 
-`tools/ui-sidebar.py` war eine einmalige Umstellung auf das Seitenmenü und die Rätsel-Einstellungen (läuft idempotent auf `sudoku/index.html` und `statistik/index.html`).
+`tools/ui-sidebar.py` war eine einmalige Umstellung auf das Seitenmenü und die Rätsel-Einstellungen (läuft idempotent auf `sudoku/index.html`).
 
 ## Ordner
 
 | Ordner / Datei | Inhalt |
 | --- | --- |
-| `sudoku/index.html` | Quellseite: Seitenmenü, Spielbereiche, Fenster, Reihenfolge der Skripte |
+| `app-body.html` | Gemeinsame Oberfläche: Seitenmenü, Spielbereiche, Fenster, Reihenfolge der Skripte |
+| `sudoku/index.html` | Kopf-Vorlage für alle Unterseiten (nur Meta-Daten unterscheiden sich) |
 | `css/` | Aussehen, nach Themen aufgeteilt (siehe unten) |
 | `js/` | Programmcode, nach Rätselarten und Funktionen aufgeteilt |
 | `icons/` | Logo (SVG), App-Symbole, Favicon |
@@ -61,7 +62,7 @@ Alle Rätselseiten sind nur mit Konto nutzbar. Ohne Anmeldung leitet ein kleines
 
 1. Logik und Spielzustand: neue Datei in `js/puzzles/` anlegen.
 2. Zeichnen für den Druck und Eintrag im Register `NXT` (siehe `puzzles/new-puzzles-registry.js`) – damit funktionieren Heft, Druckfenster, Druckverlauf und Spielverlauf.
-3. Tab und Ansicht in `sudoku/index.html` ergänzen, die neue Datei in die Skript-Liste eintragen, die Seite in `ROUTES` von `tools/build-routes.py` aufnehmen und das Skript ausführen.
+3. Tab und Ansicht in `sudoku/index.html` ergänzen, die neue Datei in die Skript-Liste in `app-body.html` eintragen, die Seite in `ROUTES` von `tools/build-routes.py` aufnehmen und das Skript ausführen.
 4. Datei in `sw.js` unter `APP_FILES` aufnehmen und die Versionsnummer erhöhen.
 
 ## Aktualisieren über GitHub
@@ -76,3 +77,10 @@ Alle Rätselseiten sind nur mit Konto nutzbar. Ohne Anmeldung leitet ein kleines
 ## Leitlinie
 
 Änderungen halten sich klein und nutzen vorhandene Mechanismen (Spielverlauf, Einstellungen, Routen) statt neue Parallelstrukturen. Ein Rätsel soll in möglichst wenigen Tippen startbar sein; „Neues Rätsel“ steht immer vor den Einstellungen.
+
+## Konto-Skript und Tests
+
+- `js/account.js` wird **nicht von Hand bearbeitet**. Quelle sind die Teile in `js/account-src/` (Kern, Profil, Oberfläche, Sync, API, Start). Nach einer Änderung `python3 tools/build-account.py` ausführen.
+- Rein rechnende Hilfsfunktionen (Fehlertexte, Icons, Daten-Zusammenfassung) stehen in `js/account-utils.js`.
+- Automatische Tests: `node --test "tests/*.test.js"` im Hauptordner (Node 18 oder neuer, keine Abhängigkeiten). Sie prüfen die Hilfsfunktionen, die Meta-Daten aller Seiten, die Skript-Reihenfolge, den Offline-Cache, die Sitemap und ob `js/account.js` aktuell gebaut ist.
+- `tests.yml` (siehe Hinweis in der Antwort) führt die Tests bei jedem Push automatisch auf GitHub aus.

@@ -128,3 +128,8 @@ button, input, select, textarea {
   color: var(--primary);
   border-bottom-color: var(--primary);
 }
+
+/* Barrierefreiheit: Link "Zum Inhalt springen" erscheint nur bei Tastaturfokus */
+.rs-skip { position: absolute; left: 8px; top: -60px; z-index: 10000; padding: 10px 16px; border-radius: 8px; background: var(--primary, #2563eb); color: #fff; font-weight: 600; text-decoration: none; }
+.rs-skip:focus { top: 8px; }
+main:focus { outline: none; }

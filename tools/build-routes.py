@@ -2,7 +2,7 @@
 """Erzeugt je Unterseite einen Ordner mit index.html (Kopie von sudoku/index.html) mit eigenem Titel,
 eigener Beschreibung, og:-Tags und canonical-Link. Die Texte hier müssen zu META in js/modes-init.js passen.
 Aufruf im Hauptordner:  python3 tools/build-routes.py
-Quelle der Wahrheit ist sudoku/index.html – nur diese Datei bearbeiten, dann das Skript laufen lassen."""
+Quelle der Wahrheit: app-body.html (Oberflaeche und Skriptliste, einmalig) und sudoku/index.html (Kopf/Huelle). Bearbeiten, dann das Skript laufen lassen."""
 import re, pathlib, html
 BASE = 'https://raetslio.github.io'
 ROUTES = {
