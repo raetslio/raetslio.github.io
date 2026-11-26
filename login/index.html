@@ -9,7 +9,7 @@
   <meta name="design-style" content="haven">
   <script>
   /* Darstellung früh setzen (verhindert Aufblitzen): gespeicherte Wahl oder Geräteeinstellung */
-  (function () { try { var m = localStorage.getItem('rs_theme') || 'system'; var d = m === 'dark' || (m !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); if (d) document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {} })();
+  (function () { try { var m = /^\/login\/?/.test(location.pathname) ? 'system' : (localStorage.getItem('rs_theme') || 'system'); var d = m === 'dark' || (m !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); if (d) document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {} })();
   </script>
   <script>
   /* Anmeldepflicht (Teil 1): Ohne gespeicherte Anmeldung sofort zur Anmeldeseite. Die Seite bleibt bis zur Prüfung unsichtbar.
@@ -95,7 +95,7 @@
         </button>
 
 
-        <button type="button" id="btn-account" class="btn" onclick="RSAUTH.open()" title="Optional anmelden, um alles geräteübergreifend zu speichern">
+        <button type="button" id="btn-account" class="btn" onclick="RSAUTH.open()" title="Mein Konto: Rätselstände, Hefte und Einstellungen auf allen Geräten">
           <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
           <span id="account-label">Anmelden</span>
         </button>

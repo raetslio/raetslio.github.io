@@ -1,5 +1,5 @@
 /* ======================================================================
-   Optionales Konto (Supabase)
+   Konto (Supabase) – Anmeldung ist Pflicht
    Anmelden (E-Mail, Google oder GitHub), Abmelden, Konto löschen, Synchronisierung von Heften,
    Verläufen und App-Zustand, getrennte Datenbereiche pro Konto/Gerät, Backup-Export/-Import.
    Eigenständiges Skript (Objekt RSAUTH), braucht die Supabase-Bibliothek.
@@ -372,7 +372,7 @@
     var body = $('acct-body'), t = $('acct-title'); if (!body) return;
     if (!configured) {
       t.textContent = 'Konto';
-      body.innerHTML = '<p class="muted-note">Die Anmeldung ist noch nicht eingerichtet. Trage in der Datei bei <b>SUPABASE_URL</b> und <b>SUPABASE_ANON_KEY</b> deine Projektdaten ein.</p><p class="muted-note">Ohne Konto funktioniert alles wie bisher – die Anmeldung ist freiwillig.</p>' + backupBlock();
+      body.innerHTML = '<p class="muted-note">Die Anmeldung ist noch nicht eingerichtet. Trage in der Datei bei <b>SUPABASE_URL</b> und <b>SUPABASE_ANON_KEY</b> deine Projektdaten ein.</p>' + backupBlock();
       return;
     }
     if (!sb) { body.innerHTML = '<p class="muted-note">Der Anmeldedienst konnte nicht geladen werden. Prüfe deine Internetverbindung und lade die Seite neu.' + (GATE ? '' : ' Du kannst weiter ohne Konto spielen.') + '</p>' + backupBlock(); return; }
@@ -542,6 +542,7 @@
     }).join('') + '</div><p class="muted-note">„Gerät“ folgt der Einstellung deines Geräts.</p></div>';
   }
   function backupBlock() {
+    if (ON_LOGIN) return '';
     return themeBlock() + '<div class="panel-subblock"><span class="label">Datensicherung</span><p class="muted-note">Sichert alle Hefte und Verläufe ' + (user ? 'deines Kontos' : 'dieses Geräts') + ' in einer Datei. Beim Importieren wird nur ergänzt, nichts überschrieben.</p>' +
       '<div style="display:flex;flex-wrap:wrap;gap:8px"><button type="button" class="btn" onclick="RSAUTH.exportBackup()">Backup exportieren</button><button type="button" class="btn" onclick="RSAUTH.pickBackup()">Backup importieren</button></div>' +
       '<input id="acct-import-file" type="file" accept="application/json,.json" style="display:none" onchange="RSAUTH.importBackup(this)"></div>';
@@ -728,7 +729,7 @@
     logout: async function () {
       clearTimeout(pushTimer); if (user) await sync();
       try { if (user) localStorage.removeItem(HK + '_' + user.id); } catch (e) {}
-      await sb.auth.signOut(); loggedIn(null); view = 'login'; render(); msg('Abgemeldet. Du siehst jetzt nur die Daten dieses Geräts.', 'info');
+      await sb.auth.signOut(); loggedIn(null); view = 'login'; render(); msg('Abgemeldet.', 'info');
     },
     deleteAccount: async function () {
       if (val('acct-del').trim().toUpperCase() !== 'LÖSCHEN') { msg('Bitte gib zur Bestätigung LÖSCHEN ein.', 'warning'); return; }
@@ -889,6 +890,9 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape') { var m = $('acct-modal'); if (m && m.getAttribute('data-open') === 'true') RSAUTH.close(); } });
 
   /* ---------- Start ---------- */
+  if (ON_LOGIN) { /* Anmeldeseite: Darstellung immer „Gerät“, gespeicherte Wahl bleibt unberührt */
+    try { var sv = localStorage.getItem('rs_theme'); if (typeof applyTheme === 'function') applyTheme('system'); if (sv === null) localStorage.removeItem('rs_theme'); else lsSetRaw.call(localStorage, 'rs_theme', sv); } catch (e) {}
+  }
   if (ON_LOGIN) nextUrl(); /* Ziel merken, falls die Anmeldung über Google/GitHub die Seite verlässt */
   renderBtn(); lockModal();
   if (configured && window.supabase) {

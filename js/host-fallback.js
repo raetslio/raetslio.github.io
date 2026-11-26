@@ -4,7 +4,7 @@
    wird der Zustand im lokalen Browser-Speicher abgelegt.
    ====================================================================== */
 
-/* Optionales Konto: lokaler Zwischenspeicher für den App-Zustand, nur aktiv wenn angemeldet (und nur wenn die Host-API fehlt) */
+/* Konto: lokaler Zwischenspeicher für den App-Zustand, nur aktiv wenn angemeldet (und nur wenn die Host-API fehlt) */
 (function () {
   if (window.notebookAppApi) return;
   var K = 'rs_appstate_cache';
