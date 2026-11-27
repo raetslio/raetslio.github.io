@@ -87,3 +87,7 @@
 body.rs-login .rs-bottomnav { display: none !important; }
 @media (max-width: 640px) { body.rs-konto { padding-bottom: 0; } body.rs-konto .rs-bottomnav { position: static; flex: none; } body.rs-konto #acct-modal { padding-bottom: var(--space-sm); } }
 @media print { .rs-bottomnav { display: none !important; } }
+
+.rs-bottomnav .rs-bn-av { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--primary); color: #fff; font-size: 13px; font-weight: 600; line-height: 1; }
+.rs-bottomnav .rs-bn-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.rs-bottomnav button[aria-current="page"] .rs-bn-av { box-shadow: 0 0 0 2px var(--primary); }

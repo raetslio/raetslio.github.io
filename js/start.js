@@ -19,9 +19,20 @@
     $('st-name').textContent = name;
     $('st-sub').textContent = signed ? 'Mein Konto öffnen' : 'Rätselstände und Hefte auf allen Geräten';
     var src = signed && img ? img.getAttribute('src') : '';
+    navAvatar(!!signed, src, name);
     if (src) { if (!av.firstChild || av.firstChild.tagName !== 'IMG' || av.firstChild.getAttribute('src') !== src) { av.textContent = ''; var i = document.createElement('img'); i.alt = ''; i.referrerPolicy = 'no-referrer'; i.src = src; av.appendChild(i); } }
     else if (signed) av.textContent = name.charAt(0).toUpperCase();
     else av.innerHTML = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>';
+  }
+  /* Untere Leiste: Konto-Symbol durch Profilbild bzw. Anfangsbuchstaben ersetzen */
+  function navAvatar(signed, src, name) {
+    var b = document.querySelector('#rs-bottomnav button[data-tab="konto"]'); if (!b) return;
+    var cur = b.querySelector('.rs-bn-av'), ico = b.querySelector('svg.icon-svg');
+    if (!signed) { if (cur) cur.remove(); if (ico) ico.style.display = ''; return; }
+    if (ico) ico.style.display = 'none';
+    if (!cur) { cur = document.createElement('span'); cur.className = 'rs-bn-av'; cur.setAttribute('aria-hidden', 'true'); b.insertBefore(cur, b.firstChild); }
+    if (src) { var im = cur.firstChild; if (!im || im.tagName !== 'IMG' || im.getAttribute('src') !== src) { cur.textContent = ''; im = document.createElement('img'); im.alt = ''; im.referrerPolicy = 'no-referrer'; im.src = src; cur.appendChild(im); } }
+    else cur.textContent = name.charAt(0).toUpperCase();
   }
   function counts() {
     var g = read(GV), items = g && Array.isArray(g.items) ? g.items : [], open = {}, openAll = 0;
@@ -49,7 +60,7 @@
   }
   /* Untere Leiste (Handy): aktuelle Seite markieren */
   function navSync() {
-    var sel = document.querySelector('#rs-drawer .nav-tab[aria-selected="true"]'), cur = sel ? sel.id.replace('tab-', '') : 'start';
+    var sel = document.querySelector('#rs-drawer .nav-tab[aria-selected="true"]'), cur = document.body.classList.contains('rs-konto') ? 'konto' : sel ? sel.id.replace('tab-', '') : 'start';
     document.querySelectorAll('#rs-bottomnav button[data-tab]').forEach(function (b) {
       var on = b.getAttribute('data-tab') === cur; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
