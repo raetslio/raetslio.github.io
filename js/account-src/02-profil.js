@@ -92,7 +92,7 @@
     var add = ['google', 'github'].filter(function (k) { return have.indexOf(k) < 0; }).map(function (k) {
       return '<button type="button" class="btn btn-sm" onclick="RSAUTH.link(\'' + k + '\')" style="display:inline-flex;align-items:center;gap:6px">' + provIcon(k) + provName(k) + ' verknüpfen</button>';
     }).join(' ');
-    return '<div class="panel-subblock"><span class="label">Anmeldemethoden</span>' + rows + (add ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">' + add + '</div>' : '') + '</div>';
+    return '<div class="panel-subblock"><span class="label">Anmeldemethoden</span>' + rows + (add ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">' + add + '</div>' : '') + pkBlock() + '</div>';
   }
   function markFresh() { try { sessionStorage.setItem('rs_fresh_login', '1'); } catch (e) {} }
   function consumeFresh() {

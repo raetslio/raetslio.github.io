@@ -250,7 +250,7 @@
     var add = ['google', 'github'].filter(function (k) { return have.indexOf(k) < 0; }).map(function (k) {
       return '<button type="button" class="btn btn-sm" onclick="RSAUTH.link(\'' + k + '\')" style="display:inline-flex;align-items:center;gap:6px">' + provIcon(k) + provName(k) + ' verknüpfen</button>';
     }).join(' ');
-    return '<div class="panel-subblock"><span class="label">Anmeldemethoden</span>' + rows + (add ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">' + add + '</div>' : '') + '</div>';
+    return '<div class="panel-subblock"><span class="label">Anmeldemethoden</span>' + rows + (add ? '<div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:8px">' + add + '</div>' : '') + pkBlock() + '</div>';
   }
   function markFresh() { try { sessionStorage.setItem('rs_fresh_login', '1'); } catch (e) {} }
   function consumeFresh() {
@@ -308,10 +308,11 @@
   }
   function pkBlock() {
     if (!pkOk()) return '';
-    return '<div class="panel-subblock"><span class="label" style="display:inline-flex;align-items:center;gap:6px">' + provIcon('key') + 'Passkey (Face ID / Fingerabdruck)</span>' +
+    /* Teil des Blocks „Anmeldemethoden“ (siehe methodsBlock) */
+    return '<div style="margin-top:12px"><span style="display:inline-flex;align-items:center;gap:8px;font-weight:600">' + provIcon('key') + 'Passkey (Face ID / Fingerabdruck)</span>' +
       '<p class="muted-note">Melde dich auf diesem Gerät statt mit Passwort per Face ID, Fingerabdruck oder Geräte-PIN an. Das Passwort funktioniert weiterhin.</p>' +
       '<div id="acct-passkeys"></div>' +
-      '<button type="button" class="btn" onclick="RSAUTH.passkeyAdd()" style="display:inline-flex;align-items:center;gap:8px">' + provIcon('key') + 'Passkey einrichten</button></div>';
+      '<button type="button" class="btn btn-sm" onclick="RSAUTH.passkeyAdd()" style="display:inline-flex;align-items:center;gap:6px">' + provIcon('key') + 'Passkey einrichten</button></div>';
   }
   async function loadPasskeys() {
     var box = $('acct-passkeys'); if (!box || !user || !pkOk()) return;
@@ -325,7 +326,8 @@
           (p.created_at ? '<span class="muted-note"> · eingerichtet am ' + esc(pkDate(p.created_at)) + '</span>' : '') + '</span>' +
           '<span style="display:inline-flex;gap:6px;flex:none"><button type="button" class="btn btn-sm" onclick="RSAUTH.passkeyRename(\'' + esc(p.id) + '\')">Umbenennen</button>' +
           '<button type="button" class="btn btn-sm" onclick="RSAUTH.passkeyDelete(\'' + esc(p.id) + '\')">Löschen</button></span></div>';
-      }).join('') + (list.length ? otpToggleHtml() : '');
+      }).join('');
+      var ob = $('acct-otpbox'); if (ob) ob.innerHTML = list.length ? '<div class="panel-subblock"><span class="label">Zusätzliche Sicherheit</span>' + otpToggleHtml() + '</div>' : '';
       if (!list.length && otpOn()) { sb.auth.updateUser({ data: { otp_required: false } }).then(function (u) { if (u && u.data && u.data.user) user = u.data.user; }); }
     } catch (e) {}
   }
@@ -402,7 +404,7 @@
       body.innerHTML = profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
         '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
-        themeBlock() + pwBlock + pkBlock() + methodsBlock() +
+        themeBlock() + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' +
         '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
         '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       return;
