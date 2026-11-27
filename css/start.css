@@ -78,10 +78,14 @@
   .rs-bottomnav button { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 56px; padding: 6px 0;
     background: none; border: 0; cursor: pointer; color: var(--on-surface-variant); font-family: var(--font-label); font-size: .72rem; -webkit-tap-highlight-color: transparent; }
   .rs-bottomnav .icon-svg { width: 22px; height: 22px; }
-  .rs-bottomnav button { position: relative; transition: background-color .15s, color .15s; }
-  .rs-bottomnav button[aria-current="page"] { color: var(--primary); font-weight: 700; background: color-mix(in srgb, var(--primary) 12%, transparent); }
-  .rs-bottomnav button[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 22%; right: 22%; height: 3px; border-radius: 0 0 3px 3px; background: var(--primary); }
+  .rs-bottomnav { background: #3c5a6e; border-top: 0; box-shadow: 0 -2px 12px rgba(0,0,0,.12); }
+  html[data-theme="dark"] .rs-bottomnav { background: #2e3d48; }
+  .rs-bottomnav button { position: relative; color: #c9d6df; transition: background-color .15s, color .15s; }
+  .rs-bottomnav button[aria-current="page"] { color: #fff; font-weight: 700; background: rgba(255,255,255,.14); }
+  .rs-bottomnav button[aria-current="page"]::before { content: ""; position: absolute; top: 0; left: 22%; right: 22%; height: 3px; border-radius: 0 0 3px 3px; background: #d9946e; }
   .rs-bottomnav button[aria-current="page"] .icon-svg { stroke-width: 2.4; }
+  .rs-bottomnav .rs-bn-av { background: #e2e9ee; color: #3c5a6e; }
+  .rs-bottomnav button[aria-current="page"] .rs-bn-av { box-shadow: 0 0 0 2px #d9946e; }
   .rs-bottomnav button:focus-visible { outline: 2px solid var(--focus); outline-offset: -4px; }
   body { padding-bottom: calc(60px + env(safe-area-inset-bottom)); }
   body.rs-menu-open .rs-bottomnav { display: none; }
@@ -91,6 +95,5 @@ body.rs-login .rs-bottomnav { display: none !important; }
 @media (max-width: 640px) { body.rs-konto { padding-bottom: 0; } body.rs-konto .rs-bottomnav { position: static; flex: none; } body.rs-konto #acct-modal { padding-bottom: var(--space-sm); } }
 @media print { .rs-bottomnav { display: none !important; } }
 
-.rs-bottomnav .rs-bn-av { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; background: var(--primary); color: #fff; font-size: 13px; font-weight: 600; line-height: 1; }
+.rs-bottomnav .rs-bn-av { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; line-height: 1; }
 .rs-bottomnav .rs-bn-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.rs-bottomnav button[aria-current="page"] .rs-bn-av { box-shadow: 0 0 0 2px var(--primary); }

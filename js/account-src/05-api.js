@@ -55,6 +55,33 @@
       if (r.error) { msg(err(r.error), 'error'); return; }
       $('acct-pw1').value = ''; msg('Passwort geändert.', 'success');
     },
+    changeEmail: async function () {
+      var e = val('acct-newmail').trim().toLowerCase(), pw = val('acct-mailpw');
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(e)) { msg('Bitte gib eine gültige E-Mail-Adresse ein.', 'warning'); return; }
+      if (user && user.email && e === user.email.toLowerCase()) { msg('Das ist bereits deine E-Mail-Adresse.', 'info'); return; }
+      if (!pw) { msg('Bitte gib zur Bestätigung dein Passwort ein.', 'warning'); return; }
+      if (capNeed()) return;
+      msg('Passwort wird geprüft …', 'info');
+      var c; otpGate = true;
+      try { c = await sb.auth.signInWithPassword({ email: user.email, password: pw, options: capOpt() }); } catch (x) { c = { error: x }; } finally { otpGate = false; }
+      capReset();
+      if (c.error) { msg(err(c.error), 'error'); return; }
+      msg('Code wird gesendet …', 'info');
+      var r = await sb.auth.updateUser({ email: e }, { emailRedirectTo: location.origin + location.pathname });
+      if (r.error) { msg(err(r.error), 'error'); return; }
+      mailNew = e; mailStage = 'code'; render();
+      msg('Wir haben einen Code an ' + e + ' geschickt.', 'success');
+    },
+    mailEnter: function () { mailNew = (user && user.new_email) || ''; mailStage = 'code'; msg(''); render(); },
+    mailCancel: function () { mailStage = 'form'; mailNew = ''; msg(''); render(); },
+    mailVerify: async function () {
+      var c = val('acct-mailcode').replace(/\s/g, ''); if (!c) { msg('Bitte den Code aus der E-Mail eingeben.', 'warning'); return; }
+      msg('Code wird geprüft …', 'info');
+      var r = await sb.auth.verifyOtp({ email: mailNew, token: c, type: 'email_change' });
+      if (r.error) { msg(err(r.error), 'error'); return; }
+      var g = await sb.auth.getUser(); if (g.data && g.data.user) user = g.data.user;
+      mailStage = 'form'; mailNew = ''; render(); msg('Deine E-Mail-Adresse wurde geändert.', 'success');
+    },
     invite: async function () {
       var e = val('acct-invite').trim(); if (!e) { msg('Bitte gib die E-Mail-Adresse der Person ein.', 'warning'); return; }
       msg('Einladung wird gesendet …', 'info');
