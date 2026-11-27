@@ -1,5 +1,6 @@
   /* ---------- Header-Button ---------- */
   function renderBtn() {
+    try { if (typeof rsApplyAbDefaults === 'function') rsApplyAbDefaults(); } catch (e) {}
     var b = $('btn-account'), l = $('account-label'); if (!b || !l) return;
     var dn = user ? displayName() : ''; l.textContent = user ? (dn.length > 18 ? dn.slice(0, 16) + '…' : dn) : 'Anmelden';
     b.classList.toggle('btn-sage', !!user);
@@ -16,7 +17,7 @@
 
   /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
   /* Passkey nur anzeigen, wenn Browser UND Gerät ihn wirklich nutzen können (Face ID, Fingerabdruck, Geräte-PIN) */
-  var pkDev = false, mailStage = 'form', mailNew = '', secOpen = false;
+  var pkDev = false, mailStage = 'form', mailNew = '', secOpen = { sec: false, des: false, ab: false };
   function pkDetect() {
     try {
       if (!window.PublicKeyCredential || typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return;
@@ -128,6 +129,7 @@
     if (user) {
       t.textContent = 'Mein Konto';
       var pwBlock = hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '';
+      var sessBlock = '<div class="panel-subblock"><span class="label">Geräte</span><p class="muted-note">Meldet dich überall ab, auch auf diesem Gerät, zum Beispiel wenn ein Gerät verloren ging.</p><button type="button" class="btn" onclick="RSAUTH.logoutAll()">Auf allen Geräten abmelden</button></div>';
       var delBlock = '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       var mailBlock = '', mailNotice = '';
       try {
@@ -156,8 +158,8 @@
       body.innerHTML = mailNotice + profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
         '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
-        themeBlock() +
-        '<details class="acct-sec" id="acct-sec"' + (secOpen ? ' open' : '') + ' ontoggle="RSAUTH.secToggle(this.open)"><summary>' + provIcon('key') + '<span>Sicherheit</span></summary>' + mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + delBlock + '</details>' +
+        designSection() + abBlock() +
+        details('sec', provIcon('key'), 'Sicherheit', mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock) +
         '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' ;
       
       return;

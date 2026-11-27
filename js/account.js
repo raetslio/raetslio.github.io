@@ -273,6 +273,7 @@
 
   /* ---------- Header-Button ---------- */
   function renderBtn() {
+    try { if (typeof rsApplyAbDefaults === 'function') rsApplyAbDefaults(); } catch (e) {}
     var b = $('btn-account'), l = $('account-label'); if (!b || !l) return;
     var dn = user ? displayName() : ''; l.textContent = user ? (dn.length > 18 ? dn.slice(0, 16) + '…' : dn) : 'Anmelden';
     b.classList.toggle('btn-sage', !!user);
@@ -289,7 +290,7 @@
 
   /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
   /* Passkey nur anzeigen, wenn Browser UND Gerät ihn wirklich nutzen können (Face ID, Fingerabdruck, Geräte-PIN) */
-  var pkDev = false, mailStage = 'form', mailNew = '', secOpen = false;
+  var pkDev = false, mailStage = 'form', mailNew = '', secOpen = { sec: false, des: false, ab: false };
   function pkDetect() {
     try {
       if (!window.PublicKeyCredential || typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return;
@@ -401,6 +402,7 @@
     if (user) {
       t.textContent = 'Mein Konto';
       var pwBlock = hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '';
+      var sessBlock = '<div class="panel-subblock"><span class="label">Geräte</span><p class="muted-note">Meldet dich überall ab, auch auf diesem Gerät, zum Beispiel wenn ein Gerät verloren ging.</p><button type="button" class="btn" onclick="RSAUTH.logoutAll()">Auf allen Geräten abmelden</button></div>';
       var delBlock = '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       var mailBlock = '', mailNotice = '';
       try {
@@ -429,8 +431,8 @@
       body.innerHTML = mailNotice + profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
         '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
-        themeBlock() +
-        '<details class="acct-sec" id="acct-sec"' + (secOpen ? ' open' : '') + ' ontoggle="RSAUTH.secToggle(this.open)"><summary>' + provIcon('key') + '<span>Sicherheit</span></summary>' + mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + delBlock + '</details>' +
+        designSection() + abBlock() +
+        details('sec', provIcon('key'), 'Sicherheit', mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock) +
         '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' ;
       
       return;
@@ -536,6 +538,34 @@
     return '<div class="panel-subblock"><span class="label">Darstellung</span><div id="acct-theme" style="display:flex;flex-wrap:wrap;gap:8px">' + opts.map(function (o) {
       return '<button type="button" class="btn btn-sm' + (cur === o[0] ? ' btn-primary' : '') + '" data-theme-opt="' + o[0] + '" aria-pressed="' + (cur === o[0]) + '" onclick="RSAUTH.setTheme(\'' + o[0] + '\')">' + o[1] + '</button>';
     }).join('') + '</div><p class="muted-note">„Gerät“ folgt der Einstellung deines Geräts.</p></div>';
+  }
+  var IC_AB = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>';
+  var IC_DS = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7" r="1"/></svg>';
+  function details(key, icon, title, inner) {
+    return '<details class="acct-sec" id="acct-sec-' + key + '"' + (secOpen[key] ? ' open' : '') + ' ontoggle="RSAUTH.secToggle(\'' + key + '\',this.open)"><summary>' + icon + '<span>' + title + '</span></summary>' + inner + '</details>';
+  }
+  function accentBlock() {
+    var cur = (window.appState && appState.accent) || 'default';
+    var cols = { 'default': '#3c5a6e', green: '#3f6e49', orange: '#a8573a', violet: '#6a4f8c', rose: '#a03b52', teal: '#1f7a7a' };
+    return '<div class="panel-subblock"><span class="label">Akzentfarbe</span><div id="acct-accent" style="display:flex;flex-wrap:wrap;gap:10px">' + Object.keys(cols).map(function (k) {
+      var nm = (window.ACCENTS && ACCENTS[k] && ACCENTS[k].name) || k;
+      return '<button type="button" class="acct-swatch" title="' + nm + '" aria-label="' + nm + '" aria-pressed="' + (cur === k) + '" style="background:' + cols[k] + '" onclick="RSAUTH.setAccent(\'' + k + '\')"></button>';
+    }).join('') + '</div></div>';
+  }
+  function designSection() { return details('des', IC_DS, 'Design', themeBlock() + accentBlock()); }
+  function abBlock() {
+    var p = (window.appState && appState.print) || {}, nm = p.nameMode === 'account' ? 'account' : 'line', dm = p.dateMode === 'line' ? 'line' : 'today', sl = p.showLink !== false;
+    function row(key, label, cur, opts) {
+      return '<div class="field-group"><span class="field-label">' + label + '</span><div style="display:flex;flex-wrap:wrap;gap:8px">' + opts.map(function (o) {
+        return '<button type="button" class="btn btn-sm' + (cur === o[0] ? ' btn-primary' : '') + '" aria-pressed="' + (cur === o[0]) + '" onclick="RSAUTH.setAb(\'' + key + '\',\'' + o[0] + '\')">' + o[1] + '</button>';
+      }).join('') + '</div></div>';
+    }
+    var inner = '<div class="panel-subblock">' +
+      row('nameMode', 'Name vorausfüllen', nm, [['line', 'Schreiblinie'], ['account', 'Name des Kontos']]) +
+      row('dateMode', 'Datum vorausfüllen', dm, [['today', 'Datum des Tages'], ['line', 'Schreiblinie']]) +
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="checkbox" style="margin-top:3px"' + (sl ? ' checked' : '') + ' onchange="RSAUTH.setLink(this.checked)"><span>Webseiten-Link unten auf dem Blatt anzeigen<span class="muted-note" style="display:block">„Arbeitsblatt · raetslio.github.io“ in der Fußzeile.</span></span></label>' +
+      '<p class="muted-note">Gilt für das Druckfenster. Name und Datum kannst du dort weiterhin von Hand ändern.</p></div>';
+    return details('ab', IC_AB, 'Arbeitsblätter', inner);
   }
   async function waitSync() { for (var i = 0; i < 24 && syncing; i++) await new Promise(function (r) { setTimeout(r, 250); }); await sync(); }
 
@@ -720,7 +750,7 @@
       try { c = await sb.auth.signInWithPassword({ email: user.email, password: pw, options: capOpt() }); } catch (x) { c = { error: x }; } finally { otpGate = false; }
       capReset();
       if (c.error) { msg(err(c.error), 'error'); return; }
-      mailNew = e; mailStage = 'send'; secOpen = true; render(); msg('');
+      mailNew = e; mailStage = 'send'; secOpen.sec = true; render(); msg('');
       if (!capOn()) RSAUTH.mailSendCode();
     },
     mailSendCode: async function () {
@@ -746,7 +776,9 @@
     mailCancel: function () { mailStage = 'form'; mailNew = ''; msg(''); render(); },
     mailRestart: function () { try { localStorage.removeItem('rs_mail_pending'); } catch (x) {} if (user) user.new_email = ''; mailStage = 'form'; msg(''); render(); },
     mailNoticeClose: function () { try { localStorage.removeItem('rs_mail_notice'); } catch (x) {} render(); },
-    secToggle: function (o) { secOpen = !!o; },
+    secToggle: function (k, o) { secOpen[k] = !!o; },
+    setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
+    setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
     invite: async function () {
       var e = val('acct-invite').trim(); if (!e) { msg('Bitte gib die E-Mail-Adresse der Person ein.', 'warning'); return; }
       msg('Einladung wird gesendet …', 'info');
@@ -762,6 +794,22 @@
       clearTimeout(pushTimer); if (user) await sync();
       try { if (user) localStorage.removeItem(HK + '_' + user.id); } catch (e) {}
       await sb.auth.signOut(); loggedIn(null); view = 'login'; render(); msg('Abgemeldet.', 'info');
+    },
+    logoutAll: async function () {
+      if (!(await rsConfirm('Du wirst auf allen Geräten abgemeldet, auch auf diesem. Danach musst du dich überall neu anmelden.', { title: 'Auf allen Geräten abmelden', ok: 'Überall abmelden', danger: true }))) return;
+      clearTimeout(pushTimer); if (user) await sync();
+      try { if (user) localStorage.removeItem(HK + '_' + user.id); } catch (e) {}
+      var r = await sb.auth.signOut({ scope: 'global' });
+      if (r && r.error) { msg(err(r.error), 'error'); return; }
+      loggedIn(null); view = 'login'; render(); msg('Auf allen Geräten abgemeldet.', 'info');
+    },
+    printName: function () { return nameCustom || (user && user.email ? user.email.split('@')[0] : ''); },
+    setAb: function (key, val) {
+      if (typeof appState === 'undefined' || !appState.print) return;
+      appState.print[key] = val;
+      if (typeof rsApplyAbDefaults === 'function') rsApplyAbDefaults(true);
+      if (typeof schedulePersist === 'function') schedulePersist();
+      render();
     },
     deleteAccount: async function () {
       if (val('acct-del').trim().toUpperCase() !== 'LÖSCHEN') { msg('Bitte gib zur Bestätigung LÖSCHEN ein.', 'warning'); return; }

@@ -53,6 +53,7 @@ var DEFAULT_WS_WORDS = [
 var appState = {
   mode: 'sudoku',
   theme: 'system',
+  accent: 'default',
   sudoku: {
     size: 9,
     subR: 3,
@@ -83,7 +84,10 @@ var appState = {
   },
   print: {
     name: '',
-    date: '18.11.2026',
+    date: '',
+    nameMode: 'line',   /* 'line' = Schreiblinie, 'account' = Name aus dem Konto */
+    showLink: true,     /* Webseiten-Link unten auf dem Blatt */
+    dateMode: 'today',  /* 'today' = Datum des Tages, 'line' = Schreiblinie */
     marginMm: 15,
     instrPt: 9.5,
     multiPrint: 1,

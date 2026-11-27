@@ -69,6 +69,34 @@
       return '<button type="button" class="btn btn-sm' + (cur === o[0] ? ' btn-primary' : '') + '" data-theme-opt="' + o[0] + '" aria-pressed="' + (cur === o[0]) + '" onclick="RSAUTH.setTheme(\'' + o[0] + '\')">' + o[1] + '</button>';
     }).join('') + '</div><p class="muted-note">„Gerät“ folgt der Einstellung deines Geräts.</p></div>';
   }
+  var IC_AB = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>';
+  var IC_DS = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7" r="1"/></svg>';
+  function details(key, icon, title, inner) {
+    return '<details class="acct-sec" id="acct-sec-' + key + '"' + (secOpen[key] ? ' open' : '') + ' ontoggle="RSAUTH.secToggle(\'' + key + '\',this.open)"><summary>' + icon + '<span>' + title + '</span></summary>' + inner + '</details>';
+  }
+  function accentBlock() {
+    var cur = (window.appState && appState.accent) || 'default';
+    var cols = { 'default': '#3c5a6e', green: '#3f6e49', orange: '#a8573a', violet: '#6a4f8c', rose: '#a03b52', teal: '#1f7a7a' };
+    return '<div class="panel-subblock"><span class="label">Akzentfarbe</span><div id="acct-accent" style="display:flex;flex-wrap:wrap;gap:10px">' + Object.keys(cols).map(function (k) {
+      var nm = (window.ACCENTS && ACCENTS[k] && ACCENTS[k].name) || k;
+      return '<button type="button" class="acct-swatch" title="' + nm + '" aria-label="' + nm + '" aria-pressed="' + (cur === k) + '" style="background:' + cols[k] + '" onclick="RSAUTH.setAccent(\'' + k + '\')"></button>';
+    }).join('') + '</div></div>';
+  }
+  function designSection() { return details('des', IC_DS, 'Design', themeBlock() + accentBlock()); }
+  function abBlock() {
+    var p = (window.appState && appState.print) || {}, nm = p.nameMode === 'account' ? 'account' : 'line', dm = p.dateMode === 'line' ? 'line' : 'today', sl = p.showLink !== false;
+    function row(key, label, cur, opts) {
+      return '<div class="field-group"><span class="field-label">' + label + '</span><div style="display:flex;flex-wrap:wrap;gap:8px">' + opts.map(function (o) {
+        return '<button type="button" class="btn btn-sm' + (cur === o[0] ? ' btn-primary' : '') + '" aria-pressed="' + (cur === o[0]) + '" onclick="RSAUTH.setAb(\'' + key + '\',\'' + o[0] + '\')">' + o[1] + '</button>';
+      }).join('') + '</div></div>';
+    }
+    var inner = '<div class="panel-subblock">' +
+      row('nameMode', 'Name vorausfüllen', nm, [['line', 'Schreiblinie'], ['account', 'Name des Kontos']]) +
+      row('dateMode', 'Datum vorausfüllen', dm, [['today', 'Datum des Tages'], ['line', 'Schreiblinie']]) +
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="checkbox" style="margin-top:3px"' + (sl ? ' checked' : '') + ' onchange="RSAUTH.setLink(this.checked)"><span>Webseiten-Link unten auf dem Blatt anzeigen<span class="muted-note" style="display:block">„Arbeitsblatt · raetslio.github.io“ in der Fußzeile.</span></span></label>' +
+      '<p class="muted-note">Gilt für das Druckfenster. Name und Datum kannst du dort weiterhin von Hand ändern.</p></div>';
+    return details('ab', IC_AB, 'Arbeitsblätter', inner);
+  }
   async function waitSync() { for (var i = 0; i < 24 && syncing; i++) await new Promise(function (r) { setTimeout(r, 250); }); await sync(); }
 
   async function sync() {

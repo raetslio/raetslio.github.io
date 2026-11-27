@@ -314,3 +314,7 @@ body.rs-konto .rs-drawer .rs-account { background: var(--primary-container); col
 .acct-sec > summary .icon-svg { width: 20px; height: 20px; flex: none; }
 .acct-sec > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
 .acct-sec[open] { padding-bottom: var(--space-sm, 12px); }
+
+.acct-swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--outline); cursor: pointer; padding: 0; }
+.acct-swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--surface-container-low, #fff), 0 0 0 5px var(--on-surface); }
+.acct-swatch:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }

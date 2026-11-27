@@ -66,7 +66,7 @@
       try { c = await sb.auth.signInWithPassword({ email: user.email, password: pw, options: capOpt() }); } catch (x) { c = { error: x }; } finally { otpGate = false; }
       capReset();
       if (c.error) { msg(err(c.error), 'error'); return; }
-      mailNew = e; mailStage = 'send'; secOpen = true; render(); msg('');
+      mailNew = e; mailStage = 'send'; secOpen.sec = true; render(); msg('');
       if (!capOn()) RSAUTH.mailSendCode();
     },
     mailSendCode: async function () {
@@ -92,7 +92,9 @@
     mailCancel: function () { mailStage = 'form'; mailNew = ''; msg(''); render(); },
     mailRestart: function () { try { localStorage.removeItem('rs_mail_pending'); } catch (x) {} if (user) user.new_email = ''; mailStage = 'form'; msg(''); render(); },
     mailNoticeClose: function () { try { localStorage.removeItem('rs_mail_notice'); } catch (x) {} render(); },
-    secToggle: function (o) { secOpen = !!o; },
+    secToggle: function (k, o) { secOpen[k] = !!o; },
+    setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
+    setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
     invite: async function () {
       var e = val('acct-invite').trim(); if (!e) { msg('Bitte gib die E-Mail-Adresse der Person ein.', 'warning'); return; }
       msg('Einladung wird gesendet …', 'info');
@@ -108,6 +110,22 @@
       clearTimeout(pushTimer); if (user) await sync();
       try { if (user) localStorage.removeItem(HK + '_' + user.id); } catch (e) {}
       await sb.auth.signOut(); loggedIn(null); view = 'login'; render(); msg('Abgemeldet.', 'info');
+    },
+    logoutAll: async function () {
+      if (!(await rsConfirm('Du wirst auf allen Geräten abgemeldet, auch auf diesem. Danach musst du dich überall neu anmelden.', { title: 'Auf allen Geräten abmelden', ok: 'Überall abmelden', danger: true }))) return;
+      clearTimeout(pushTimer); if (user) await sync();
+      try { if (user) localStorage.removeItem(HK + '_' + user.id); } catch (e) {}
+      var r = await sb.auth.signOut({ scope: 'global' });
+      if (r && r.error) { msg(err(r.error), 'error'); return; }
+      loggedIn(null); view = 'login'; render(); msg('Auf allen Geräten abgemeldet.', 'info');
+    },
+    printName: function () { return nameCustom || (user && user.email ? user.email.split('@')[0] : ''); },
+    setAb: function (key, val) {
+      if (typeof appState === 'undefined' || !appState.print) return;
+      appState.print[key] = val;
+      if (typeof rsApplyAbDefaults === 'function') rsApplyAbDefaults(true);
+      if (typeof schedulePersist === 'function') schedulePersist();
+      render();
     },
     deleteAccount: async function () {
       if (val('acct-del').trim().toUpperCase() !== 'LÖSCHEN') { msg('Bitte gib zur Bestätigung LÖSCHEN ein.', 'warning'); return; }

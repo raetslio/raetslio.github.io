@@ -16,6 +16,7 @@ async function saveStateToHost() {
     await window.notebookAppApi.setAppState({
       mode: appState.mode,
       theme: appState.theme,
+      accent: appState.accent,
       sudoku: {
         size: appState.sudoku.size,
         subR: appState.sudoku.subR,

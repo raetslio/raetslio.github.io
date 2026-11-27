@@ -8,6 +8,7 @@ function openPrintModal() {
   if (!modal) return;
   printModalOpener = document.activeElement || null;
   modal.setAttribute('data-open', 'true');
+  if (typeof rsApplyAbDefaults === 'function') rsApplyAbDefaults();
   updatePrintModalModeUI();
   renderPrintPreview();
   var closeBtn = modal.querySelector('.modal-header .btn');
@@ -55,8 +56,8 @@ function onPrintSettingChange() {
   var marginIn = document.getElementById('print-margin');
   var instrIn = document.getElementById('print-instr-size');
 
-  if (nameIn) appState.print.name = nameIn.value;
-  if (dateIn) appState.print.date = dateIn.value;
+  if (nameIn) { if (nameIn.value !== appState.print.name) rsAbTouched.name = true; appState.print.name = nameIn.value; }
+  if (dateIn) { if (dateIn.value !== appState.print.date) rsAbTouched.date = true; appState.print.date = dateIn.value; }
   if (marginIn) appState.print.marginMm = parseFloat(marginIn.value);
   if (instrIn) appState.print.instrPt = parseFloat(instrIn.value);
 
@@ -374,7 +375,7 @@ function buildA4SvgString(sheetType, includeGhostGuides) {
   /* Footer line */
   if (drawBaseElements) {
     var footLabel = sheetType === 'sheet2' ? 'Lösungsblatt' : 'Arbeitsblatt';
-    svgParts.push(`<text x="${pageW / 2}" y="${(pageH - margin + 2).toFixed(2)}" font-family="Outfit, sans-serif" font-size="2.7" fill="${PRINT_PALETTE.muted}" text-anchor="middle">${footLabel} · raetslio.github.io</text>`);
+    svgParts.push(`<text x="${pageW / 2}" y="${(pageH - margin + 2).toFixed(2)}" font-family="Outfit, sans-serif" font-size="2.7" fill="${PRINT_PALETTE.muted}" text-anchor="middle">${footLabel}${appState.print.showLink === false ? '' : ' · raetslio.github.io'}</text>`);
   }
 
   svgParts.push(`</svg>`);

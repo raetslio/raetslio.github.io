@@ -7,6 +7,30 @@ function systemPrefersDark() {
   return !!(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 }
 
+/* Akzentfarben: Hauptfarbe der Oberfläche (hell / dunkel getrennt, damit der Kontrast stimmt) */
+var ACCENTS = {
+  'default': { name: 'Blaugrau' },
+  green:  { name: 'Grün',    l: ['#3f6e49', '#e4efe6', '#26442d'], d: ['#88be91', '#243628', '#dff0e2'] },
+  orange: { name: 'Terrakotta', l: ['#a8573a', '#f5e5de', '#5e2a18'], d: ['#e0a084', '#3e2a22', '#fbe6dc'] },
+  violet: { name: 'Violett', l: ['#6a4f8c', '#ece6f3', '#3d2a57'], d: ['#bda6dc', '#342c42', '#efe6fa'] },
+  rose:   { name: 'Rosé',    l: ['#a03b52', '#f6e3e8', '#5a1c2b'], d: ['#e49aab', '#3e2430', '#fbe3ea'] },
+  teal:   { name: 'Türkis',  l: ['#1f7a7a', '#ddefef', '#0f4747'], d: ['#7cc7c7', '#1f3a3a', '#dff4f4'] }
+};
+function applyAccent(name) {
+  var key = ACCENTS[name] ? name : 'default';
+  if (typeof appState !== 'undefined') appState.accent = key;
+  var root = document.documentElement, dark = root.getAttribute('data-theme') === 'dark';
+  var vars = ['--primary', '--primary-container', '--on-primary-container', '--focus', '--data-1', '--ws-hl-0'];
+  var a = ACCENTS[key];
+  if (!a.l) { vars.forEach(function (v) { root.style.removeProperty(v); }); }
+  else {
+    var c = dark ? a.d : a.l;
+    root.style.setProperty('--primary', c[0]); root.style.setProperty('--focus', c[0]); root.style.setProperty('--data-1', c[0]); root.style.setProperty('--ws-hl-0', c[0]);
+    root.style.setProperty('--primary-container', c[1]); root.style.setProperty('--on-primary-container', c[2]);
+  }
+  try { if (key === 'default') localStorage.removeItem('rs_accent'); else localStorage.setItem('rs_accent', key); } catch (e) {}
+}
+
 function applyTheme(themeName) {
   var mode = (themeName === 'dark' || themeName === 'light') ? themeName : 'system';
   appState.theme = mode;
@@ -18,6 +42,7 @@ function applyTheme(themeName) {
     root.removeAttribute('data-theme');
   }
   try { localStorage.setItem('rs_theme', mode); } catch (e) {}
+  if (typeof applyAccent === 'function') applyAccent(appState.accent);
   var names = { system: 'Gerät', light: 'Hell', dark: 'Dunkel' };
   var btn = document.getElementById('btn-theme-toggle');
   var sun = document.getElementById('icon-theme-sun');

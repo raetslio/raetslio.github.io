@@ -67,7 +67,7 @@ function buildNewSheet(sheetType, ghost) {
       else o.push(mazeSvg(sx, gy, bs, d, sol));
     }
   }
-  if (base) o.push('<text x="' + (W / 2) + '" y="' + (Hh - m + 2).toFixed(2) + '" font-family="Outfit, sans-serif" font-size="2.7" fill="' + PP.muted + '" text-anchor="middle">' + (sheetType === 'sheet2' ? 'Lösungsblatt' : 'Arbeitsblatt') + ' · raetslio.github.io</text>');
+  if (base) o.push('<text x="' + (W / 2) + '" y="' + (Hh - m + 2).toFixed(2) + '" font-family="Outfit, sans-serif" font-size="2.7" fill="' + PP.muted + '" text-anchor="middle">' + (sheetType === 'sheet2' ? 'Lösungsblatt' : 'Arbeitsblatt') + (appState.print.showLink === false ? '' : ' · raetslio.github.io') + '</text>');
   o.push('</svg>'); return o.join('');
 }
 var origBuildA4 = window.buildA4SvgString;

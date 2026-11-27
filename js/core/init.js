@@ -6,11 +6,13 @@
 async function initApp() {
   var cachedTheme = null;
   try { cachedTheme = localStorage.getItem('rs_theme'); } catch (e) {}
+  try { var ca = localStorage.getItem('rs_accent'); if (ca) appState.accent = ca; } catch (e) {}
   applyTheme(cachedTheme || 'system');
   var saved = await loadStateFromHost();
 
   if (saved && typeof saved === 'object') {
-    if (saved.theme) applyTheme(saved.theme);
+    if (saved.accent) appState.accent = saved.accent;
+    if (saved.theme) applyTheme(saved.theme); else applyAccent(appState.accent);
     if (saved.print) {
       Object.assign(appState.print, saved.print);
       var pn = document.getElementById('print-name');
@@ -18,7 +20,7 @@ async function initApp() {
       var pm = document.getElementById('print-margin');
       var pi = document.getElementById('print-instr-size');
       if (pn) pn.value = appState.print.name || '';
-      if (pd) pd.value = appState.print.date || '18.11.2026';
+      if (pd) pd.value = appState.print.date || '';
       if (pm) pm.value = String(appState.print.marginMm || 15);
       if (pi) pi.value = String(appState.print.instrPt || 9.5);
       var mv = document.getElementById('print-margin-val');
@@ -100,6 +102,7 @@ async function initApp() {
     switchMode('sudoku');
   }
 
+  rsApplyAbDefaults(true);
   startSudokuTimer();
   window.__rsInit = true;
 
@@ -109,3 +112,31 @@ async function initApp() {
 }
 
 initApp();
+
+/* ----------------------------------------------------------------------
+   Arbeitsblatt: Name und Datum vorausfüllen (Einstellung im Konto)
+   nameMode: 'line' (Schreiblinie, Standard) oder 'account' (Name des Kontos)
+   dateMode: 'today' (heutiges Datum, Standard) oder 'line' (Schreiblinie)
+   Von Hand geänderte Felder bleiben in dieser Sitzung unberührt.
+   ---------------------------------------------------------------------- */
+var rsAbTouched = { name: false, date: false };
+function rsTodayStr() {
+  var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; };
+  return p(d.getDate()) + '.' + p(d.getMonth() + 1) + '.' + d.getFullYear();
+}
+function rsAccountName() {
+  try { return (window.RSAUTH && typeof RSAUTH.printName === 'function' && RSAUTH.printName()) || ''; } catch (e) { return ''; }
+}
+function rsApplyAbDefaults(force) {
+  if (typeof appState === 'undefined' || !appState.print) return;
+  var p = appState.print;
+  if (force) { rsAbTouched.name = false; rsAbTouched.date = false; }
+  if (p.nameMode !== 'account') p.nameMode = 'line';
+  if (p.dateMode !== 'line') p.dateMode = 'today';
+  if (!rsAbTouched.name) p.name = p.nameMode === 'account' ? rsAccountName() : '';
+  if (!rsAbTouched.date) p.date = p.dateMode === 'today' ? rsTodayStr() : '';
+  var ni = document.getElementById('print-name'), di = document.getElementById('print-date');
+  if (ni && ni.value !== p.name) ni.value = p.name;
+  if (di && di.value !== p.date) di.value = p.date;
+  if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} }
+}
