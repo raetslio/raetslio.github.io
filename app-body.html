@@ -57,6 +57,13 @@
             <svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
           </button>
         </section>
+        <section id="st-resume" class="hidden" aria-label="Weiterspielen">
+          <button type="button" class="st-resume-btn" onclick="RSSTART.resume()">
+            <span class="st-resume-ico" aria-hidden="true"><svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor"><path d="M7 4l12 8-12 8z"/></svg></span>
+            <span class="st-txt"><span class="st-resume-k">Weiterspielen</span><span id="st-resume-name" class="st-resume-n"></span><span class="st-resume-bar" aria-hidden="true"><span id="st-resume-fill"></span></span></span>
+            <svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </section>
         <section class="panel panel-stack" aria-labelledby="st-h-puz">
           <h2 id="st-h-puz" class="section-title">Rätsel<strong>arten</strong></h2>
           <div class="st-grid">
@@ -1008,6 +1015,12 @@
       <div id="acct-body" style="display:flex;flex-direction:column;gap:var(--space-sm)"></div>
     </div>
   </div>
+  <nav id="rs-bottomnav" class="rs-bottomnav" aria-label="Schnellzugriff">
+    <button type="button" data-tab="start" onclick="switchMode('start')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg><span>Start</span></button>
+    <button type="button" data-tab="spiele" onclick="switchMode('spiele')"><svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 4l12 8-12 8z"/></svg><span>Weiter</span></button>
+    <button type="button" data-tab="heft" onclick="switchMode('heft')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 8h8M8 12h8"/></svg><span>Heft</span></button>
+    <button type="button" data-tab="menu" onclick="document.getElementById('rs-menu-btn').click()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menü</span></button>
+  </nav>
   <script src="js/sidebar.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/rs-home.js"></script>

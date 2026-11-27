@@ -118,7 +118,20 @@
   /* Frische Anmeldung: Sync-Merkzettel dieses Geräts verwerfen, damit bei Konflikten der Stand des Kontos gewinnt */
   var freshSync = false;
   /* Nach der Rückkehr von Google/GitHub: War es ein bereits bestehendes Konto (Identität deutlich jünger als das Konto), wurde es verknüpft */
+  /* Mitteilung überlebt ein Neuladen (Sync/Kontowechsel): erst nach dem Anzeigen (10 s) verwerfen, spätestens nach 2 Min. */
+  function noteSet(text, kind) { try { sessionStorage.setItem('rs_note', JSON.stringify({ t: text, k: kind, at: Date.now() })); } catch (e) {} }
+  function noteShow() {
+    var n = null; try { n = JSON.parse(sessionStorage.getItem('rs_note') || 'null'); } catch (e) {}
+    if (!n || Date.now() - n.at > 120000) { try { sessionStorage.removeItem('rs_note'); } catch (e) {} return false; }
+    view = 'login'; RSAUTH.open();
+    setTimeout(function () {
+      msg(n.t, n.k);
+      setTimeout(function () { try { sessionStorage.removeItem('rs_note'); } catch (e) {} }, 10000);
+    }, 60);
+    return true;
+  }
   function oauthNote() {
+    if (noteShow()) return;
     /* Manuell verknüpft (Konto → „verknüpfen“): Nutzer erklären, was jetzt gilt */
     var lp = null; try { lp = sessionStorage.getItem('rs_link_prov'); } catch (e) {}
     if (lp && user) {
@@ -127,10 +140,8 @@
       if (li) {
         var le = li.identity_data && li.identity_data.email, mail = user.email || '';
         var other = le && mail && le.toLowerCase() !== mail.toLowerCase();
-        view = 'login'; RSAUTH.open();
-        setTimeout(function () {
-          msg(provName(lp) + (other ? ' (' + le + ')' : '') + ' wurde mit deinem Konto' + (mail ? ' (' + mail + ')' : '') + ' verknüpft. Du kannst dich ab jetzt mit beidem anmelden – mit deiner bisherigen Methode oder mit ' + provName(lp) + '. Es bleibt dasselbe Konto, alle Daten, Hefte und der Verlauf bleiben erhalten.', 'success');
-        }, 60);
+        noteSet(provName(lp) + (other ? ' (' + le + ')' : '') + ' wurde mit deinem Konto' + (mail ? ' (' + mail + ')' : '') + ' verknüpft. Du kannst dich ab jetzt mit beidem anmelden – mit deiner bisherigen Methode oder mit ' + provName(lp) + '. Es bleibt dasselbe Konto, alle Daten, Hefte und der Verlauf bleiben erhalten.', 'success');
+        noteShow();
       }
       return;
     }
@@ -140,8 +151,8 @@
     var idn = (user.identities || []).filter(function (i) { return i.provider === prov; })[0];
     if (!idn || !idn.created_at || !user.created_at) return;
     if (new Date(idn.created_at) - new Date(user.created_at) > 120000) {
-      view = 'login'; RSAUTH.open();
-      setTimeout(function () { msg('Es gab bereits ein Konto mit dieser E-Mail-Adresse. Es wurde mit ' + provName(prov) + ' verknüpft – du bist in deinem bestehenden Konto angemeldet.', 'success'); }, 60);
+      noteSet('Es gab bereits ein Konto mit dieser E-Mail-Adresse. Es wurde mit ' + provName(prov) + ' verknüpft – du bist in deinem bestehenden Konto angemeldet.', 'success');
+      noteShow();
     }
   }
 

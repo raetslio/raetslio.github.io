@@ -31,8 +31,28 @@
     var h = read(HV), hn = h && Array.isArray(h.items) ? h.items.length : 0; badge('verlauf', hn, String(hn));
     var b = read(BKI), bn = b && Array.isArray(b.list) ? b.list.length : 0; badge('heft', bn, bn + (bn === 1 ? ' Heft' : ' Hefte'));
   }
-  function render() { profile(); counts(); }
-  window.RSSTART = { render: render };
+  var NAMES = { sudoku: 'Sudoku', ws: 'Suchsel', binoxxo: 'Binoxxo', maze: 'Labyrinth', hitori: 'Hitori', mauer: 'Zahlenmauer', magic: 'Magisches Quadrat' };
+  var last = null;
+  /* Zuletzt angefangenes, noch nicht gelöstes Rätsel groß oben anbieten */
+  function resumeCard() {
+    var g = read(GV), items = g && Array.isArray(g.items) ? g.items : [], box = $('st-resume'); if (!box) return;
+    last = items.filter(function (it) { return it && !it.done && it.started && NAMES[it.type]; })[0] || null;
+    box.classList.toggle('hidden', !last); if (!last) return;
+    $('st-resume-name').textContent = NAMES[last.type] + (last.pct ? ' · ' + last.pct + ' % gelöst' : '');
+    $('st-resume-fill').style.width = Math.max(4, Math.min(100, last.pct || 0)) + '%';
+  }
+  function resume() { if (last && typeof gvOpen === 'function') { try { gvOpen(last); } catch (e) { if (typeof switchMode === 'function') switchMode('spiele'); } } }
+  /* Untere Leiste (Handy): aktuelle Seite markieren */
+  function navSync() {
+    var sel = document.querySelector('#rs-drawer .nav-tab[aria-selected="true"]'), cur = sel ? sel.id.replace('tab-', '') : 'start';
+    document.querySelectorAll('#rs-bottomnav button[data-tab]').forEach(function (b) {
+      var on = b.getAttribute('data-tab') === cur; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    });
+  }
+  function render() { profile(); counts(); resumeCard(); navSync(); }
+  window.RSSTART = { render: render, resume: resume };
+  var dr = $('rs-drawer'); if (dr && window.MutationObserver) new MutationObserver(navSync).observe(dr, { attributes: true, attributeFilter: ['aria-selected'], subtree: true });
+  document.addEventListener('visibilitychange', function () { if (document.visibilityState === 'visible') render(); });
   var lab = $('account-label');
   if (lab && window.MutationObserver) {
     var mo = new MutationObserver(profile);
