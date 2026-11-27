@@ -297,7 +297,7 @@ body.rs-login > *:not(#acct-modal):not(script):not(style) { display: none !impor
 body.rs-login #acct-modal { background-color: var(--background); }
 
 /* Konto-Seite (/konto/): Menü + Kopfzeile bleiben, das Konto-Fenster steht als Seiteninhalt darunter */
-body.rs-konto > *:not(#rs-backdrop):not(#rs-drawer):not(.app-shell):not(#acct-modal):not(script):not(style) { display: none !important; }
+body.rs-konto > *:not(#rs-backdrop):not(#rs-drawer):not(.rs-bottomnav):not(.app-shell):not(#acct-modal):not(script):not(style) { display: none !important; }
 body.rs-konto .app-shell { padding-bottom: 0; }
 body.rs-konto .app-shell > *:not(.site-header) { display: none !important; }
 body.rs-konto .site-header .header-controls { display: none; }

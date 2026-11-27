@@ -84,5 +84,6 @@
   body.rs-menu-open .rs-bottomnav { display: none; }
   .st-tile { min-height: 64px; }
 }
-body.rs-login .rs-bottomnav, body.rs-konto .rs-bottomnav { display: none !important; }
+body.rs-login .rs-bottomnav { display: none !important; }
+@media (max-width: 640px) { body.rs-konto { padding-bottom: 0; } body.rs-konto .rs-bottomnav { position: static; flex: none; } body.rs-konto #acct-modal { padding-bottom: var(--space-sm); } }
 @media print { .rs-bottomnav { display: none !important; } }
