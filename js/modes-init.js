@@ -4,18 +4,19 @@
    ====================================================================== */
 'use strict';
 
-var NEW_MODES = { binoxxo: 'view-binoxxo', labyrinth: 'view-labyrinth', hitori: 'view-hitori', mauer: 'view-mauer', magic: 'view-magic', heft: 'view-heft', verlauf: 'view-verlauf', spiele: 'view-spiele' };
+var NEW_MODES = { start: 'view-start', binoxxo: 'view-binoxxo', labyrinth: 'view-labyrinth', hitori: 'view-hitori', mauer: 'view-mauer', magic: 'view-magic', heft: 'view-heft', verlauf: 'view-verlauf', spiele: 'view-spiele' };
 var origSwitch = window.switchMode;
 window.switchMode = function (m) {
   var isNew = !!NEW_MODES[m];
   Object.keys(NEW_MODES).forEach(function (k) { $(NEW_MODES[k]).classList.toggle('hidden', k !== m); $('tab-' + k).setAttribute('aria-selected', k === m ? 'true' : 'false'); });
-  var pb = $('btn-open-print'); if (pb) pb.classList.toggle('hidden', m === 'heft' || m === 'verlauf' || m === 'spiele');
+  var pb = $('btn-open-print'); if (pb) pb.classList.toggle('hidden', m === 'heft' || m === 'verlauf' || m === 'spiele' || m === 'start');
   if (!isNew) { origSwitch(m); return; }
   window.appState.mode = m;
   ['sudoku', 'wortsuche'].forEach(function (k) { $('view-' + k).classList.add('hidden'); $('tab-' + k).setAttribute('aria-selected', 'false'); });
   if (m === 'heft') refreshUI();
   if (m === 'verlauf') hvRender();
   if (m === 'spiele') gvRender();
+  if (m === 'start' && window.RSSTART) window.RSSTART.render();
 };
 BX.init(); BX.bind(); MZ.init(); HT.init(); NXMG.init(); MW.init(); BK.init(); hvInit(); gvInit();
 /* Spielstand beim Verlassen/Ausblenden der Seite sofort sichern (inkl. Sudoku-Zeit) */
@@ -70,9 +71,10 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
    Eigene Adresse für jede Unterseite (/sudoku/, /suchsel/, …)
    ====================================================================== */
 (function () {
-  var ROUTES = { sudoku: 'sudoku', wortsuche: 'suchsel', binoxxo: 'binoxxo', labyrinth: 'labyrinth', hitori: 'hitori', mauer: 'zahlenmauer', magic: 'magisches-quadrat', heft: 'heft', spiele: 'spiele', verlauf: 'verlauf' };
+  var ROUTES = { start: 'start', sudoku: 'sudoku', wortsuche: 'suchsel', binoxxo: 'binoxxo', labyrinth: 'labyrinth', hitori: 'hitori', mauer: 'zahlenmauer', magic: 'magisches-quadrat', heft: 'heft', spiele: 'spiele', verlauf: 'verlauf' };
   var SLUGS = {}; Object.keys(ROUTES).forEach(function (m) { SLUGS[ROUTES[m]] = m; });
   var META = {
+    start: ["Startseite", "Alle Rätselarten, Spielverlauf, Druckverlauf und Rätselhefte von Rätslio? auf einen Blick."],
     sudoku: ["Sudoku", "Sudoku online spielen oder drucken: in vielen Größen und vier Schwierigkeitsstufen, mit Notizen und Prüfen."],
     wortsuche: ["Suchsel", "Suchsel (Wortsuche) online lösen oder als Arbeitsblatt drucken – mit eigenen Wörtern, wählbarer Größe und Richtungen."],
     binoxxo: ["Binoxxo", "Binoxxo (Takuzu) online spielen und drucken: Fülle das Gitter mit X und O nach den Binoxxo-Regeln."],

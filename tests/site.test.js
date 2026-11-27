@@ -9,7 +9,7 @@ const { spawnSync } = require('node:child_process');
 const root = path.join(__dirname, '..');
 const read = (f) => fs.readFileSync(path.join(root, f), 'utf8');
 const exists = (f) => fs.existsSync(path.join(root, f));
-const ROUTES = ['sudoku', 'suchsel', 'binoxxo', 'labyrinth', 'hitori', 'zahlenmauer', 'magisches-quadrat', 'heft', 'spiele', 'verlauf'];
+const ROUTES = ['start', 'sudoku', 'suchsel', 'binoxxo', 'labyrinth', 'hitori', 'zahlenmauer', 'magisches-quadrat', 'heft', 'spiele', 'verlauf'];
 const PRIVATE = ['login', 'konto'];
 
 test('jede Seite hat Titel, Beschreibung, Canonical und og-Tags passend zur Adresse', () => {
@@ -76,8 +76,8 @@ test('alle Dateien des Offline-Caches (sw.js) sind vorhanden', () => {
 
 test('Sitemap listet alle oeffentlichen Seiten und keine privaten', () => {
   const sm = read('sitemap.xml');
-  for (const r of ROUTES.filter((x) => !['spiele', 'verlauf'].includes(x))) assert.ok(sm.includes(`/${r}/`), r);
-  for (const r of [...PRIVATE, 'spiele', 'verlauf']) assert.ok(!sm.includes(`/${r}/`), r);
+  for (const r of ROUTES.filter((x) => !['start', 'spiele', 'verlauf'].includes(x))) assert.ok(sm.includes(`/${r}/`), r);
+  for (const r of [...PRIVATE, 'start', 'spiele', 'verlauf']) assert.ok(!sm.includes(`/${r}/`), r);
 });
 
 test('js/account.js ist aus js/account-src/ aktuell gebaut', () => {

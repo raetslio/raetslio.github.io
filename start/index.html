@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <base href="/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <meta name="artifact-type" content="tool">
+  <meta name="design-style" content="haven">
+  <script>
+  /* Darstellung früh setzen (verhindert Aufblitzen): gespeicherte Wahl oder Geräteeinstellung */
+  (function () { try { var m = /^\/login\/?/.test(location.pathname) ? 'system' : (localStorage.getItem('rs_theme') || 'system'); var d = m === 'dark' || (m !== 'light' && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches); if (d) document.documentElement.setAttribute('data-theme', 'dark'); } catch (e) {} })();
+  </script>
+  <script>
+  /* Anmeldepflicht (Teil 1): Ohne gespeicherte Anmeldung sofort zur Anmeldeseite. Die Seite bleibt bis zur Prüfung unsichtbar.
+     Die eigentliche Prüfung der Sitzung macht js/account.js. Einladungs-/Passwort-Links (#...type=...) bleiben erhalten. */
+  (function () {
+    var onLogin = /^\/login\/?(index\.html)?$/.test(location.pathname);
+    window.__rsGate = !onLogin;
+    if (onLogin) return;
+    var has = false; try { has = !!localStorage.getItem('sb-dnhjzlnbuqmyqgjxxygx-auth-token'); } catch (e) {}
+    if (!has) {
+      var next = location.pathname + location.search;
+      location.replace('/login/?next=' + encodeURIComponent(next) + location.hash);
+      return;
+    }
+    var st = document.createElement('style'); st.id = 'rs-gate-css'; st.textContent = 'html{visibility:hidden}';
+    document.head.appendChild(st);
+    window.__rsReveal = function () { var s = document.getElementById('rs-gate-css'); if (s) s.remove(); };
+    setTimeout(window.__rsReveal, 8000); /* Notausgang: gespeicherte Anmeldung vorhanden, aber Dienst nicht erreichbar */
+  })();
+  </script>
+  <title>Startseite — Rätslio?</title>
+  <meta name="description" content="Alle Rätselarten, Spielverlauf, Druckverlauf und Rätselhefte von Rätslio? auf einen Blick.">
+  <link rel="canonical" href="https://raetslio.github.io/start/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="Rätslio?">
+  <meta property="og:title" content="Startseite — Rätslio?">
+  <meta property="og:url" content="https://raetslio.github.io/start/">
+  <meta property="og:description" content="Alle Rätselarten, Spielverlauf, Druckverlauf und Rätselhefte von Rätslio? auf einen Blick.">
+  <meta property="og:image" content="https://raetslio.github.io/icons/rl-512.png?v=3">
+  <meta property="og:image:width" content="512">
+  <meta property="og:image:height" content="512">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:image" content="https://raetslio.github.io/icons/rl-512.png?v=3">
+  <link rel="icon" type="image/png" sizes="32x32" href="icons/rl-32.png">
+  <link rel="icon" href="/icons/rl.ico?v=3" sizes="any">
+  <link rel="icon" type="image/png" sizes="32x32" href="/icons/rl-32.png?v=3">
+  <link rel="icon" type="image/png" sizes="192x192" href="/icons/rl-192.png?v=3">
+  <link rel="apple-touch-icon" sizes="180x180" href="icons/rl-180.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/icons/rl-180.png?v=3">
+  <link rel="apple-touch-icon" href="/icons/rl-180.png?v=3">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Rätslio?">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/tokens.css">
+  <link rel="stylesheet" href="css/base.css">
+  <link rel="stylesheet" href="css/components.css">
+  <link rel="stylesheet" href="css/board.css">
+  <link rel="stylesheet" href="css/modals.css">
+  <link rel="stylesheet" href="css/extensions.css">
+  <link rel="stylesheet" href="css/heft-polish.css">
+  <link rel="stylesheet" href="css/sidebar.css">
+  <link rel="stylesheet" href="css/start.css">
+  <script src="js/host-fallback.js"></script>
+</head>
+<body>
+  <!-- Gemeinsames Markup und alle Skripte liegen einmalig in /app-body.html (Quelle der Wahrheit fuer die Oberflaeche). -->
+  <script>
+  (function () {
+    try { var x = new XMLHttpRequest(); x.open('GET', '/app-body.html', false); x.send(); if (x.status < 200 || x.status >= 300) throw 0; document.write(x.responseText); }
+    catch (e) { document.write('<p style="padding:24px;font-family:sans-serif">Rätslio? konnte nicht geladen werden. <a href="">Seite neu laden</a></p>'); }
+  })();
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="js/account-utils.js"></script>
+  <script src="js/account.js"></script>
+</body>
+</html>

@@ -4,6 +4,7 @@
     <div class="rs-drawer-head"><span class="rs-drawer-title">Rätslio<svg aria-hidden="true" class="brand-mark" viewBox="0 0 512 512" aria-hidden="true" focusable="false"><rect width="512" height="512" rx="112" fill="#3c5a6e"/><g fill="none" stroke="#e2e9ee" stroke-opacity="0.28" stroke-width="6" stroke-linecap="round"><rect x="86" y="86" width="340" height="340" rx="26"/><path d="M199.3 86v340M312.7 86v340M86 199.3h340M86 312.7h340"/></g><path d="M190 204C190 150 226 120 262 120C300 120 330 146 330 184C330 226 288 240 270 264C262 276 262 290 262 308" fill="none" stroke="#ffffff" stroke-width="42" stroke-linecap="round" stroke-linejoin="round"/><circle cx="262" cy="376" r="30" fill="#d9946e"/></svg></span><button type="button" id="rs-menu-close" class="rs-icon-btn" aria-label="Menü schließen"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
     <div class="rs-drawer-scroll">
         <nav class="nav-tabs" aria-label="Rätselmodus wählen">
+          <button type="button" id="tab-start" class="nav-tab" aria-selected="false" onclick="switchMode('start')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11.5L12 4l9 7.5M5.5 10v10h13V10M10 20v-5.5h4V20"/></svg> Startseite</button>
           <div class="rs-drawer-label">Rätselarten</div>
           <button type="button" id="tab-sudoku" class="nav-tab" aria-selected="true" onclick="switchMode('sudoku')">
             <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg>
@@ -45,6 +46,39 @@
         </button>
       </div>
     </header>
+
+    <!-- START VIEW -->
+    <main id="view-start" class="page-grid rs-single hidden">
+      <div class="main-column">
+        <section class="st-profile" aria-label="Profil">
+          <button type="button" id="st-profile-btn" class="st-profile-btn" onclick="RSAUTH.open()">
+            <span id="st-avatar" class="st-avatar" aria-hidden="true"></span>
+            <span class="st-profile-txt"><span id="st-hello" class="st-hello">Willkommen</span><span id="st-name" class="st-pname">Anmelden</span><span id="st-sub" class="st-sub">Rätselstände und Hefte auf allen Geräten</span></span>
+            <svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+          </button>
+        </section>
+        <section class="panel panel-stack" aria-labelledby="st-h-puz">
+          <h2 id="st-h-puz" class="section-title">Rätsel<strong>arten</strong></h2>
+          <div class="st-grid">
+            <button type="button" class="st-tile" data-go="sudoku" data-key="sudoku" onclick="switchMode('sudoku')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg></span><span class="st-txt"><span class="st-name">Sudoku</span><span class="st-desc">Zahlen in Zeilen, Spalten und Blöcken</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="st-tile" data-go="wortsuche" data-key="wortsuche" onclick="switchMode('wortsuche')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.35-4.35M8 11h6M11 8v6"/></svg></span><span class="st-txt"><span class="st-name">Suchsel</span><span class="st-desc">Versteckte Wörter im Buchstabengitter</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="st-tile" data-go="binoxxo" data-key="binoxxo" onclick="switchMode('binoxxo')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M5 5l14 14M19 5L5 19"/></svg></span><span class="st-txt"><span class="st-name">Binoxxo</span><span class="st-desc">Gitter mit X und O füllen</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="st-tile" data-go="hitori" data-key="hitori" onclick="switchMode('hitori')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 12h16M12 4v16"/><rect x="12" y="12" width="8" height="8" fill="currentColor" stroke="none"/></svg></span><span class="st-txt"><span class="st-name">Hitori</span><span class="st-desc">Doppelte Zahlen schwärzen</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="st-tile" data-go="magic" data-key="magic" onclick="switchMode('magic')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.7h16M9.3 4v16M14.7 4v16"/></svg></span><span class="st-txt"><span class="st-name">Magisches Quadrat</span><span class="st-desc">Überall dieselbe Summe</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="st-tile" data-go="mauer" data-key="mauer" onclick="switchMode('mauer')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 20h18M5 20v-5h6v5M13 20v-5h6v5M8 15v-5h8v5M11 10V5h2v5"/></svg></span><span class="st-txt"><span class="st-name">Zahlenmauer</span><span class="st-desc">Steine mit Rechnen füllen</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="st-tile" data-go="labyrinth" data-key="labyrinth" onclick="switchMode('labyrinth')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M3 3h18v18H3zM3 9h12v6M9 15v6M15 3v6"/></svg></span><span class="st-txt"><span class="st-name">Labyrinth</span><span class="st-desc">Den Weg zum Ziel finden</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
+        </section>
+        <section class="panel panel-stack" aria-labelledby="st-h-sam">
+          <h2 id="st-h-sam" class="section-title">Verlauf &amp; <strong>Heft</strong></h2>
+          <div class="st-grid">
+            <button type="button" class="st-tile" data-go="spiele" data-key="spiele" onclick="switchMode('spiele')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M7 4l12 8-12 8z"/></svg></span><span class="st-txt"><span class="st-name">Spielverlauf</span><span class="st-desc">Angefangene Rätsel weiterspielen</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="st-tile" data-go="verlauf" data-key="verlauf" onclick="switchMode('verlauf')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><span class="st-txt"><span class="st-name">Druckverlauf</span><span class="st-desc">Gedruckte Blätter wieder öffnen</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <button type="button" class="st-tile" data-go="heft" data-key="heft" onclick="switchMode('heft')"><span class="st-ico"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 4h12a4 4 0 0 1 4 4v12H8a4 4 0 0 1-4-4zM8 8h8M8 12h8"/></svg></span><span class="st-txt"><span class="st-name">Rätselheft</span><span class="st-desc">Eigene Hefte zusammenstellen</span></span><span class="st-badge hidden" aria-hidden="true"></span><svg class="st-arrow icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+          </div>
+        </section>
+      </div>
+    </main>
 
     <!-- SUDOKU VIEW -->
     <main id="view-sudoku" class="page-grid rs-single">
@@ -977,3 +1011,4 @@
   <script src="js/sidebar.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/rs-home.js"></script>
+  <script src="js/start.js"></script>
