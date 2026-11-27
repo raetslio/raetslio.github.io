@@ -402,7 +402,7 @@
     if (user) {
       t.textContent = 'Mein Konto';
       var pwBlock = hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '';
-      var sessBlock = '<div class="panel-subblock"><span class="label">Geräte</span><p class="muted-note">Meldet dich überall ab, auch auf diesem Gerät, zum Beispiel wenn ein Gerät verloren ging.</p><button type="button" class="btn" onclick="RSAUTH.logoutAll()">Auf allen Geräten abmelden</button></div>';
+      var sessBlock = '<div class="panel-subblock"><span class="label">Geräte</span><p class="muted-note">Meldet dich überall ab, auch auf diesem Gerät, zum Beispiel wenn ein Gerät verloren ging.</p><button type="button" class="btn btn-logout" onclick="RSAUTH.logoutAll()">' + provIcon('logout') + '<span>Auf allen Geräten abmelden</span></button></div>';
       var delBlock = '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       var mailBlock = '', mailNotice = '';
       try {
@@ -548,7 +548,7 @@
     var cur = (window.appState && appState.accent) || 'default';
     var cols = { 'default': '#3c5a6e', green: '#3f6e49', orange: '#a8573a', violet: '#6a4f8c', rose: '#a03b52', teal: '#1f7a7a' };
     return '<div class="panel-subblock"><span class="label">Akzentfarbe</span><div id="acct-accent" style="display:flex;flex-wrap:wrap;gap:10px">' + Object.keys(cols).map(function (k) {
-      var nm = (window.ACCENTS && ACCENTS[k] && ACCENTS[k].name) || k;
+      var nm = (window.RS_ACCENTS && RS_ACCENTS[k] && RS_ACCENTS[k].name) || k;
       return '<button type="button" class="acct-swatch" title="' + nm + '" aria-label="' + nm + '" aria-pressed="' + (cur === k) + '" style="background:' + cols[k] + '" onclick="RSAUTH.setAccent(\'' + k + '\')"></button>';
     }).join('') + '</div></div>';
   }

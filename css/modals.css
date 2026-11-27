@@ -318,3 +318,11 @@ body.rs-konto .rs-drawer .rs-account { background: var(--primary-container); col
 .acct-swatch { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--outline); cursor: pointer; padding: 0; }
 .acct-swatch[aria-pressed="true"] { box-shadow: 0 0 0 3px var(--surface-container-low, #fff), 0 0 0 5px var(--on-surface); }
 .acct-swatch:focus-visible { outline: 2px solid var(--focus); outline-offset: 3px; }
+
+/* Konto: Abschnitte innerhalb eines Bereichs als eigene Karten */
+.acct-sec > .panel-subblock, .acct-sec > #acct-otpbox > .panel-subblock {
+  border: var(--hairline); border-radius: var(--radius-md, 12px); padding: var(--space-sm, 12px);
+  margin-top: var(--space-sm, 12px); background: var(--surface-container-low, transparent); gap: var(--space-xs, 8px);
+}
+.acct-sec > .panel-subblock > .label, .acct-sec > #acct-otpbox > .panel-subblock > .label { font-weight: 700; font-size: 1rem; color: var(--on-surface); }
+.acct-sec > #acct-otpbox:empty { display: none; }

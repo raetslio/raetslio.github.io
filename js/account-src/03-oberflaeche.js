@@ -129,7 +129,7 @@
     if (user) {
       t.textContent = 'Mein Konto';
       var pwBlock = hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '';
-      var sessBlock = '<div class="panel-subblock"><span class="label">Geräte</span><p class="muted-note">Meldet dich überall ab, auch auf diesem Gerät, zum Beispiel wenn ein Gerät verloren ging.</p><button type="button" class="btn" onclick="RSAUTH.logoutAll()">Auf allen Geräten abmelden</button></div>';
+      var sessBlock = '<div class="panel-subblock"><span class="label">Geräte</span><p class="muted-note">Meldet dich überall ab, auch auf diesem Gerät, zum Beispiel wenn ein Gerät verloren ging.</p><button type="button" class="btn btn-logout" onclick="RSAUTH.logoutAll()">' + provIcon('logout') + '<span>Auf allen Geräten abmelden</span></button></div>';
       var delBlock = '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
       var mailBlock = '', mailNotice = '';
       try {

@@ -8,7 +8,7 @@ function systemPrefersDark() {
 }
 
 /* Akzentfarben: Hauptfarbe der Oberfläche (hell / dunkel getrennt, damit der Kontrast stimmt) */
-var ACCENTS = {
+var RS_ACCENTS = {
   'default': { name: 'Blaugrau' },
   green:  { name: 'Grün',    l: ['#3f6e49', '#e4efe6', '#26442d'], d: ['#88be91', '#243628', '#dff0e2'] },
   orange: { name: 'Terrakotta', l: ['#a8573a', '#f5e5de', '#5e2a18'], d: ['#e0a084', '#3e2a22', '#fbe6dc'] },
@@ -17,11 +17,11 @@ var ACCENTS = {
   teal:   { name: 'Türkis',  l: ['#1f7a7a', '#ddefef', '#0f4747'], d: ['#7cc7c7', '#1f3a3a', '#dff4f4'] }
 };
 function applyAccent(name) {
-  var key = ACCENTS[name] ? name : 'default';
+  var key = RS_ACCENTS[name] ? name : 'default';
   if (typeof appState !== 'undefined') appState.accent = key;
   var root = document.documentElement, dark = root.getAttribute('data-theme') === 'dark';
   var vars = ['--primary', '--primary-container', '--on-primary-container', '--focus', '--data-1', '--ws-hl-0'];
-  var a = ACCENTS[key];
+  var a = RS_ACCENTS[key];
   if (!a.l) { vars.forEach(function (v) { root.style.removeProperty(v); }); }
   else {
     var c = dark ? a.d : a.l;
