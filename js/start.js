@@ -41,7 +41,12 @@
     $('st-resume-name').textContent = NAMES[last.type] + (last.pct ? ' · ' + last.pct + ' % gelöst' : '');
     $('st-resume-fill').style.width = Math.max(4, Math.min(100, last.pct || 0)) + '%';
   }
-  function resume() { if (last && typeof gvOpen === 'function') { try { gvOpen(last); } catch (e) { if (typeof switchMode === 'function') switchMode('spiele'); } } }
+  function resume() { resumeCard(); if (last) openLast(); else if (typeof switchMode === 'function') switchMode('spiele'); }
+  function openLast() {
+    if (typeof gvOpen === 'function') { try { gvOpen(last); return; } catch (e) {} }
+    try { localStorage.setItem('rs_resume', last.id); } catch (e) {} /* andere Seite (z. B. Konto): rs-home.js öffnet es nach dem Wechsel */
+    if (typeof switchMode === 'function') switchMode('start');
+  }
   /* Untere Leiste (Handy): aktuelle Seite markieren */
   function navSync() {
     var sel = document.querySelector('#rs-drawer .nav-tab[aria-selected="true"]'), cur = sel ? sel.id.replace('tab-', '') : 'start';
