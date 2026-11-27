@@ -86,8 +86,9 @@
       if (r.error) { try { sessionStorage.removeItem('rs_fresh_login'); } catch (e) {} msg(err(r.error), 'error'); }
     },
     link: async function (prov) {
-      msg('Weiterleitung zu ' + provName(prov) + ' …', 'info');
+      msg('Weiterleitung zu ' + provName(prov) + ' …', 'info'); try { sessionStorage.setItem('rs_link_prov', prov); } catch (e) {}
       var r = await sb.auth.linkIdentity({ provider: prov, options: { redirectTo: location.origin + location.pathname } });
+      if (r.error) { try { sessionStorage.removeItem('rs_link_prov'); } catch (e) {} }
       if (r.error) msg(/manual linking/i.test(r.error.message || '') ? 'Das Verknüpfen ist in Supabase noch nicht aktiviert (Authentication → Sign In / Providers → „Allow manual linking").' : err(r.error), 'error');
     },
     unlink: async function (prov) {

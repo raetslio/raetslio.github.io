@@ -119,6 +119,21 @@
   var freshSync = false;
   /* Nach der Rückkehr von Google/GitHub: War es ein bereits bestehendes Konto (Identität deutlich jünger als das Konto), wurde es verknüpft */
   function oauthNote() {
+    /* Manuell verknüpft (Konto → „verknüpfen“): Nutzer erklären, was jetzt gilt */
+    var lp = null; try { lp = sessionStorage.getItem('rs_link_prov'); } catch (e) {}
+    if (lp && user) {
+      try { sessionStorage.removeItem('rs_link_prov'); } catch (e) {}
+      var li = (user.identities || []).filter(function (i) { return i.provider === lp; })[0];
+      if (li) {
+        var le = li.identity_data && li.identity_data.email, mail = user.email || '';
+        var other = le && mail && le.toLowerCase() !== mail.toLowerCase();
+        view = 'login'; RSAUTH.open();
+        setTimeout(function () {
+          msg(provName(lp) + (other ? ' (' + le + ')' : '') + ' wurde mit deinem Konto' + (mail ? ' (' + mail + ')' : '') + ' verknüpft. Du kannst dich ab jetzt mit beidem anmelden – mit deiner bisherigen Methode oder mit ' + provName(lp) + '. Es bleibt dasselbe Konto, alle Daten, Hefte und der Verlauf bleiben erhalten.', 'success');
+        }, 60);
+      }
+      return;
+    }
     var prov = null; try { prov = sessionStorage.getItem('rs_oauth_prov'); } catch (e) {}
     if (!prov || !user) return;
     try { sessionStorage.removeItem('rs_oauth_prov'); } catch (e) {}
@@ -686,8 +701,9 @@
       if (r.error) { try { sessionStorage.removeItem('rs_fresh_login'); } catch (e) {} msg(err(r.error), 'error'); }
     },
     link: async function (prov) {
-      msg('Weiterleitung zu ' + provName(prov) + ' …', 'info');
+      msg('Weiterleitung zu ' + provName(prov) + ' …', 'info'); try { sessionStorage.setItem('rs_link_prov', prov); } catch (e) {}
       var r = await sb.auth.linkIdentity({ provider: prov, options: { redirectTo: location.origin + location.pathname } });
+      if (r.error) { try { sessionStorage.removeItem('rs_link_prov'); } catch (e) {} }
       if (r.error) msg(/manual linking/i.test(r.error.message || '') ? 'Das Verknüpfen ist in Supabase noch nicht aktiviert (Authentication → Sign In / Providers → „Allow manual linking").' : err(r.error), 'error');
     },
     unlink: async function (prov) {
