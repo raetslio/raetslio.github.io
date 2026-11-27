@@ -152,6 +152,29 @@ function wsMakeUnique(grid, n, placements, vectors, weights) {
   return false;
 }
 
+/* Liefert alle platzierten Wörter, die noch an einer zweiten Stelle im Gitter stehen. */
+function wsDuplicateWords(grid, n, placements, vectors) {
+  var out = [];
+  function key(cells) { return cells.sort(function (a, b) { return a - b; }).join(','); }
+  placements.forEach(function (pl) {
+    var w = pl.word, own = [], q;
+    for (q = 0; q < w.length; q++) own.push((pl.sr + pl.dr * q) * n + pl.sc + pl.dc * q);
+    var ownKey = key(own), dup = false;
+    for (var vi = 0; vi < vectors.length && !dup; vi++) {
+      var dr = vectors[vi][0], dc = vectors[vi][1];
+      for (var sr = 0; sr < n && !dup; sr++) for (var sc = 0; sc < n && !dup; sc++) {
+        var er = sr + dr * (w.length - 1), ec = sc + dc * (w.length - 1);
+        if (er < 0 || er >= n || ec < 0 || ec >= n) continue;
+        var ok = true, cells = [];
+        for (var t = 0; t < w.length; t++) { var rr = sr + dr * t, cc = sc + dc * t; if (grid[rr][cc] !== w[t]) { ok = false; break; } cells.push(rr * n + cc); }
+        if (ok && key(cells) !== ownKey) dup = true;
+      }
+    }
+    if (dup) out.push(pl);
+  });
+  return out;
+}
+
 function generateWordSearch() {
   var ws = appState.ws;
   var n = ws.size;
@@ -246,6 +269,19 @@ function generateWordSearch() {
   uniqueOk = wsMakeUnique(grid, n, placements, vectors, weights);
   }
 
+  /* Garantie: Jedes Wort der Liste steht genau einmal im Gitter. Lässt sich ein Doppelfund nicht durch andere
+     Füllbuchstaben beseitigen (Wort steckt in einem anderen, zu viele kurze Wörter), fliegt das kürzeste betroffene
+     Wort aus dem Rätsel und wird als nicht platziert gemeldet. */
+  for (var guard = 0; guard < 300 && !uniqueOk; guard++) {
+    var dups = wsDuplicateWords(grid, n, placements, vectors);
+    if (!dups.length) { uniqueOk = true; break; }
+    dups.sort(function (a, b) { return a.word.length - b.word.length; });
+    var gone = dups[0];
+    placements = placements.filter(function (pl) { return pl !== gone; });
+    unplaced.push(gone.word);
+    uniqueOk = wsMakeUnique(grid, n, placements, vectors, weights) && !wsDuplicateWords(grid, n, placements, vectors).length;
+  }
+
   ws.grid = grid;
   ws.placements = placements;
   ws.unplaced = unplaced;
@@ -253,14 +289,35 @@ function generateWordSearch() {
   ws.revealed = false;
   ws.startCell = null;
 
+  ws.ambiguous = !uniqueOk;
+  ws.contained = wsContainedWords(placements.map(function (pl) { return pl.word; }), !!ws.dirs.r);
   if (unplaced.length > 0) {
-    showWsFeedback(`Hinweis: ${unplaced.length} Wort/Wörter passten nicht ins ${n}×${n}-Gitter (${unplaced.slice(0, 4).join(', ')}${unplaced.length > 4 ? '…' : ''}).`, 'warning');
+    showWsFeedback(`Hinweis: ${unplaced.length} Wort/Wörter konnten nicht eindeutig ins ${n}×${n}-Gitter gesetzt werden (${unplaced.slice(0, 4).join(', ')}${unplaced.length > 4 ? '…' : ''}).`, 'warning');
+  } else if (ws.contained.length > 0) {
+    showWsFeedback(`Hinweis: ${ws.contained.slice(0, 3).join(', ')}${ws.contained.length > 3 ? '…' : ''} steckt in einem anderen Wort der Liste und kommt deshalb mehrfach im Gitter vor.`, 'warning');
+  } else if (ws.ambiguous) {
+    showWsFeedback('Hinweis: Einzelne Wörter kommen mehrfach im Gitter vor. Weniger kurze Wörter oder ein größeres Gitter helfen.', 'warning');
   } else {
     hideWsFeedback();
   }
 
   renderWsAll();
   schedulePersist();
+}
+
+/* Wörter, die in einem anderen Wort der Liste stecken (z. B. ROSE in ROSEN, bei Rückwärts-Richtungen auch gespiegelt).
+   Sie kommen im Gitter zwangsläufig mehrfach vor und können nicht eindeutig sein. */
+function wsContainedWords(words, allowReverse) {
+  var out = [];
+  for (var i = 0; i < words.length; i++) {
+    var w = words[i], rv = w.split('').reverse().join(''), hit = false;
+    for (var j = 0; j < words.length && !hit; j++) {
+      if (i === j || words[j].length < w.length) continue;
+      if ((words[j].length > w.length && words[j].indexOf(w) >= 0) || (allowReverse && words[j].indexOf(rv) >= 0)) hit = true;
+    }
+    if (hit) out.push(w);
+  }
+  return out;
 }
 
 function renderWsAll() {

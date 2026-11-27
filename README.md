@@ -84,3 +84,16 @@ Alle Rätselseiten sind nur mit Konto nutzbar. Ohne Anmeldung leitet ein kleines
 - Rein rechnende Hilfsfunktionen (Fehlertexte, Icons, Daten-Zusammenfassung) stehen in `js/account-utils.js`.
 - Automatische Tests: `node --test "tests/*.test.js"` im Hauptordner (Node 18 oder neuer, keine Abhängigkeiten). Sie prüfen die Hilfsfunktionen, die Meta-Daten aller Seiten, die Skript-Reihenfolge, den Offline-Cache, die Sitemap und ob `js/account.js` aktuell gebaut ist.
 - `tests.yml` (siehe Hinweis in der Antwort) führt die Tests bei jedem Push automatisch auf GitHub aus.
+
+## Eindeutigkeit der Rätsel
+
+- Jeder Generator erzeugt nur Rätsel mit **genau einer Lösung** (Sudoku, Binoxxo, Hitori, Magisches Quadrat, Zahlenmauer; das Labyrinth ist ein Baum ohne Schleifen, beim Suchsel wird jedes Wort nur einmal im Gitter zugelassen und doppelte Fundstellen zählen trotzdem).
+- Zusätzlich prüft die Seite eine fertig ausgefüllte Lösung **nach den Regeln** und nicht nur gegen die gespeicherte Lösung (Sudoku: `sudokuRulesOk`, Binoxxo: `bxValidFull`; Hitori, Magisches Quadrat und Zahlenmauer prüfen ohnehin nach Regeln). Eine regelkonforme Lösung wird deshalb nie als falsch bezeichnet.
+- `tests/puzzles.test.js` erzeugt Rätsel mit dem echten Generator und zählt die Lösungen mit eigenen, unabhängigen Lösern nach.
+
+### Gedruckte Arbeitsblätter und Hefte
+
+Der Druck verwendet dieselben Generatoren wie der Bildschirm, ein gedrucktes Rätsel hat also immer genau eine Lösung (Sudoku bis 55×55, siehe `tests/puzzles-druck.test.js`).
+
+- **Suchsel:** Jedes aufgelistete Wort steht genau einmal im Gitter. Lässt sich ein Doppelfund nicht durch andere Füllbuchstaben beseitigen (Wort steckt in einem anderen, z. B. ROSE in ROSEN, oder zu viele kurze Wörter), wird das kürzeste betroffene Wort aus dem Rätsel genommen und als „nicht eindeutig platzierbar“ gemeldet (Hinweis am Bildschirm und im Heft).
+- **Zahlenmauer:** Eindeutig innerhalb der positiven ganzen Zahlen. Das steht auf dem Bildschirm und auf dem Arbeitsblatt.

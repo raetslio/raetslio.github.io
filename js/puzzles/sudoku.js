@@ -586,16 +586,40 @@ function enterSudokuValue(val) {
   }
 }
 
-function isSudokuCompleteAndValid() {
-  var s = appState.sudoku;
-  var n = s.size;
-  for (var r = 0; r < n; r++) {
-    for (var c = 0; c < n; c++) {
-      var v = s.givens[r][c] || s.entries[r][c];
-      if (v !== s.solution[r][c]) return false;
+/* Regelprüfung: vollständiges Gitter, jede Zeile, Spalte (und jeder Block) enthält 1..n genau einmal.
+   Damit gilt jede regelkonforme Lösung als richtig, nicht nur die gespeicherte. */
+function sudokuRulesOk(grid, n, subR, subC) {
+  var hasBoxes = subR > 1 && subC > 1, i, j, units = [];
+  for (i = 0; i < n; i++) {
+    var row = [], col = [];
+    for (j = 0; j < n; j++) { row.push(grid[i][j]); col.push(grid[j][i]); }
+    units.push(row, col);
+  }
+  if (hasBoxes) {
+    for (var br = 0; br < n; br += subR) for (var bc = 0; bc < n; bc += subC) {
+      var box = [];
+      for (i = 0; i < subR; i++) for (j = 0; j < subC; j++) box.push(grid[br + i][bc + j]);
+      units.push(box);
+    }
+  }
+  for (i = 0; i < units.length; i++) {
+    var seen = {};
+    for (j = 0; j < units[i].length; j++) {
+      var v = units[i][j];
+      if (!(v >= 1 && v <= n) || seen[v]) return false;
+      seen[v] = 1;
     }
   }
   return true;
+}
+function sudokuFullGrid(s) {
+  var n = s.size, g = [];
+  for (var r = 0; r < n; r++) { g.push([]); for (var c = 0; c < n; c++) g[r].push((s.givens[r] && s.givens[r][c]) || (s.entries[r] && s.entries[r][c]) || 0); }
+  return g;
+}
+function isSudokuCompleteAndValid() {
+  var s = appState.sudoku;
+  return sudokuRulesOk(sudokuFullGrid(s), s.size, s.subR || 1, s.subC || 1);
 }
 
 function updateSudokuMeta() {
@@ -653,6 +677,11 @@ function checkSudoku() {
         }
       }
     }
+  }
+  /* Sicherheitsnetz: Ist das Gitter vollständig und regelkonform, ist es gelöst, auch wenn es von der gespeicherten Lösung abweicht */
+  if (remaining === 0 && wrongCount > 0 && isSudokuCompleteAndValid()) {
+    for (var fr = 0; fr < n; fr++) for (var fc = 0; fc < n; fc++) if (status[fr][fc] === 'wrong') { status[fr][fc] = 'correct'; correctCount++; }
+    wrongCount = 0;
   }
   s.checkedStatus = status;
   renderSudokuGrid();

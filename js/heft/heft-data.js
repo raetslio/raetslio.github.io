@@ -81,7 +81,7 @@ function wsGenerate(size) {
     ws.size = size; ws.wordsRaw = $('bk-ws-words').value; ws.umlautDirect = $('bk-ws-uml').checked;
     ws.dirs = { h: $('bk-ws-h').checked, v: $('bk-ws-v').checked, d: $('bk-ws-d').checked, r: $('bk-ws-r').checked };
     if (!ws.dirs.h && !ws.dirs.v && !ws.dirs.d) ws.dirs.h = true;
-    window.generateWordSearch(); out = wsSnapshot(); if (ws.unplaced && ws.unplaced.length) warn = ws.unplaced.length + ' Wort/Wörter passten nicht ins Gitter.';
+    window.generateWordSearch(); out = wsSnapshot(); if (ws.unplaced && ws.unplaced.length) warn = ws.unplaced.length + ' Wort/Wörter konnten nicht eindeutig ins Gitter gesetzt werden.'; else if (ws.contained && ws.contained.length) warn = 'Mehrfach im Gitter, weil in anderem Wort enthalten: ' + ws.contained.slice(0, 3).join(', ') + '.'; else if (ws.ambiguous) warn = 'Einzelne Wörter kommen mehrfach im Gitter vor (zu viele kurze Wörter?).';
   } finally {
     Object.keys(keep).forEach(function (k) { ws[k] = keep[k]; });
     try { window.renderWsAll(); } catch (e) {}

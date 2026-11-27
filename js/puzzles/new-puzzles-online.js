@@ -205,7 +205,7 @@ window.MW = {
       pyr.appendChild(row);
     }
     $('mw-badge').textContent = n + ' Zeilen · ' + OP_LABEL[mw.op] + ' · ' + DIFFS[mw.diff];
-    $('mw-oprule').innerHTML = 'Rechenart <b>' + OP_LABEL[mw.op] + ' (' + OP_SIGN[mw.op] + ')</b>: Jeder Stein ist gleich ' + OP_DESC[mw.op] + ' der beiden Steine direkt darunter.';
+    $('mw-oprule').innerHTML = 'Rechenart <b>' + OP_LABEL[mw.op] + ' (' + OP_SIGN[mw.op] + ')</b>: Jeder Stein ist gleich ' + OP_DESC[mw.op] + ' der beiden Steine direkt darunter. Es kommen nur positive ganze Zahlen vor.';
     nxChips('mw-ops', 'data-v', mw.op); nxChips('mw-sizes', 'data-v', n); nxChips('mw-diffs', 'data-v', mw.diff); MW.refresh(false); nxPersist();
   },
   refresh: function (announce) {

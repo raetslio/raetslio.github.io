@@ -36,6 +36,6 @@ function mwDraw(x, y, w, h, d, sol, only) {
     if (!only) o.push('<rect x="' + fnum(px + 0.3) + '" y="' + fnum(py + 0.3) + '" width="' + fnum(cw - 0.6) + '" height="' + fnum(ch - 0.6) + '" rx="0.8" fill="' + (g ? '#eceeed' : '#fff') + '" stroke="' + INK + '" stroke-width="0.4"/>');
     if (only ? (!g && sol) : (g || sol)) { var fs = Math.min(ch * 0.55, (cw - 2) / (txt.length * 0.62)); o.push(T(px + cw / 2, py + ch / 2 + fs * 0.35, txt, fs, { a: 'middle', w: 600, fill: g ? INK : SOLINK })); }
   }
-  if (!only) o.push(T(x + w / 2, top + n * ch + 5, 'Rechenart ' + OP_LABEL[d.op] + ' (' + OP_SIGN[d.op] + '): jeder Stein ist gleich ' + OP_DESC[d.op] + ' der zwei Steine darunter', 2.8, { a: 'middle', fill: MUTED }));
+  if (!only) o.push(T(x + w / 2, top + n * ch + 5, 'Rechenart ' + OP_LABEL[d.op] + ' (' + OP_SIGN[d.op] + '): jeder Stein ist gleich ' + OP_DESC[d.op] + ' der zwei Steine darunter. Nur positive ganze Zahlen.', 2.8, { a: 'middle', fill: MUTED }));
   return o.join('');
 }

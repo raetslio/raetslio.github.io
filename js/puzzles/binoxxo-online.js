@@ -79,6 +79,7 @@ window.BX = {
       var v = bx.entries[r][c];
       if (v < 0) empty++; else if (v !== bx.data.solution[r][c]) { wrong++; bx.wrong[r + ',' + c] = 1; }
     }
+    if (!empty && wrong && bxValidFull(bx.entries, n)) { wrong = 0; bx.wrong = {}; } /* regelkonforme Lösung gilt immer */
     BX.render();
     rsCheck('bx-feedback', wrong, empty, !wrong && !empty);
   },

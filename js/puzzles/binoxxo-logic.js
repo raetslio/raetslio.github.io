@@ -103,6 +103,24 @@ function bxCount(g, n, limit, budget) {
   rec(start);
   return aborted ? limit : count;
 }
+/* Regelprüfung eines vollständigen Gitters (alle Zellen 0/1): gleich viele X und O je Zeile/Spalte,
+   keine drei gleichen in Folge, keine zwei gleichen Zeilen oder Spalten. Jede regelkonforme Lösung zählt als richtig. */
+function bxValidFull(a, n) {
+  var half = n / 2, rows = {}, cols = {}, i, j;
+  for (i = 0; i < n; i++) {
+    var rs = '', cs = '', r1 = 0, c1 = 0;
+    for (j = 0; j < n; j++) {
+      var x = a[i][j], y = a[j][i];
+      if ((x !== 0 && x !== 1) || (y !== 0 && y !== 1)) return false;
+      rs += x; cs += y; r1 += x; c1 += y;
+      if (j >= 2 && a[i][j] === a[i][j - 1] && a[i][j] === a[i][j - 2]) return false;
+      if (j >= 2 && a[j][i] === a[j - 1][i] && a[j][i] === a[j - 2][i]) return false;
+    }
+    if (r1 !== half || c1 !== half || rows[rs] || cols[cs]) return false;
+    rows[rs] = 1; cols[cs] = 1;
+  }
+  return true;
+}
 var BX_RATIO = [0.55, 0.45, 0.37, 0.30];
 function bxCreate(n, diff) {
   var sol = bxSolution(n);

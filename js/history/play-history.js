@@ -42,7 +42,7 @@ function gvSnap(type) {
     if (!bx.data || !bx.entries.length) return null;
     var be = 0, bf = 0, ok = true;
     for (var br = 0; br < bx.n; br++) for (var bc = 0; bc < bx.n; bc++) { if (bx.data.givens[br][bc] < 0) { be++; if (bx.entries[br][bc] >= 0) bf++; } if (bx.entries[br][bc] !== bx.data.solution[br][bc]) ok = false; }
-    e = { id: 'binoxxo_' + djb(JSON.stringify(bx.data.givens)), type: 'binoxxo', size: bx.n, diff: bx.diff, started: bf > 0, done: ok && bf > 0, pct: be ? Math.round(bf / be * 100) : 0,
+    e = { id: 'binoxxo_' + djb(JSON.stringify(bx.data.givens)), type: 'binoxxo', size: bx.n, diff: bx.diff, started: bf > 0, done: (ok || bxValidFull(bx.entries, bx.n)) && bf > 0, pct: be ? Math.round(bf / be * 100) : 0,
       sig: djb(JSON.stringify(bx.entries)), data: { n: bx.n, diff: bx.diff, data: bx.data }, state: { entries: bx.entries } };
   } else if (NXT[type]) {
     e = NXT[type].gvSnap();
