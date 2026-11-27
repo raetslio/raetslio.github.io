@@ -16,7 +16,7 @@
 
   /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
   /* Passkey nur anzeigen, wenn Browser UND Gerät ihn wirklich nutzen können (Face ID, Fingerabdruck, Geräte-PIN) */
-  var pkDev = false, mailStage = 'form', mailNew = '';
+  var pkDev = false, mailStage = 'form', mailNew = '', secOpen = false;
   function pkDetect() {
     try {
       if (!window.PublicKeyCredential || typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return;
@@ -101,7 +101,7 @@
   function capNeed() { if (capOn() && !capToken) { msg('Bitte bestätige zuerst das Captcha.', 'warning'); return true; } return false; }
   function capOpt() { return capOn() ? { captchaToken: capToken } : {}; }
 
-  function render() { renderBody(); if (!user || (mailStage === 'form' && $('acct-captcha'))) capInit(); if (user) loadPasskeys(); }
+  function render() { renderBody(); if (!user || (user && $('acct-captcha'))) capInit(); if (user) loadPasskeys(); }
   function renderBody() {
     var body = $('acct-body'), t = $('acct-title'); if (!body) return;
     if (!configured) {
@@ -128,27 +128,38 @@
     if (user) {
       t.textContent = 'Mein Konto';
       var pwBlock = hasEmailLogin() ? '<div class="panel-subblock"><span class="label">Passwort ändern</span>' + field('acct-pw1', 'Neues Passwort (min. 8 Zeichen)', 'password', 'new-password') + '<button type="button" class="btn" onclick="RSAUTH.changePassword()">Passwort ändern</button></div>' : '';
-      var mailBlock = '';
+      var delBlock = '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
+      var mailBlock = '', mailNotice = '';
+      try {
+        var pend = localStorage.getItem('rs_mail_pending');
+        if (pend && user.email && pend === user.email.toLowerCase()) { localStorage.setItem('rs_mail_notice', '1'); localStorage.removeItem('rs_mail_pending'); }
+        if (localStorage.getItem('rs_mail_notice') === '1') mailNotice = '<div class="feedback-banner success" role="status" style="display:flex;gap:8px;align-items:center;justify-content:space-between"><span>Fertig: Deine E-Mail-Adresse wurde auf <b>' + esc(user.email || '') + '</b> geändert.</span><button type="button" class="btn btn-sm" onclick="RSAUTH.mailNoticeClose()">OK</button></div>';
+      } catch (x) {}
       if (hasEmailLogin()) {
         mailBlock = '<div class="panel-subblock"><span class="label">E-Mail-Adresse ändern</span>';
-        if (mailStage === 'code') {
-          mailBlock += '<p class="muted-note">Wir haben einen Code an <b>' + esc(mailNew) + '</b> geschickt. Nur diese neue Adresse muss bestätigt werden.</p>' + field('acct-mailcode', 'Code aus der E-Mail', 'text', 'one-time-code') +
-            '<button type="button" class="btn btn-primary" onclick="RSAUTH.mailVerify()">Adresse bestätigen</button><button type="button" class="btn btn-sm" onclick="RSAUTH.mailCancel()">Abbrechen</button>';
+        if (mailStage === 'send') {
+          mailBlock += '<p class="muted-note">Passwort stimmt. Zur Sicherheit senden wir einen Code an deine <b>aktuelle</b> Adresse <b>' + esc(user.email || '') + '</b>.</p>' + capHtml() +
+            '<button type="button" class="btn btn-primary" onclick="RSAUTH.mailSendCode()">Code an aktuelle Adresse senden</button><button type="button" class="btn btn-sm" onclick="RSAUTH.mailCancel()">Abbrechen</button>';
+        } else if (mailStage === 'code') {
+          mailBlock += '<p class="muted-note">Gib den Code ein, den wir an <b>' + esc(user.email || '') + '</b> geschickt haben. Danach senden wir einen Bestätigungslink an <b>' + esc(mailNew) + '</b>.</p>' + field('acct-mailcode', 'Code aus der E-Mail', 'text', 'one-time-code') +
+            '<button type="button" class="btn btn-primary" onclick="RSAUTH.mailVerify()">Code bestätigen</button><button type="button" class="btn btn-sm" onclick="RSAUTH.mailSendCode()">Neuen Code anfordern</button><button type="button" class="btn btn-sm" onclick="RSAUTH.mailCancel()">Abbrechen</button>';
+        } else if (user.new_email) {
+          mailBlock += '<p class="muted-note">Fast fertig: Wir haben einen Bestätigungslink an <b>' + esc(user.new_email) + '</b> geschickt. Klicke darauf, dann gilt die neue Adresse. Bis dahin meldest du dich weiter mit <b>' + esc(user.email || '') + '</b> an.</p>' +
+            '<button type="button" class="btn btn-sm" onclick="RSAUTH.mailRestart()">Andere Adresse wählen</button>';
         } else {
-          mailBlock += '<p class="muted-note">Aktuell: <b>' + esc(user.email || '') + '</b>. Zur Sicherheit brauchst du dein Passwort. Den Code bekommst du an die neue Adresse; nur sie muss bestätigt werden.' +
-            (user.new_email ? ' Offen: Änderung auf <b>' + esc(user.new_email) + '</b>.' : '') + '</p>' +
+          mailBlock += '<p class="muted-note">Aktuell: <b>' + esc(user.email || '') + '</b>. Gib die neue Adresse und dein Passwort ein. Danach bestätigst du mit einem Code an die aktuelle Adresse und einem Link an die neue.</p>' +
             field('acct-newmail', 'Neue E-Mail-Adresse', 'email', 'email') + field('acct-mailpw', 'Dein Passwort', 'password', 'current-password') + capHtml() +
-            '<button type="button" class="btn" onclick="RSAUTH.changeEmail()">Code senden</button>' +
-            (user.new_email ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.mailEnter()">Code eingeben</button>' : '');
+            '<button type="button" class="btn" onclick="RSAUTH.changeEmail()">Weiter</button>';
         }
         mailBlock += '</div>';
       }
-      body.innerHTML = profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
+      body.innerHTML = mailNotice + profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
         '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
-        themeBlock() + mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' +
-        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
-        '<div class="panel-subblock"><span class="label">Konto löschen</span><p class="muted-note">Löscht dein Konto und alle in der Cloud gespeicherten Daten endgültig.</p>' + field('acct-del', 'Zur Bestätigung LÖSCHEN eingeben', 'text', 'off') + '<button type="button" class="btn" style="color:var(--error);border-color:var(--error)" onclick="RSAUTH.deleteAccount()">Konto endgültig löschen</button></div>';
+        themeBlock() +
+        '<details class="acct-sec" id="acct-sec"' + (secOpen ? ' open' : '') + ' ontoggle="RSAUTH.secToggle(this.open)"><summary>' + provIcon('key') + '<span>Sicherheit</span></summary>' + mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + delBlock + '</details>' +
+        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' ;
+      
       return;
     }
     if (view === 'otp') {

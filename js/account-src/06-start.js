@@ -4,6 +4,7 @@
   }
   if (ON_LOGIN) nextUrl(); /* Ziel merken, falls die Anmeldung über Google/GitHub die Seite verlässt */
   renderBtn(); lockModal(); pkDetect();
+  try { if (/[#?&]type=email_change\b/.test(location.hash + location.search)) localStorage.setItem('rs_mail_notice', '1'); } catch (e) {} /* Link aus der Bestätigungs-E-Mail */
   if (configured && window.supabase) {
     try {
       sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: true, experimental: { passkey: true } } });

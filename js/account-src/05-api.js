@@ -66,22 +66,33 @@
       try { c = await sb.auth.signInWithPassword({ email: user.email, password: pw, options: capOpt() }); } catch (x) { c = { error: x }; } finally { otpGate = false; }
       capReset();
       if (c.error) { msg(err(c.error), 'error'); return; }
-      msg('Code wird gesendet …', 'info');
-      var r = await sb.auth.updateUser({ email: e }, { emailRedirectTo: location.origin + location.pathname });
-      if (r.error) { msg(err(r.error), 'error'); return; }
-      mailNew = e; mailStage = 'code'; render();
-      msg('Wir haben einen Code an ' + e + ' geschickt.', 'success');
+      mailNew = e; mailStage = 'send'; secOpen = true; render(); msg('');
+      if (!capOn()) RSAUTH.mailSendCode();
     },
-    mailEnter: function () { mailNew = (user && user.new_email) || ''; mailStage = 'code'; msg(''); render(); },
-    mailCancel: function () { mailStage = 'form'; mailNew = ''; msg(''); render(); },
+    mailSendCode: async function () {
+      if (!user || !mailNew) return;
+      if (capNeed()) return;
+      msg('Code wird gesendet …', 'info');
+      var r = await sb.auth.signInWithOtp({ email: user.email, options: Object.assign({ shouldCreateUser: false }, capOpt()) });
+      capReset();
+      if (r.error) { msg(err(r.error), 'error'); return; }
+      mailStage = 'code'; render(); msg('Wir haben einen Code an ' + user.email + ' geschickt.', 'success');
+    },
     mailVerify: async function () {
       var c = val('acct-mailcode').replace(/\s/g, ''); if (!c) { msg('Bitte den Code aus der E-Mail eingeben.', 'warning'); return; }
       msg('Code wird geprüft …', 'info');
-      var r = await sb.auth.verifyOtp({ email: mailNew, token: c, type: 'email_change' });
+      var r = await sb.auth.verifyOtp({ email: user.email, token: c, type: 'email' });
       if (r.error) { msg(err(r.error), 'error'); return; }
-      var g = await sb.auth.getUser(); if (g.data && g.data.user) user = g.data.user;
-      mailStage = 'form'; mailNew = ''; render(); msg('Deine E-Mail-Adresse wurde geändert.', 'success');
+      var u = await sb.auth.updateUser({ email: mailNew }, { emailRedirectTo: location.origin + location.pathname });
+      if (u.error) { msg(err(u.error), 'error'); return; }
+      if (u.data && u.data.user) user = u.data.user;
+      try { localStorage.setItem('rs_mail_pending', mailNew); localStorage.removeItem('rs_mail_notice'); } catch (x) {}
+      var n = mailNew; mailStage = 'form'; mailNew = ''; render(); msg('Wir haben einen Bestätigungslink an ' + n + ' geschickt.', 'success');
     },
+    mailCancel: function () { mailStage = 'form'; mailNew = ''; msg(''); render(); },
+    mailRestart: function () { try { localStorage.removeItem('rs_mail_pending'); } catch (x) {} if (user) user.new_email = ''; mailStage = 'form'; msg(''); render(); },
+    mailNoticeClose: function () { try { localStorage.removeItem('rs_mail_notice'); } catch (x) {} render(); },
+    secToggle: function (o) { secOpen = !!o; },
     invite: async function () {
       var e = val('acct-invite').trim(); if (!e) { msg('Bitte gib die E-Mail-Adresse der Person ein.', 'warning'); return; }
       msg('Einladung wird gesendet …', 'info');

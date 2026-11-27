@@ -304,3 +304,13 @@ body.rs-konto .site-header .header-controls { display: none; }
 body.rs-konto #acct-modal { position: static; inset: auto; z-index: auto; background: transparent; justify-content: center; align-items: flex-start; padding: 0 var(--space-lg) var(--space-2xl); }
 body.rs-konto #acct-modal .modal-card { max-width: 520px !important; margin: 0 auto; }
 body.rs-konto .rs-drawer .rs-account { background: var(--primary-container); color: var(--on-primary-container); }
+
+/* Konto: einklappbarer Bereich „Sicherheit“ */
+.acct-sec { border: var(--hairline); border-radius: var(--radius-md, 12px); padding: 0 var(--space-sm, 12px); margin: 8px 0; }
+.acct-sec > summary { display: flex; align-items: center; gap: 8px; min-height: 48px; cursor: pointer; font-weight: 600; list-style: none; }
+.acct-sec > summary::-webkit-details-marker { display: none; }
+.acct-sec > summary::after { content: ""; margin-left: auto; width: 8px; height: 8px; border-right: 2px solid currentColor; border-bottom: 2px solid currentColor; transform: rotate(45deg); transition: transform .15s; }
+.acct-sec[open] > summary::after { transform: rotate(-135deg); }
+.acct-sec > summary .icon-svg { width: 20px; height: 20px; flex: none; }
+.acct-sec > summary:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; border-radius: 8px; }
+.acct-sec[open] { padding-bottom: var(--space-sm, 12px); }
