@@ -102,8 +102,8 @@
       msg('Nachricht wird gesendet …', 'info');
       try {
         var r = await sb.functions.invoke('support', { body: { topic: t, message: m, page: location.pathname, ua: navigator.userAgent } });
-        if (r.error) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); return; }
-        if (!r.data || !r.data.ok) { msg((r.data && r.data.error) || 'Die Nachricht konnte nicht gesendet werden.', 'error'); return; }
+        if (r.error) { var st = r.error.context && r.error.context.status; msg(st === 404 ? 'Der Support ist noch nicht eingerichtet (Funktion „support“ fehlt). Bitte versuche es später erneut.' : 'Die Nachricht konnte nicht gesendet werden (' + (st ? 'Fehler ' + st : 'keine Verbindung') + '). Bitte versuche es später erneut.', 'error'); return; }
+        if (!r.data || !r.data.ok) { msg(((r.data && r.data.error) || 'Die Nachricht konnte nicht gesendet werden.') + (r.data && r.data.code ? ' (' + r.data.code + ')' : ''), 'error'); return; }
         supDraft = ''; var el = $('acct-sup-msg'); if (el) el.value = '';
         msg('Danke! Deine Nachricht ist bei uns angekommen. Wir antworten dir per E-Mail.', 'success');
       } catch (e) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); }

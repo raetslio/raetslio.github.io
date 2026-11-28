@@ -82,7 +82,7 @@ Deno.serve(async (req) => {
       if (answer.length < 2) return reply({ ok: false, error: 'Bitte schreibe eine Antwort.' });
       if (answer.length > MAX_LEN) return reply({ ok: false, error: `Die Antwort ist zu lang (höchstens ${MAX_LEN} Zeichen).` });
       const topic = String(t.topic ?? 'Support');
-      const client = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: gmail, password: Deno.env.get('GMAIL_APP_PASSWORD')! } } });
+      const client = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: gmail, password: (Deno.env.get('GMAIL_APP_PASSWORD') ?? '').replace(/\s+/g, '') } } });
       try {
         await client.send({
           from: `Rätslio? Support <${gmail}>`, to: t.email,

@@ -23,6 +23,7 @@ const MAX_PER_DAY = 5;        // Nachrichten pro Nutzer und Tag
 const MAX_LEN = 4000;         // Zeichen pro Nachricht
 const TOPICS: Record<string, string> = { question: 'Frage', bug: 'Fehler melden', idea: 'Idee / Wunsch', other: 'Sonstiges' };
 
+const FAIL = 'Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.';
 const reply = (body: unknown) =>
   new Response(JSON.stringify(body), { headers: { ...CORS, 'Content-Type': 'application/json' } });
 const newId = () => {
@@ -53,7 +54,8 @@ Deno.serve(async (req) => {
     const count = meta.support_day === today ? Number(meta.support_count ?? 0) : 0;
     if (count >= MAX_PER_DAY) return reply({ ok: false, error: `Du kannst pro Tag höchstens ${MAX_PER_DAY} Nachrichten senden.` });
 
-    const gmail = Deno.env.get('GMAIL_USER')!, pass = Deno.env.get('GMAIL_APP_PASSWORD')!;
+    const gmail = Deno.env.get('GMAIL_USER') ?? '', pass = Deno.env.get('GMAIL_APP_PASSWORD') ?? '';
+    if (!gmail || !pass) { console.error('support: Geheimnisse GMAIL_USER / GMAIL_APP_PASSWORD fehlen'); return reply({ ok: false, code: 'secrets', error: FAIL }); }
     const to = Deno.env.get('SUPPORT_TO') || gmail;
     const email = u.user.email;
     const name = oneLine((u.user.user_metadata as any)?.name ?? '', 60);
@@ -61,7 +63,7 @@ Deno.serve(async (req) => {
     const id = newId();
     const page = oneLine(body.page, 200), ua = oneLine(body.ua, 300);
     const { error: ie } = await admin.from('support_tickets').insert({ id, user_id: u.user.id, email, name: name || null, topic, message });
-    if (ie) return reply({ ok: false, error: 'Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.' });
+    if (ie) { console.error('support: Datenbank (Tabelle support_tickets angelegt?):', ie.message); return reply({ ok: false, code: 'db', error: FAIL }); }
     const link = `${SITE}/answer/${id}/`;
 
     const text = [
@@ -83,15 +85,20 @@ Deno.serve(async (req) => {
 <p style="margin:18px 0"><a href="${link}" style="background:#3c5a6e;color:#fff;text-decoration:none;padding:11px 18px;border-radius:8px;display:inline-block">Jetzt antworten</a></p>
 <p style="margin:0;color:#888;font-size:12px">Browser: ${esc(ua)}</p></div>`;
 
-    const client = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: gmail, password: pass } } });
+    const client = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: gmail, password: pass.replace(/\s+/g, '') } } });
     try {
       await client.send({ from: gmail, to, replyTo: email, subject: `[Rätslio? Support] ${topic} – ${email}`, content: text, html });
+    } catch (e) {
+      console.error('support: E-Mail-Versand (Gmail) fehlgeschlagen:', (e as Error).message);
+      await admin.from('support_tickets').delete().eq('id', id);
+      return reply({ ok: false, code: 'smtp', error: FAIL });
     } finally {
       try { await client.close(); } catch (_e) { /* egal */ }
     }
     await admin.auth.admin.updateUserById(u.user.id, { app_metadata: { ...meta, support_day: today, support_count: count + 1 } });
     return reply({ ok: true });
-  } catch (_e) {
-    return reply({ ok: false, error: 'Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.' });
+  } catch (e) {
+    console.error('support: unerwarteter Fehler:', (e as Error).message);
+    return reply({ ok: false, code: 'crash', error: FAIL });
   }
 });
