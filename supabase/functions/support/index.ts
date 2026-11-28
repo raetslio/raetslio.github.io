@@ -31,6 +31,7 @@ const newId = () => {
   return 'ID-' + Array.from(b, (x) => 'abcdefghjkmnpqrstuvwxyz23456789'[x % 31]).join('');
 };
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+const subj = (s: string) => s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').replace(/ß/g, 'ss').replace(/[–—]/g, '-').replace(/[^\x20-\x7E]/g, '').replace(/[?=]/g, '').replace(/\s+/g, ' ').trim();
 const oneLine = (s: unknown, n: number) => String(s ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, n);
 
 Deno.serve(async (req) => {
@@ -87,7 +88,7 @@ Deno.serve(async (req) => {
 
     const client = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: gmail, password: pass.replace(/\s+/g, '') } } });
     try {
-      await client.send({ from: gmail, to, replyTo: email, subject: `[Rätslio? Support] ${topic} – ${email}`, content: text, html });
+      await client.send({ from: gmail, to, replyTo: email, subject: subj(`[Raetslio Support] ${topic} - ${email}`), content: text, html });
     } catch (e) {
       console.error('support: E-Mail-Versand (Gmail) fehlgeschlagen:', (e as Error).message);
       await admin.from('support_tickets').delete().eq('id', id);

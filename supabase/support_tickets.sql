@@ -11,3 +11,8 @@ create table if not exists public.support_tickets (
   replies     jsonb not null default '[]'::jsonb
 );
 alter table public.support_tickets enable row level security;
+
+-- Rechte: nur die Edge Functions (service_role) dürfen an die Tabelle, Nutzer und Besucher nie.
+revoke all on table public.support_tickets from anon, authenticated;
+grant usage on schema public to service_role;
+grant all on table public.support_tickets to service_role;

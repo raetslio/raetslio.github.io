@@ -19,6 +19,7 @@ const DENIED = { ok: false, error: 'Kein Zugriff oder unbekannte Answer-ID.' };
 const reply = (body: unknown) =>
   new Response(JSON.stringify(body), { headers: { ...CORS, 'Content-Type': 'application/json' } });
 const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const subj = (s: string) => s.replace(/ä/g, 'ae').replace(/ö/g, 'oe').replace(/ü/g, 'ue').replace(/Ä/g, 'Ae').replace(/Ö/g, 'Oe').replace(/Ü/g, 'Ue').replace(/ß/g, 'ss').replace(/[–—]/g, '-').replace(/[^\x20-\x7E]/g, '').replace(/[?=]/g, '').replace(/\s+/g, ' ').trim();
 const para = (t: string) => esc(t).split(/\n{2,}/).map((p) =>
   `<p style="margin:0 0 14px;font-size:17px;line-height:1.65;color:#3f4a53">${p.replace(/\n/g, '<br>')}</p>`).join('');
 
@@ -85,8 +86,8 @@ Deno.serve(async (req) => {
       const client = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: gmail, password: (Deno.env.get('GMAIL_APP_PASSWORD') ?? '').replace(/\s+/g, '') } } });
       try {
         await client.send({
-          from: `Rätslio? Support <${gmail}>`, to: t.email,
-          subject: `Re: ${topic} – Rätslio? Support`,
+          from: `Raetslio Support <${gmail}>`, to: t.email,
+          subject: subj(`Re: ${topic} - Raetslio Support`),
           content: mailText(t.name ?? '', answer, topic, t.message), html: mailHtml(t.name ?? '', answer, topic, t.message),
         });
       } finally { try { await client.close(); } catch (_e) { /* egal */ } }
