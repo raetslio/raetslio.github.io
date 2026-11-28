@@ -110,7 +110,7 @@ Einrichten: `supabase/support_tickets.sql` im SQL-Editor ausführen, Geheimnisse
 ## Hinweise
 
 - Offline-Nutzung und Installation als App funktionieren nur über `https://` (oder `localhost`).
-- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v88`), sonst bleibt der alte Zwischenspeicher aktiv.
+- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v90`), sonst bleibt der alte Zwischenspeicher aktiv.
 
 ## Leitlinie
 
@@ -135,3 +135,7 @@ Der Druck verwendet dieselben Generatoren wie der Bildschirm, ein gedrucktes Rä
 
 - **Suchsel:** Jedes aufgelistete Wort steht genau einmal im Gitter. Lässt sich ein Doppelfund nicht durch andere Füllbuchstaben beseitigen (Wort steckt in einem anderen, z. B. ROSE in ROSEN, oder zu viele kurze Wörter), wird das kürzeste betroffene Wort aus dem Rätsel genommen und als „nicht eindeutig platzierbar“ gemeldet (Hinweis am Bildschirm und im Heft).
 - **Zahlenmauer:** Eindeutig innerhalb der positiven ganzen Zahlen. Das steht auf dem Bildschirm und auf dem Arbeitsblatt.
+
+## Passkey beim Anmelden
+
+Auf Geräten, auf denen ein Passkey eingerichtet oder benutzt wurde (Merker `rs_pk_dev` in `localStorage`), öffnet die Anmeldeseite die Passkey-Abfrage (Face ID / Fingerabdruck) sofort, sobald das Captcha gelöst ist (`autoPasskey` in `js/account-src/06-start.js`). Nicht nach „Abmelden“ (Merker `rs_no_autopk` in `sessionStorage`), nur einmal je Seitenaufruf; bei Abbruch bleibt die normale Anmeldung. Nach Änderungen `python3 tools/build-account.py` ausführen.

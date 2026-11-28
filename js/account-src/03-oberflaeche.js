@@ -31,6 +31,9 @@
       }).catch(function () { pkDev = false; });
     } catch (e) { pkDev = false; }
   }
+  /* Merker: Auf diesem Gerät ist ein Passkey eingerichtet oder wurde benutzt -> Anmeldeseite fragt ihn sofort ab */
+  function pkMark(on) { try { if (on) localStorage.setItem('rs_pk_dev', '1'); else localStorage.removeItem('rs_pk_dev'); } catch (e) {} }
+  function noAutoPk() { try { sessionStorage.setItem('rs_no_autopk', '1'); } catch (e) {} } /* nach „Abmelden“ nicht gleich wieder automatisch anmelden */
   function pkOk() {
     try { return !!(pkDev && window.PublicKeyCredential && sb && sb.auth && typeof sb.auth.signInWithPasskey === 'function' && typeof sb.auth.registerPasskey === 'function'); } catch (e) { return false; }
   }
@@ -48,6 +51,7 @@
       var r = await sb.auth.passkey.list();
       if (r.error) { box.innerHTML = ''; return; }
       var list = Array.isArray(r.data) ? r.data : ((r.data && r.data.passkeys) || []);
+      if (list.length) pkMark(true); else pkMark(false);
       box = $('acct-passkeys'); if (!box) return;
       box.innerHTML = list.map(function (p) {
         return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0"><span style="overflow-wrap:anywhere;min-width:0">' + esc(p.friendly_name || 'Passkey') +

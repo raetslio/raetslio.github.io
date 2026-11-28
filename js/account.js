@@ -307,6 +307,9 @@
       }).catch(function () { pkDev = false; });
     } catch (e) { pkDev = false; }
   }
+  /* Merker: Auf diesem Gerät ist ein Passkey eingerichtet oder wurde benutzt -> Anmeldeseite fragt ihn sofort ab */
+  function pkMark(on) { try { if (on) localStorage.setItem('rs_pk_dev', '1'); else localStorage.removeItem('rs_pk_dev'); } catch (e) {} }
+  function noAutoPk() { try { sessionStorage.setItem('rs_no_autopk', '1'); } catch (e) {} } /* nach „Abmelden“ nicht gleich wieder automatisch anmelden */
   function pkOk() {
     try { return !!(pkDev && window.PublicKeyCredential && sb && sb.auth && typeof sb.auth.signInWithPasskey === 'function' && typeof sb.auth.registerPasskey === 'function'); } catch (e) { return false; }
   }
@@ -324,6 +327,7 @@
       var r = await sb.auth.passkey.list();
       if (r.error) { box.innerHTML = ''; return; }
       var list = Array.isArray(r.data) ? r.data : ((r.data && r.data.passkeys) || []);
+      if (list.length) pkMark(true); else pkMark(false);
       box = $('acct-passkeys'); if (!box) return;
       box.innerHTML = list.map(function (p) {
         return '<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;margin:4px 0"><span style="overflow-wrap:anywhere;min-width:0">' + esc(p.friendly_name || 'Passkey') +
@@ -721,7 +725,7 @@
     try { if (user) localStorage.setItem('rs_cloud_on', '1'); else localStorage.removeItem('rs_cloud_on'); } catch (e) {}
     renderBtn(); render();
     if (!user) { toLogin(); return; }
-    anonSupport(false);
+    anonSupport(false); try { sessionStorage.removeItem('rs_no_autopk'); } catch (e) {}
     reveal();
     if (ON_LOGIN) { if (view !== 'recovery' && !(needWelcome() && !inviteShown)) toApp(); return; }
     oauthNote();
@@ -856,13 +860,13 @@
     logout: async function () {
       clearTimeout(pushTimer); if (user) await sync();
       try { if (user) localStorage.removeItem(HK + '_' + user.id); } catch (e) {}
-      await sb.auth.signOut(); loggedIn(null); view = 'login'; render(); msg('Abgemeldet.', 'info');
+      noAutoPk(); await sb.auth.signOut(); loggedIn(null); view = 'login'; render(); msg('Abgemeldet.', 'info');
     },
     logoutAll: async function () {
       if (!(await rsConfirm('Du wirst auf allen Geräten abgemeldet, auch auf diesem. Danach musst du dich überall neu anmelden.', { title: 'Auf allen Geräten abmelden', ok: 'Überall abmelden', danger: true }))) return;
       clearTimeout(pushTimer); if (user) await sync();
       try { if (user) localStorage.removeItem(HK + '_' + user.id); } catch (e) {}
-      var r = await sb.auth.signOut({ scope: 'global' });
+      noAutoPk(); var r = await sb.auth.signOut({ scope: 'global' });
       if (r && r.error) { msg(err(r.error), 'error'); return; }
       loggedIn(null); view = 'login'; render(); msg('Auf allen Geräten abgemeldet.', 'info');
     },
@@ -881,7 +885,7 @@
       if (r.error) { msg('Konto konnte nicht gelöscht werden: ' + err(r.error), 'error'); return; }
       try { Object.keys(localStorage).forEach(function (k) { if (k.indexOf(HK) === 0) localStorage.removeItem(k); }); } catch (e) {}
       discardOwner = user ? user.id : null;
-      await sb.auth.signOut().catch(function () {}); loggedIn(null); view = 'login'; render(); msg('Dein Konto und alle Cloud-Daten wurden gelöscht.', 'success');
+      noAutoPk(); await sb.auth.signOut().catch(function () {}); loggedIn(null); view = 'login'; render(); msg('Dein Konto und alle Cloud-Daten wurden gelöscht.', 'success');
     },
     google: async function () {
       msg('Weiterleitung zu Google …', 'info'); markFresh(); try { sessionStorage.setItem('rs_oauth_prov', 'google'); } catch (e) {}
@@ -903,12 +907,14 @@
       var g = await sb.auth.getUser(); if (g.data && g.data.user) user = g.data.user;
       render(); msg(provName(prov) + ' wurde getrennt.', 'success');
     },
-    passkeyLogin: async function () {
-      if (capNeed()) return;
+    passkeyLogin: async function (auto) {
+      /* auto === true: automatischer Versuch beim Öffnen der Anmeldeseite (erst wenn das Captcha gelöst ist, bei Abbruch ohne Fehlermeldung) */
+      if (auto === true) { if (capOn() && !capToken) return; } else if (capNeed()) return;
       msg('Passkey wird abgefragt …', 'info');
       var r; try { r = await sb.auth.signInWithPasskey(capOn() ? { options: { captchaToken: capToken } } : undefined); } catch (x) { r = { error: x }; }
       capReset();
-      if (!r || r.error || !r.data || !r.data.session) { msg(pkErr(r && r.error), 'error'); return; }
+      if (!r || r.error || !r.data || !r.data.session) { if (auto === true) msg(''); else msg(pkErr(r && r.error), 'error'); return; }
+      pkMark(true); try { sessionStorage.removeItem('rs_no_autopk'); } catch (e) {}
       markFresh(); loggedIn(r.data.session); msg('Angemeldet.', 'success'); sync();
     },
     otpSend: async function () {
@@ -952,6 +958,7 @@
       var r; try { r = await sb.auth.registerPasskey(); } catch (x) { r = { error: x }; }
       if (!r || r.error) { msg(pkErr(r && r.error), 'error'); return; }
       try { localStorage.removeItem('rs_pk_new'); } catch (e) {}
+      pkMark(true);
       var wasSetup = view === 'pksetup'; if (wasSetup) { view = 'login'; render(); }
       msg('Eingerichtet. Du kannst dich auf diesem Gerät jetzt mit deinem Passkey anmelden.', 'success'); loadPasskeys();
       if (wasSetup) setTimeout(checkImport, 1500);
@@ -1002,6 +1009,23 @@
   document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !ON_KONTO) { var m = $('acct-modal'); if (m && m.getAttribute('data-open') === 'true') RSAUTH.close(); } });
 
   /* ---------- Start ---------- */
+  /* Anmeldeseite auf einem Gerät mit eingerichtetem Passkey: die Passkey-Abfrage (Face ID / Fingerabdruck) öffnet sich sofort.
+     Nicht nach „Abmelden“, wartet auf das Captcha, nur einmal je Seitenaufruf; bei Abbruch bleibt die normale Anmeldung. */
+  var autoPkDone = false;
+  function autoPasskey() {
+    if (!ON_LOGIN || autoPkDone || user) return;
+    try { if (localStorage.getItem('rs_pk_dev') !== '1' || sessionStorage.getItem('rs_no_autopk')) return; } catch (e) { return; }
+    var tries = 0;
+    (function wait() {
+      if (autoPkDone || user) return;
+      if (pkOk() && (!capOn() || capToken)) { /* Captcha löst sich meist von selbst in ein bis zwei Sekunden */
+        var em = $('acct-email'), pw = $('acct-pw');
+        if (view !== 'login' || otpGate || (em && em.value) || (pw && pw.value)) return;
+        autoPkDone = true; RSAUTH.passkeyLogin(true); return;
+      }
+      if (++tries < 50) setTimeout(wait, 150);
+    })();
+  }
   if (ON_LOGIN) { /* Anmeldeseite: Darstellung immer „Gerät“, gespeicherte Wahl bleibt unberührt */
     try { var sv = localStorage.getItem('rs_theme'); if (typeof applyTheme === 'function') applyTheme('system'); if (sv === null) localStorage.removeItem('rs_theme'); else lsSetRaw.call(localStorage, 'rs_theme', sv); } catch (e) {}
   }
@@ -1024,7 +1048,7 @@
         if (r.data && r.data.session && enforcePw(r.data.session)) { }
         else if (r.data && r.data.session && needWelcome() && !inviteShown) { showPw(r.data.session); }
         else if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
-        else { loggedIn(null); showNoPw(); showGone(); }
+        else { loggedIn(null); showNoPw(); showGone(); autoPasskey(); }
       });
     } catch (e) { sb = null; }
   }

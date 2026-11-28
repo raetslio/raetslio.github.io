@@ -237,7 +237,7 @@
     try { if (user) localStorage.setItem('rs_cloud_on', '1'); else localStorage.removeItem('rs_cloud_on'); } catch (e) {}
     renderBtn(); render();
     if (!user) { toLogin(); return; }
-    anonSupport(false);
+    anonSupport(false); try { sessionStorage.removeItem('rs_no_autopk'); } catch (e) {}
     reveal();
     if (ON_LOGIN) { if (view !== 'recovery' && !(needWelcome() && !inviteShown)) toApp(); return; }
     oauthNote();

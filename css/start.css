@@ -229,3 +229,6 @@ html.rs-anon-support .rs-signed-only { display: none; }
 html.rs-anon-support #rs-menu-btn, html.rs-anon-support #btn-open-print, html.rs-anon-support #rs-drawer, html.rs-anon-support #rs-backdrop,
 html.rs-anon-support .rs-appnav, html.rs-anon-support .rs-appmore { display: none !important; }
 html.rs-anon-support body { padding-bottom: 0; }
+
+/* Konto-Seite: Leiste liegt im Seitenfluss am unteren Rand; die Versätze der schwebenden Leiste (left/right/bottom) dürfen dort nicht wirken */
+body.rs-konto .rs-appnav { left: auto; right: auto; bottom: auto; top: auto; }

@@ -1,4 +1,21 @@
   /* ---------- Start ---------- */
+  /* Anmeldeseite auf einem Gerät mit eingerichtetem Passkey: die Passkey-Abfrage (Face ID / Fingerabdruck) öffnet sich sofort.
+     Nicht nach „Abmelden“, wartet auf das Captcha, nur einmal je Seitenaufruf; bei Abbruch bleibt die normale Anmeldung. */
+  var autoPkDone = false;
+  function autoPasskey() {
+    if (!ON_LOGIN || autoPkDone || user) return;
+    try { if (localStorage.getItem('rs_pk_dev') !== '1' || sessionStorage.getItem('rs_no_autopk')) return; } catch (e) { return; }
+    var tries = 0;
+    (function wait() {
+      if (autoPkDone || user) return;
+      if (pkOk() && (!capOn() || capToken)) { /* Captcha löst sich meist von selbst in ein bis zwei Sekunden */
+        var em = $('acct-email'), pw = $('acct-pw');
+        if (view !== 'login' || otpGate || (em && em.value) || (pw && pw.value)) return;
+        autoPkDone = true; RSAUTH.passkeyLogin(true); return;
+      }
+      if (++tries < 50) setTimeout(wait, 150);
+    })();
+  }
   if (ON_LOGIN) { /* Anmeldeseite: Darstellung immer „Gerät“, gespeicherte Wahl bleibt unberührt */
     try { var sv = localStorage.getItem('rs_theme'); if (typeof applyTheme === 'function') applyTheme('system'); if (sv === null) localStorage.removeItem('rs_theme'); else lsSetRaw.call(localStorage, 'rs_theme', sv); } catch (e) {}
   }
@@ -21,7 +38,7 @@
         if (r.data && r.data.session && enforcePw(r.data.session)) { }
         else if (r.data && r.data.session && needWelcome() && !inviteShown) { showPw(r.data.session); }
         else if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
-        else { loggedIn(null); showNoPw(); showGone(); }
+        else { loggedIn(null); showNoPw(); showGone(); autoPasskey(); }
       });
     } catch (e) { sb = null; }
   }
