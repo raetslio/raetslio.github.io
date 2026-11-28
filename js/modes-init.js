@@ -107,6 +107,7 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
     if (!window.RSAUTH || !RSAUTH.show) return false;
     document.body.classList.add('rs-konto');
     Array.prototype.forEach.call(document.querySelectorAll('.nav-tab'), function (t) { t.setAttribute('aria-selected', 'false'); });
+    if (RSAUTH.tabReset) RSAUTH.tabReset();
     RSAUTH.show('login');
     var m = document.getElementById('acct-modal'); if (m) m.setAttribute('data-open', 'true');
     document.title = KONTO_TITLE;

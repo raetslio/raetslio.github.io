@@ -47,4 +47,6 @@
     var hasTok = false; try { hasTok = !!localStorage.getItem('sb-dnhjzlnbuqmyqgjxxygx-auth-token'); } catch (e) {}
     if (hasTok && !ON_LOGIN) reveal(); else if (!ON_LOGIN) toLogin(); else { lockModal(); render(); }
   }
+  /* Kontobereich: Layout beim Wechsel zwischen Handy- und PC-Breite neu aufbauen */
+  (function () { try { var mq = window.matchMedia('(min-width: 760px)'), f = function () { if (user && document.body.classList.contains('rs-konto') && view === 'login') render(); }; if (mq.addEventListener) mq.addEventListener('change', f); else if (mq.addListener) mq.addListener(f); } catch (e) {} })();
 })();

@@ -97,6 +97,8 @@
     mailNoticeClose: function () { try { localStorage.removeItem('rs_mail_notice'); } catch (x) {} render(); },
     secToggle: function (k, o) { secOpen[k] = !!o; },
     tab: function (k) { acctTab = k; render(); try { window.scrollTo(0, 0); } catch (e) {} },
+    tabReset: function () { acctTab = ''; },
+    leave: function () { if (typeof window.switchMode === 'function') window.switchMode('start'); },
     setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
     setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
     /* Support-Nachricht senden (für die Seite /support/). Gibt { ok, kind, text } zurück, zeigt selbst nichts an. */

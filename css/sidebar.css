@@ -245,3 +245,38 @@ html[data-theme="dark"] .rs-drawer .nav-tab, html[data-theme="dark"] .rs-drawer 
 }
 body.rs-konto #acct-modal .modal-card { background: transparent; border: 0; box-shadow: none; border-radius: 0; padding-left: 0; padding-right: 0; }
 body.rs-konto #acct-modal .modal-card::before, body.rs-konto #acct-modal .modal-card::after { display: none; }
+
+/* ===== Kontobereich Handy: Übersicht + Unterseiten wie in den Claude-Einstellungen ===== */
+.acct-topbar, .acct-profilecard { display: none; }
+.acct-nav-group { display: none; }
+.acct-chev { display: none; }
+@media (max-width: 759px) {
+  body.rs-konto #acct-modal .modal-header { display: none; }
+  body.rs-konto #acct-modal .modal-card { max-width: 640px !important; }
+  .acct-topbar { display: grid; grid-template-columns: 44px 1fr 44px; align-items: center; gap: 8px; margin-bottom: var(--space-md); }
+  .acct-topbar-title { text-align: center; font-family: var(--font-headline); font-size: 1.15rem; font-weight: 600; }
+  .acct-round { width: 44px; height: 44px; border-radius: 50%; border: 0; background: var(--surface-container-high); color: var(--on-surface); display: inline-flex; align-items: center; justify-content: center; cursor: pointer; padding: 0; }
+  .acct-round svg { width: 22px; height: 22px; }
+  .acct-round-ghost { background: none; cursor: default; }
+  .acct-profilecard { display: flex; align-items: center; gap: var(--space-md); padding: var(--space-md); border-radius: 24px; background: var(--surface-container-low); margin-bottom: var(--space-md); }
+  .acct-pc-av { width: 56px; height: 56px; border-radius: 50%; overflow: hidden; background: var(--primary-container); color: var(--on-primary-container); display: inline-flex; align-items: center; justify-content: center; font-weight: 600; font-size: 1.15rem; flex: none; }
+  .acct-pc-av img { width: 100%; height: 100%; object-fit: cover; }
+  .acct-pc-txt { display: flex; flex-direction: column; min-width: 0; }
+  .acct-pc-txt b { font-size: 1.15rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .acct-pc-txt small { color: var(--on-surface-variant); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .acct-layout[data-tab=""] .acct-pane, .acct-layout:not([data-tab=""]) .acct-nav, .acct-layout:not([data-tab=""]) .acct-profilecard { display: none; }
+  .acct-nav { flex-direction: column; overflow: visible; gap: 0; padding: 0; }
+  .acct-nav-group { display: block; margin: var(--space-md) 0 6px 16px; color: var(--on-surface-variant); font-size: .95rem; }
+  .acct-nav-card { display: flex; flex-direction: column; border-radius: 24px; background: var(--surface-container-low); overflow: hidden; }
+  .acct-nav-out { margin-top: var(--space-lg); }
+  .acct-nav-btn { width: 100%; padding: 18px 16px; border-radius: 0; font-size: 1.1rem; gap: 16px; }
+  .acct-nav-btn + .acct-nav-btn { border-top: 1px solid color-mix(in srgb, var(--on-surface) 10%, transparent); }
+  .acct-nav-btn[aria-current="true"] { background: none; font-weight: 500; }
+  .acct-nav-btn .icon-svg { width: 24px; height: 24px; color: var(--on-surface-variant); }
+  .acct-nav-lbl { flex: 1; }
+  .acct-chev { display: block; width: 20px; height: 20px; color: var(--on-surface-variant); }
+  .acct-nav-out .acct-chev { display: none; }
+  .acct-pane-title { display: none; }
+  .acct-pane .panel-subblock { background: var(--surface-container-low); border-radius: 22px; padding: var(--space-md); border: 0; }
+}
+@media (min-width: 760px) { .acct-nav-group { display: block; margin: var(--space-md) 0 4px 14px; color: var(--on-surface-variant); font-size: .85rem; } .acct-nav-card { display: flex; flex-direction: column; } }
