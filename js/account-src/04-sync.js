@@ -55,10 +55,25 @@
   function checkImport() { /* Konto ist Pflicht: keine Nachfrage mehr zur Übernahme von Gerätedaten */ }
   /* Konto nur mit Passkey: nach der E-Mail-Bestätigung gleich den Passkey einrichten lassen */
   function pkNewMail() { try { return localStorage.getItem('rs_pk_new') || ''; } catch (e) { return ''; } }
+  /* Nach dem Erstellen eines Kontos: Name und Profilbild abfragen (optional) */
+  function profNewMail() { try { return localStorage.getItem('rs_prof_new') || ''; } catch (e) { return ''; } }
+  function checkProf() {
+    if (!user || switching) return;
+    var md = user.user_metadata || {};
+    if (md.prof_done) { try { localStorage.removeItem('rs_prof_new'); } catch (e) {} return; } /* auf einem anderen Gerät schon erledigt */
+    if (!profNewMail()) { /* Erste Anmeldung über Google/GitHub: Konto ist gerade erst entstanden */
+      var ap = (user.app_metadata || {}).provider, c = Date.parse(user.created_at), l = Date.parse(user.last_sign_in_at);
+      if (ap && ap !== 'email' && isFinite(c) && isFinite(l) && Math.abs(l - c) < 15 * 60 * 1000) { try { localStorage.setItem('rs_prof_new', String(user.email || '').toLowerCase()); } catch (e) {} }
+    }
+    if (!profNewMail()) return;
+    if (profNewMail() !== String(user.email || '').toLowerCase()) return;
+    if (view === 'recovery' || view === 'import' || needWelcome()) return;
+    view = 'profsetup'; RSAUTH.open();
+  }
   function checkPk() {
     if (!user || switching || !pkNewMail()) return;
     if (pkNewMail() !== String(user.email || '').toLowerCase()) return;
-    if (view === 'recovery' || view === 'import' || needWelcome()) return; /* nie ein anderes Fenster verdrängen */
+    if (view === 'recovery' || view === 'import' || view === 'profsetup' || needWelcome()) return; /* nie ein anderes Fenster verdrängen */
     if (!pkOk()) { try { localStorage.removeItem('rs_pk_new'); } catch (e) {} return; }
     view = 'pksetup'; RSAUTH.open();
   }
@@ -198,6 +213,22 @@
     setInterval(pull, 60000);
   })();
 
+  /* Hinweis „E-Mail-Adresse geändert“: bleibt nach Neuladen sichtbar, bis er bestätigt wurde */
+  var mailPopupOpen = false;
+  function mailDonePopup() {
+    if (!user || mailPopupOpen || typeof rsConfirm !== 'function') return;
+    try {
+      var pend = localStorage.getItem('rs_mail_pending');
+      if (pend && user.email && pend === user.email.toLowerCase()) { localStorage.setItem('rs_mail_notice', '1'); localStorage.removeItem('rs_mail_pending'); }
+      if (localStorage.getItem('rs_mail_notice') !== '1') return;
+    } catch (e) { return; }
+    mailPopupOpen = true;
+    rsConfirm('Deine E-Mail-Adresse wurde auf ' + (user.email || '') + ' geändert. Ab jetzt meldest du dich damit an.', { title: 'E-Mail-Adresse geändert', ok: 'OK', cancel: 'Schließen' }).then(function () {
+      mailPopupOpen = false;
+      try { localStorage.removeItem('rs_mail_notice'); } catch (e) {}
+      render();
+    });
+  }
   function loggedIn(session) {
     user = session ? session.user : null;
     if (ensureNamespace()) return;
@@ -209,6 +240,6 @@
     reveal();
     if (ON_LOGIN) { if (view !== 'recovery' && !(needWelcome() && !inviteShown)) toApp(); return; }
     oauthNote();
-    setTimeout(checkPk, 400); setTimeout(checkImport, 1200);
+    setTimeout(checkProf, 300); setTimeout(checkPk, 400); setTimeout(checkImport, 1200); setTimeout(mailDonePopup, 500);
   }
 

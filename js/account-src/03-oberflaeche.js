@@ -17,7 +17,7 @@
 
   /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
   /* Passkey nur anzeigen, wenn Browser UND Gerät ihn wirklich nutzen können (Face ID, Fingerabdruck, Geräte-PIN) */
-  var pkDev = false, mailStage = 'form', mailNew = '', secOpen = { sec: false, des: false, ab: false };
+  var pkDev = false, mailStage = 'form', mailNew = '', profDraft = '', supDraft = '', secOpen = { sec: false, des: false, ab: false };
   function pkDetect() {
     try {
       if (!window.PublicKeyCredential || typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return;
@@ -117,6 +117,15 @@
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.setNewPassword()">Passwort speichern</button>';
       return;
     }
+    if (user && view === 'profsetup') {
+      t.textContent = 'Profil einrichten';
+      body.innerHTML = '<p class="muted-note">Dein Konto ist erstellt. Wie sollen wir dich nennen? Name und Profilbild sind freiwillig. Ohne Namen nehmen wir den Teil deiner E-Mail-Adresse vor dem @.</p>' +
+        '<div style="display:flex;align-items:center;gap:14px">' + avatarHtml(72) + '<div style="display:flex;flex-wrap:wrap;gap:6px"><button type="button" class="btn btn-sm" onclick="RSAUTH.pickAvatar()">' + (avatarUrl() ? 'Bild ändern' : 'Profilbild wählen') + '</button>' + (avatarUrl() ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.removeAvatar()">Entfernen</button>' : '') + '</div>' +
+        '<input id="acct-avatar-file" type="file" accept="image/*" style="display:none" onchange="RSAUTH.setAvatar(this)"></div>' +
+        '<div class="field-group"><label class="field-label" for="acct-name">Anzeigename (optional)</label><input id="acct-name" class="input-control" type="text" maxlength="40" autocomplete="nickname" placeholder="' + esc(user.email.split('@')[0]) + '" value="' + esc(profDraft || nameCustom) + '" oninput="RSAUTH.nameDraft(this.value)"></div>' +
+        '<button type="button" class="btn btn-primary" onclick="RSAUTH.profDone()">Fertig</button><button type="button" class="btn btn-sm" onclick="RSAUTH.profSkip()">Überspringen</button>';
+      return;
+    }
     if (user && view === 'pksetup') {
       t.textContent = 'Passkey einrichten';
       body.innerHTML = '<div style="display:flex;justify-content:center;color:var(--sage,#7a9a7e)">' + provIcon('key').replace(/width="18" height="18"/, 'width="56" height="56"') + '</div>' +
@@ -135,7 +144,7 @@
       try {
         var pend = localStorage.getItem('rs_mail_pending');
         if (pend && user.email && pend === user.email.toLowerCase()) { localStorage.setItem('rs_mail_notice', '1'); localStorage.removeItem('rs_mail_pending'); }
-        if (localStorage.getItem('rs_mail_notice') === '1') mailNotice = '<div class="feedback-banner success" role="status" style="display:flex;gap:8px;align-items:center;justify-content:space-between"><span>Fertig: Deine E-Mail-Adresse wurde auf <b>' + esc(user.email || '') + '</b> geändert.</span><button type="button" class="btn btn-sm" onclick="RSAUTH.mailNoticeClose()">OK</button></div>';
+        if (localStorage.getItem('rs_mail_notice') === '1') mailNotice = '<div class="feedback-banner success" role="status" style="display:flex;gap:8px;align-items:center;justify-content:space-between"><span>Fertig: Deine E-Mail-Adresse wurde auf <b>' + esc(user.email || '') + '</b> geändert.</span><button type="button" class="btn btn-sm" style="flex:none;width:auto;white-space:nowrap" onclick="RSAUTH.mailNoticeClose()">OK</button></div>';
       } catch (x) {}
       if (hasEmailLogin()) {
         mailBlock = '<div class="panel-subblock"><span class="label">E-Mail-Adresse ändern</span>';
@@ -160,7 +169,11 @@
         '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
         designSection() + abBlock() +
         details('sec', provIcon('key'), 'Sicherheit', mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock) +
-        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' ;
+        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
+        '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib mir direkt. Deine E-Mail-Adresse (' + esc(user.email || '') + ') wird mitgeschickt, damit ich dir antworten kann.</p>' +
+        '<div class="field-group"><label class="field-label" for="acct-sup-topic">Worum geht es?</label><select id="acct-sup-topic" class="input-control"><option value="question">Frage</option><option value="bug">Fehler melden</option><option value="idea">Idee / Wunsch</option><option value="other">Sonstiges</option></select></div>' +
+        '<div class="field-group"><label class="field-label" for="acct-sup-msg">Nachricht</label><textarea id="acct-sup-msg" class="input-control" rows="5" maxlength="4000" placeholder="Beschreibe kurz, was du erlebt hast oder dir wünschst." style="resize:vertical">' + esc(supDraft) + '</textarea></div>' +
+        '<button type="button" class="btn btn-primary" onclick="RSAUTH.supportSend()">Nachricht senden</button></div>';
       
       return;
     }

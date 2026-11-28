@@ -290,7 +290,7 @@
 
   /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
   /* Passkey nur anzeigen, wenn Browser UND Gerät ihn wirklich nutzen können (Face ID, Fingerabdruck, Geräte-PIN) */
-  var pkDev = false, mailStage = 'form', mailNew = '', secOpen = { sec: false, des: false, ab: false };
+  var pkDev = false, mailStage = 'form', mailNew = '', profDraft = '', supDraft = '', secOpen = { sec: false, des: false, ab: false };
   function pkDetect() {
     try {
       if (!window.PublicKeyCredential || typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return;
@@ -390,6 +390,15 @@
         '<button type="button" class="btn btn-primary" onclick="RSAUTH.setNewPassword()">Passwort speichern</button>';
       return;
     }
+    if (user && view === 'profsetup') {
+      t.textContent = 'Profil einrichten';
+      body.innerHTML = '<p class="muted-note">Dein Konto ist erstellt. Wie sollen wir dich nennen? Name und Profilbild sind freiwillig. Ohne Namen nehmen wir den Teil deiner E-Mail-Adresse vor dem @.</p>' +
+        '<div style="display:flex;align-items:center;gap:14px">' + avatarHtml(72) + '<div style="display:flex;flex-wrap:wrap;gap:6px"><button type="button" class="btn btn-sm" onclick="RSAUTH.pickAvatar()">' + (avatarUrl() ? 'Bild ändern' : 'Profilbild wählen') + '</button>' + (avatarUrl() ? '<button type="button" class="btn btn-sm" onclick="RSAUTH.removeAvatar()">Entfernen</button>' : '') + '</div>' +
+        '<input id="acct-avatar-file" type="file" accept="image/*" style="display:none" onchange="RSAUTH.setAvatar(this)"></div>' +
+        '<div class="field-group"><label class="field-label" for="acct-name">Anzeigename (optional)</label><input id="acct-name" class="input-control" type="text" maxlength="40" autocomplete="nickname" placeholder="' + esc(user.email.split('@')[0]) + '" value="' + esc(profDraft || nameCustom) + '" oninput="RSAUTH.nameDraft(this.value)"></div>' +
+        '<button type="button" class="btn btn-primary" onclick="RSAUTH.profDone()">Fertig</button><button type="button" class="btn btn-sm" onclick="RSAUTH.profSkip()">Überspringen</button>';
+      return;
+    }
     if (user && view === 'pksetup') {
       t.textContent = 'Passkey einrichten';
       body.innerHTML = '<div style="display:flex;justify-content:center;color:var(--sage,#7a9a7e)">' + provIcon('key').replace(/width="18" height="18"/, 'width="56" height="56"') + '</div>' +
@@ -408,7 +417,7 @@
       try {
         var pend = localStorage.getItem('rs_mail_pending');
         if (pend && user.email && pend === user.email.toLowerCase()) { localStorage.setItem('rs_mail_notice', '1'); localStorage.removeItem('rs_mail_pending'); }
-        if (localStorage.getItem('rs_mail_notice') === '1') mailNotice = '<div class="feedback-banner success" role="status" style="display:flex;gap:8px;align-items:center;justify-content:space-between"><span>Fertig: Deine E-Mail-Adresse wurde auf <b>' + esc(user.email || '') + '</b> geändert.</span><button type="button" class="btn btn-sm" onclick="RSAUTH.mailNoticeClose()">OK</button></div>';
+        if (localStorage.getItem('rs_mail_notice') === '1') mailNotice = '<div class="feedback-banner success" role="status" style="display:flex;gap:8px;align-items:center;justify-content:space-between"><span>Fertig: Deine E-Mail-Adresse wurde auf <b>' + esc(user.email || '') + '</b> geändert.</span><button type="button" class="btn btn-sm" style="flex:none;width:auto;white-space:nowrap" onclick="RSAUTH.mailNoticeClose()">OK</button></div>';
       } catch (x) {}
       if (hasEmailLogin()) {
         mailBlock = '<div class="panel-subblock"><span class="label">E-Mail-Adresse ändern</span>';
@@ -433,7 +442,11 @@
         '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
         designSection() + abBlock() +
         details('sec', provIcon('key'), 'Sicherheit', mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock) +
-        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' ;
+        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
+        '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib mir direkt. Deine E-Mail-Adresse (' + esc(user.email || '') + ') wird mitgeschickt, damit ich dir antworten kann.</p>' +
+        '<div class="field-group"><label class="field-label" for="acct-sup-topic">Worum geht es?</label><select id="acct-sup-topic" class="input-control"><option value="question">Frage</option><option value="bug">Fehler melden</option><option value="idea">Idee / Wunsch</option><option value="other">Sonstiges</option></select></div>' +
+        '<div class="field-group"><label class="field-label" for="acct-sup-msg">Nachricht</label><textarea id="acct-sup-msg" class="input-control" rows="5" maxlength="4000" placeholder="Beschreibe kurz, was du erlebt hast oder dir wünschst." style="resize:vertical">' + esc(supDraft) + '</textarea></div>' +
+        '<button type="button" class="btn btn-primary" onclick="RSAUTH.supportSend()">Nachricht senden</button></div>';
       
       return;
     }
@@ -525,10 +538,25 @@
   function checkImport() { /* Konto ist Pflicht: keine Nachfrage mehr zur Übernahme von Gerätedaten */ }
   /* Konto nur mit Passkey: nach der E-Mail-Bestätigung gleich den Passkey einrichten lassen */
   function pkNewMail() { try { return localStorage.getItem('rs_pk_new') || ''; } catch (e) { return ''; } }
+  /* Nach dem Erstellen eines Kontos: Name und Profilbild abfragen (optional) */
+  function profNewMail() { try { return localStorage.getItem('rs_prof_new') || ''; } catch (e) { return ''; } }
+  function checkProf() {
+    if (!user || switching) return;
+    var md = user.user_metadata || {};
+    if (md.prof_done) { try { localStorage.removeItem('rs_prof_new'); } catch (e) {} return; } /* auf einem anderen Gerät schon erledigt */
+    if (!profNewMail()) { /* Erste Anmeldung über Google/GitHub: Konto ist gerade erst entstanden */
+      var ap = (user.app_metadata || {}).provider, c = Date.parse(user.created_at), l = Date.parse(user.last_sign_in_at);
+      if (ap && ap !== 'email' && isFinite(c) && isFinite(l) && Math.abs(l - c) < 15 * 60 * 1000) { try { localStorage.setItem('rs_prof_new', String(user.email || '').toLowerCase()); } catch (e) {} }
+    }
+    if (!profNewMail()) return;
+    if (profNewMail() !== String(user.email || '').toLowerCase()) return;
+    if (view === 'recovery' || view === 'import' || needWelcome()) return;
+    view = 'profsetup'; RSAUTH.open();
+  }
   function checkPk() {
     if (!user || switching || !pkNewMail()) return;
     if (pkNewMail() !== String(user.email || '').toLowerCase()) return;
-    if (view === 'recovery' || view === 'import' || needWelcome()) return; /* nie ein anderes Fenster verdrängen */
+    if (view === 'recovery' || view === 'import' || view === 'profsetup' || needWelcome()) return; /* nie ein anderes Fenster verdrängen */
     if (!pkOk()) { try { localStorage.removeItem('rs_pk_new'); } catch (e) {} return; }
     view = 'pksetup'; RSAUTH.open();
   }
@@ -668,6 +696,22 @@
     setInterval(pull, 60000);
   })();
 
+  /* Hinweis „E-Mail-Adresse geändert“: bleibt nach Neuladen sichtbar, bis er bestätigt wurde */
+  var mailPopupOpen = false;
+  function mailDonePopup() {
+    if (!user || mailPopupOpen || typeof rsConfirm !== 'function') return;
+    try {
+      var pend = localStorage.getItem('rs_mail_pending');
+      if (pend && user.email && pend === user.email.toLowerCase()) { localStorage.setItem('rs_mail_notice', '1'); localStorage.removeItem('rs_mail_pending'); }
+      if (localStorage.getItem('rs_mail_notice') !== '1') return;
+    } catch (e) { return; }
+    mailPopupOpen = true;
+    rsConfirm('Deine E-Mail-Adresse wurde auf ' + (user.email || '') + ' geändert. Ab jetzt meldest du dich damit an.', { title: 'E-Mail-Adresse geändert', ok: 'OK', cancel: 'Schließen' }).then(function () {
+      mailPopupOpen = false;
+      try { localStorage.removeItem('rs_mail_notice'); } catch (e) {}
+      render();
+    });
+  }
   function loggedIn(session) {
     user = session ? session.user : null;
     if (ensureNamespace()) return;
@@ -679,7 +723,7 @@
     reveal();
     if (ON_LOGIN) { if (view !== 'recovery' && !(needWelcome() && !inviteShown)) toApp(); return; }
     oauthNote();
-    setTimeout(checkPk, 400); setTimeout(checkImport, 1200);
+    setTimeout(checkProf, 300); setTimeout(checkPk, 400); setTimeout(checkImport, 1200); setTimeout(mailDonePopup, 500);
   }
 
   /* ---------- Öffentliche API ---------- */
@@ -712,7 +756,7 @@
       msg('Konto wird erstellt …', 'info');
       var r = await sb.auth.signUp({ email: e, password: p, options: Object.assign({ emailRedirectTo: location.origin + location.pathname }, capOpt()) });
       if (r.error) { capReset(); msg(err(r.error), 'error'); return; }
-      try { localStorage.setItem('rs_pk_new', e.toLowerCase()); } catch (x) {} /* danach Passkey vorschlagen */
+      try { localStorage.setItem('rs_pk_new', e.toLowerCase()); localStorage.setItem('rs_prof_new', e.toLowerCase()); } catch (x) {} /* danach Profil und Passkey vorschlagen */
       if (r.data.session) { markFresh(); loggedIn(r.data.session); sync(); }
       else { view = 'login'; render(); msg('Fast geschafft: Wir haben dir eine Bestätigungsmail geschickt. Klicke auf den Link darin. Danach schlagen wir dir vor, einen Passkey einzurichten.', 'success'); }
     },
@@ -731,7 +775,7 @@
       var r = await sb.auth.updateUser({ password: a, data: { pw_set: true } });
       if (r.error) { msg(err(r.error), 'error'); return; }
       var wasWelcome = welcome; welcome = false; clearWelcome();
-      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); if (ON_LOGIN) { setTimeout(toApp, 900); return; } setTimeout(checkPk, 1200); setTimeout(checkImport, 2000);
+      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); if (ON_LOGIN) { try { if (wasWelcome && user && user.email) localStorage.setItem('rs_prof_new', user.email.toLowerCase()); } catch (x) {} setTimeout(toApp, 900); return; } try { if (wasWelcome && user && user.email) localStorage.setItem('rs_prof_new', user.email.toLowerCase()); } catch (x) {} setTimeout(checkProf, 1000); setTimeout(checkPk, 1200); setTimeout(checkImport, 2000);
     },
     changePassword: async function () {
       var a = val('acct-pw1'); if (a.length < 8) { msg('Das Passwort muss mindestens 8 Zeichen haben.', 'warning'); return; }
@@ -779,6 +823,19 @@
     secToggle: function (k, o) { secOpen[k] = !!o; },
     setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
     setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
+    supportSend: async function () {
+      var m = val('acct-sup-msg').trim(), t = val('acct-sup-topic') || 'question';
+      supDraft = m;
+      if (m.length < 5) { msg('Bitte schreibe eine Nachricht (mindestens 5 Zeichen).', 'warning'); return; }
+      msg('Nachricht wird gesendet …', 'info');
+      try {
+        var r = await sb.functions.invoke('support', { body: { topic: t, message: m, page: location.pathname, ua: navigator.userAgent } });
+        if (r.error) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); return; }
+        if (!r.data || !r.data.ok) { msg((r.data && r.data.error) || 'Die Nachricht konnte nicht gesendet werden.', 'error'); return; }
+        supDraft = ''; var el = $('acct-sup-msg'); if (el) el.value = '';
+        msg('Danke! Deine Nachricht ist angekommen. Ich antworte dir per E-Mail.', 'success');
+      } catch (e) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); }
+    },
     invite: async function () {
       var e = val('acct-invite').trim(); if (!e) { msg('Bitte gib die E-Mail-Adresse der Person ein.', 'warning'); return; }
       msg('Einladung wird gesendet …', 'info');
@@ -871,6 +928,18 @@
       if (r.data && r.data.user) user = r.data.user;
       msg(on ? 'Bei Anmeldung mit Passwort wird jetzt zusätzlich ein Code per E-Mail verlangt.' : 'Der zusätzliche E-Mail-Code ist ausgeschaltet.', 'success');
     },
+    nameDraft: function (v) { profDraft = v; },
+    profDone: async function () {
+      var n = (profDraft || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+      if (n) { try { msg('Wird gespeichert …', 'info'); await saveProfile(avatarCustom, n); } catch (e) { msg('Der Name konnte nicht gespeichert werden: ' + err(e), 'error'); return; } }
+      RSAUTH.profSkip();
+    },
+    profSkip: function () {
+      try { localStorage.removeItem('rs_prof_new'); } catch (e) {} profDraft = ''; view = 'login'; msg('');
+      try { sb.auth.updateUser({ data: { prof_done: true } }).catch(function () {}); } catch (e) {}
+      var willPk = false; try { willPk = !!pkNewMail() && pkNewMail() === String((user && user.email) || '').toLowerCase() && pkOk(); } catch (e) {}
+      if (willPk) { render(); setTimeout(checkPk, 200); } else if (!ON_KONTO) { RSAUTH.close(); render(); } else render();
+    },
     passkeySkip: function () { try { localStorage.removeItem('rs_pk_new'); } catch (e) {} view = 'login'; render(); msg('Du kannst den Passkey jederzeit unter „Mein Konto“ einrichten.', 'info'); setTimeout(checkImport, 600); },
     passkeyAdd: async function () {
       msg('Passkey wird eingerichtet …', 'info');
@@ -940,6 +1009,7 @@
         if (ev === 'SIGNED_IN' && otpGate) return; /* Passwort-Anmeldung läuft: erst nach Code-Prüfung entscheiden */
         if (ev === 'PASSWORD_RECOVERY') { try { if (!pwKind()) sessionStorage.setItem('rs_welcome', 'recovery'); } catch (e) {} if (!inviteShown) showPw(session); }
         else if (ev === 'SIGNED_OUT') { loggedIn(null); }
+        else if (ev === 'USER_UPDATED' && session && user) { user = session.user; setTimeout(mailDonePopup, 300); }
         else if (ev === 'SIGNED_IN' && needWelcome() && !inviteShown && session) { showPw(session); }
         else if (ev === 'SIGNED_IN' && enforcePw(session)) { }
         else if (ev === 'SIGNED_IN' && !user) { loggedIn(session); setTimeout(sync, 0); }

@@ -12,6 +12,7 @@
         if (ev === 'SIGNED_IN' && otpGate) return; /* Passwort-Anmeldung läuft: erst nach Code-Prüfung entscheiden */
         if (ev === 'PASSWORD_RECOVERY') { try { if (!pwKind()) sessionStorage.setItem('rs_welcome', 'recovery'); } catch (e) {} if (!inviteShown) showPw(session); }
         else if (ev === 'SIGNED_OUT') { loggedIn(null); }
+        else if (ev === 'USER_UPDATED' && session && user) { user = session.user; setTimeout(mailDonePopup, 300); }
         else if (ev === 'SIGNED_IN' && needWelcome() && !inviteShown && session) { showPw(session); }
         else if (ev === 'SIGNED_IN' && enforcePw(session)) { }
         else if (ev === 'SIGNED_IN' && !user) { loggedIn(session); setTimeout(sync, 0); }

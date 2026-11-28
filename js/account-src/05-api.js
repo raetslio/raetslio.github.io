@@ -28,7 +28,7 @@
       msg('Konto wird erstellt …', 'info');
       var r = await sb.auth.signUp({ email: e, password: p, options: Object.assign({ emailRedirectTo: location.origin + location.pathname }, capOpt()) });
       if (r.error) { capReset(); msg(err(r.error), 'error'); return; }
-      try { localStorage.setItem('rs_pk_new', e.toLowerCase()); } catch (x) {} /* danach Passkey vorschlagen */
+      try { localStorage.setItem('rs_pk_new', e.toLowerCase()); localStorage.setItem('rs_prof_new', e.toLowerCase()); } catch (x) {} /* danach Profil und Passkey vorschlagen */
       if (r.data.session) { markFresh(); loggedIn(r.data.session); sync(); }
       else { view = 'login'; render(); msg('Fast geschafft: Wir haben dir eine Bestätigungsmail geschickt. Klicke auf den Link darin. Danach schlagen wir dir vor, einen Passkey einzurichten.', 'success'); }
     },
@@ -47,7 +47,7 @@
       var r = await sb.auth.updateUser({ password: a, data: { pw_set: true } });
       if (r.error) { msg(err(r.error), 'error'); return; }
       var wasWelcome = welcome; welcome = false; clearWelcome();
-      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); if (ON_LOGIN) { setTimeout(toApp, 900); return; } setTimeout(checkPk, 1200); setTimeout(checkImport, 2000);
+      view = 'login'; render(); msg(wasWelcome ? 'Passwort gespeichert. Willkommen bei Rätslio? – du bist angemeldet.' : 'Passwort geändert. Du bist angemeldet.', 'success'); sync(); if (ON_LOGIN) { try { if (wasWelcome && user && user.email) localStorage.setItem('rs_prof_new', user.email.toLowerCase()); } catch (x) {} setTimeout(toApp, 900); return; } try { if (wasWelcome && user && user.email) localStorage.setItem('rs_prof_new', user.email.toLowerCase()); } catch (x) {} setTimeout(checkProf, 1000); setTimeout(checkPk, 1200); setTimeout(checkImport, 2000);
     },
     changePassword: async function () {
       var a = val('acct-pw1'); if (a.length < 8) { msg('Das Passwort muss mindestens 8 Zeichen haben.', 'warning'); return; }
@@ -95,6 +95,19 @@
     secToggle: function (k, o) { secOpen[k] = !!o; },
     setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
     setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
+    supportSend: async function () {
+      var m = val('acct-sup-msg').trim(), t = val('acct-sup-topic') || 'question';
+      supDraft = m;
+      if (m.length < 5) { msg('Bitte schreibe eine Nachricht (mindestens 5 Zeichen).', 'warning'); return; }
+      msg('Nachricht wird gesendet …', 'info');
+      try {
+        var r = await sb.functions.invoke('support', { body: { topic: t, message: m, page: location.pathname, ua: navigator.userAgent } });
+        if (r.error) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); return; }
+        if (!r.data || !r.data.ok) { msg((r.data && r.data.error) || 'Die Nachricht konnte nicht gesendet werden.', 'error'); return; }
+        supDraft = ''; var el = $('acct-sup-msg'); if (el) el.value = '';
+        msg('Danke! Deine Nachricht ist angekommen. Ich antworte dir per E-Mail.', 'success');
+      } catch (e) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); }
+    },
     invite: async function () {
       var e = val('acct-invite').trim(); if (!e) { msg('Bitte gib die E-Mail-Adresse der Person ein.', 'warning'); return; }
       msg('Einladung wird gesendet …', 'info');
@@ -186,6 +199,18 @@
       if (r.error) { msg(err(r.error), 'error'); var cb = $('acct-otp-req'); if (cb) cb.checked = !on; return; }
       if (r.data && r.data.user) user = r.data.user;
       msg(on ? 'Bei Anmeldung mit Passwort wird jetzt zusätzlich ein Code per E-Mail verlangt.' : 'Der zusätzliche E-Mail-Code ist ausgeschaltet.', 'success');
+    },
+    nameDraft: function (v) { profDraft = v; },
+    profDone: async function () {
+      var n = (profDraft || '').trim().replace(/\s+/g, ' ').slice(0, 40);
+      if (n) { try { msg('Wird gespeichert …', 'info'); await saveProfile(avatarCustom, n); } catch (e) { msg('Der Name konnte nicht gespeichert werden: ' + err(e), 'error'); return; } }
+      RSAUTH.profSkip();
+    },
+    profSkip: function () {
+      try { localStorage.removeItem('rs_prof_new'); } catch (e) {} profDraft = ''; view = 'login'; msg('');
+      try { sb.auth.updateUser({ data: { prof_done: true } }).catch(function () {}); } catch (e) {}
+      var willPk = false; try { willPk = !!pkNewMail() && pkNewMail() === String((user && user.email) || '').toLowerCase() && pkOk(); } catch (e) {}
+      if (willPk) { render(); setTimeout(checkPk, 200); } else if (!ON_KONTO) { RSAUTH.close(); render(); } else render();
     },
     passkeySkip: function () { try { localStorage.removeItem('rs_pk_new'); } catch (e) {} view = 'login'; render(); msg('Du kannst den Passkey jederzeit unter „Mein Konto“ einrichten.', 'info'); setTimeout(checkImport, 600); },
     passkeyAdd: async function () {
