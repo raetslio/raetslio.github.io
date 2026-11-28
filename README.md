@@ -9,7 +9,7 @@ Die App besteht aus **einer gemeinsamen Oberfläche `app-body.html`** (Markup un
 - Startseite: `/start/` (Kacheln der Rätselarten, Profil, Zähler für angefangene Rätsel, Verläufe und Hefte)
 - Rätselarten: `/sudoku/`, `/suchsel/`, `/binoxxo/`, `/labyrinth/`, `/hitori/`, `/zahlenmauer/`, `/magisches-quadrat/`
 - Rätselheft und Verläufe: `/heft/`, `/spiele/` (Spielverlauf), `/verlauf/` (Druckverlauf)
-- Support: `/support/` (Formular für eingeloggte Nutzer, nicht in der Sitemap, per `robots.txt` gesperrt)
+- Support: `/support/` (Formular, auch ohne Anmeldung nutzbar; dort mit E-Mail-Feld; nicht in der Sitemap, per `robots.txt` gesperrt)
 - Konto: `/login/`, `/konto/` (beide nicht indexierbar)
 - Support-Antworten: `/answer/<ID>/` (nur für den Admin, eigenständige Seite ohne `app-body.html`, nicht indexierbar; siehe „Support“)
 
@@ -71,7 +71,7 @@ Alle Rätselseiten sind nur mit Konto nutzbar. Ohne Anmeldung leitet ein kleines
 
 ## Support
 
-Eingeloggte Nutzer schreiben aus `/konto/` an den Support (Aufruf `sb.functions.invoke('support')` in `js/account-src/05-api.js`). Die Funktion `support` prüft die Anmeldung, legt ein Ticket mit zufälliger Answer-ID in `support_tickets` an (höchstens 5 Nachrichten pro Nutzer und Tag, höchstens 4000 Zeichen), und schickt dir per Gmail eine Mail mit dem Link `https://raetslio.github.io/answer/<ID>/`. Dort antwortest du: `answer/index.html` ruft `support-admin` auf, das nur für die in `ADMIN_EMAILS` (Standard: `SUPPORT_TO` bzw. `GMAIL_USER`) eingetragenen Konten arbeitet, das Ticket lädt und die Antwort als HTML-Mail an den Nutzer sendet. Der Nutzer erfährt die ID nie. Die Tabelle hat Row Level Security ohne Richtlinien: nur die Edge Functions (Service-Key) kommen an die Daten.
+Nutzer schreiben über `/support/` an den Support, angemeldet oder ohne Anmeldung (ohne Anmeldung ist `/support/` die einzige offene Seite, ohne Menü und Leiste; das Formular fragt dann nach der E-Mail-Adresse, die in der Mail als „nicht bestätigt“ steht; Schutz: verstecktes Feld, höchstens 3 Nachrichten je E-Mail und Tag, höchstens 30 anonyme Nachrichten pro Tag) (Aufruf `sb.functions.invoke('support')` in `js/account-src/05-api.js`). Die Funktion `support` prüft die Anmeldung (falls vorhanden), legt ein Ticket mit zufälliger Answer-ID in `support_tickets` an (angemeldet: höchstens 5 Nachrichten pro Nutzer und Tag, höchstens 4000 Zeichen), und schickt dir per Gmail eine Mail mit dem Link `https://raetslio.github.io/answer/<ID>/`. Dort antwortest du: `answer/index.html` ruft `support-admin` auf, das nur für die in `ADMIN_EMAILS` (Standard: `SUPPORT_TO` bzw. `GMAIL_USER`) eingetragenen Konten arbeitet, das Ticket lädt und die Antwort als HTML-Mail an den Nutzer sendet. Der Nutzer erfährt die ID nie. Die Tabelle hat Row Level Security ohne Richtlinien: nur die Edge Functions (Service-Key) kommen an die Daten.
 
 Einrichten: `supabase/support_tickets.sql` im SQL-Editor ausführen, Geheimnisse setzen (`GMAIL_USER`, `GMAIL_APP_PASSWORD`, optional `SUPPORT_TO`, `ADMIN_EMAILS`, Einzelheiten im Kopf der Funktionsdateien) und mit `supabase functions deploy support` sowie `supabase functions deploy support-admin` bereitstellen.
 
@@ -110,7 +110,7 @@ Einrichten: `supabase/support_tickets.sql` im SQL-Editor ausführen, Geheimnisse
 ## Hinweise
 
 - Offline-Nutzung und Installation als App funktionieren nur über `https://` (oder `localhost`).
-- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v86`), sonst bleibt der alte Zwischenspeicher aktiv.
+- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v88`), sonst bleibt der alte Zwischenspeicher aktiv.
 
 ## Leitlinie
 

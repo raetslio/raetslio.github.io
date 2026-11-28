@@ -1,7 +1,9 @@
   /* ---------- Öffentliche API ---------- */
   window.RSAUTH = {
     open: function () {
-      var m = $('acct-modal'); if (!m) return; if (GATE && !ON_LOGIN && !user) { toLogin(); return; }
+      var m = $('acct-modal'); if (!m) return;
+      if (ON_SUPPORT && !user) { location.href = '/login/?next=' + encodeURIComponent('/support/'); return; }
+      if (GATE && !ON_LOGIN && !user) { toLogin(); return; }
       /* Eingeloggt: „Mein Konto“ ist eine eigene Seite. Einrichtungs-Schritte (Passkey, Passwort) bleiben Fenster. */
       if (user && !ON_KONTO && !ON_LOGIN && view === 'login') { try { sessionStorage.setItem('rs_konto_back', location.pathname + location.search); } catch (e) {} location.href = '/konto/'; return; }
        m.setAttribute('data-open', 'true'); msg(''); render(); var f = m.querySelector('input'); if (f) f.focus(); },
@@ -96,11 +98,15 @@
     setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
     setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
     /* Support-Nachricht senden (für die Seite /support/). Gibt { ok, kind, text } zurück, zeigt selbst nichts an. */
-    supportPost: async function (topic, message, page) {
-      var m = String(message || '').trim(), t = topic || 'question';
+    supportPost: async function (topic, message, page, extra) {
+      var m = String(message || '').trim(), t = topic || 'question', em = '';
       if (m.length < 5) return { ok: false, kind: 'warning', text: 'Bitte schreibe eine Nachricht (mindestens 5 Zeichen).' };
+      if (!user) { /* ohne Anmeldung: E-Mail-Adresse für die Antwort nötig */
+        em = String((extra && extra.email) || '').trim();
+        if (!/^[^\s@<>"',;]+@[^\s@<>"',;]+\.[^\s@<>"',;]{2,}$/.test(em) || em.length > 200) return { ok: false, kind: 'warning', text: 'Bitte gib eine gültige E-Mail-Adresse an, damit wir dir antworten können.' };
+      }
       try {
-        var r = await sb.functions.invoke('support', { body: { topic: t, message: m, page: page || location.pathname, ua: navigator.userAgent } });
+        var r = await sb.functions.invoke('support', { body: { topic: t, message: m, page: page || location.pathname, ua: navigator.userAgent, email: em, hp: (extra && extra.hp) || '' } });
         if (r.error) { var st = r.error.context && r.error.context.status; return { ok: false, kind: 'error', text: st === 404 ? 'Der Support ist noch nicht eingerichtet (Funktion „support“ fehlt). Bitte versuche es später erneut.' : 'Die Nachricht konnte nicht gesendet werden (' + (st ? 'Fehler ' + st : 'keine Verbindung') + '). Bitte versuche es später erneut.' }; }
         if (!r.data || !r.data.ok) return { ok: false, kind: 'error', text: ((r.data && r.data.error) || 'Die Nachricht konnte nicht gesendet werden.') + (r.data && r.data.code ? ' (' + r.data.code + ')' : '') };
         return { ok: true, kind: 'success', text: 'Danke! Deine Nachricht ist bei uns angekommen. Wir antworten dir per E-Mail.' };

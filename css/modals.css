@@ -264,7 +264,7 @@
     overflow: visible !important;
     width: 210mm;
   }
-  .app-shell, .modal-backdrop {
+  .app-shell, .modal-backdrop, .rs-skip, .rs-appnav, .rs-appmore, .rs-drawer, .rs-backdrop {
     display: none !important;
   }
   #print-output-container {

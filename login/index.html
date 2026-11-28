@@ -16,9 +16,11 @@
      Die eigentliche Prüfung der Sitzung macht js/account.js. Einladungs-/Passwort-Links (#...type=...) bleiben erhalten. */
   (function () {
     var onLogin = /^\/login\/?(index\.html)?$/.test(location.pathname);
+    var onSupport = /^\/support\/?(index\.html)?$/.test(location.pathname); /* Support ist auch ohne Anmeldung erreichbar */
     window.__rsGate = !onLogin;
     if (onLogin) return;
     var has = false; try { has = !!localStorage.getItem('sb-dnhjzlnbuqmyqgjxxygx-auth-token'); } catch (e) {}
+    if (!has && onSupport) { document.documentElement.classList.add('rs-anon-support'); return; }
     if (!has) {
       var next = location.pathname + location.search;
       location.replace('/login/?next=' + encodeURIComponent(next) + location.hash);

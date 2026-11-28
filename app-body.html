@@ -626,8 +626,11 @@
       <div class="main-column">
         <section class="panel panel-stack">
           <h2 class="section-title">Sup<strong>port</strong></h2>
-          <p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt. Die E-Mail-Adresse deines Kontos wird mitgeschickt, damit wir dir antworten können.</p>
+          <p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt. <span class="rs-signed-only">Die E-Mail-Adresse deines Kontos wird mitgeschickt, damit wir dir antworten können.</span><span class="rs-anon-only">Du musst dafür nicht angemeldet sein. Gib bitte deine E-Mail-Adresse an, damit wir dir antworten können.</span></p>
+          <div class="rs-anon-only"><a class="btn btn-sm" href="/login/?next=%2Fsupport%2F">Zur Anmeldung</a></div>
           <div id="sup-msg" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <div class="field-group rs-anon-only"><label class="field-label" for="sup-email">Deine E-Mail-Adresse</label><input id="sup-email" class="input-control" type="email" inputmode="email" autocomplete="email" maxlength="200" placeholder="name@beispiel.de"></div>
+          <div aria-hidden="true" style="position:absolute;left:-9999px;width:1px;height:1px;overflow:hidden"><label>Bitte leer lassen<input id="sup-web" type="text" tabindex="-1" autocomplete="off"></label></div>
           <div class="field-group"><label class="field-label" for="sup-topic">Worum geht es?</label><select id="sup-topic" class="input-control"><option value="question">Frage</option><option value="bug">Fehler melden</option><option value="idea">Idee / Wunsch</option><option value="other">Sonstiges</option></select></div>
           <div class="field-group"><label class="field-label" for="sup-text">Nachricht</label><textarea id="sup-text" class="input-control" rows="7" maxlength="4000" placeholder="Beschreibe kurz, was du erlebt hast oder dir wünschst." style="resize:vertical"></textarea></div>
           <button type="button" id="sup-send" class="btn btn-primary">Nachricht senden</button>
@@ -1035,7 +1038,7 @@
     <button type="button" id="rs-am-btn" data-tab="more" aria-haspopup="true" aria-expanded="false" aria-controls="rs-appmore" aria-label="Mehr"><svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg><span>Mehr</span></button>
   </nav>
   <div id="rs-appmore" class="rs-appmore" role="menu" aria-label="Mehr" aria-hidden="true">
-    <button type="button" role="menuitem" id="rs-am-logout" class="rs-am-item"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H5v16h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg><span>Abmelden</span></button>
+    <button type="button" role="menuitem" id="rs-am-logout" class="rs-am-item rs-am-danger"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H5v16h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg><span>Abmelden</span></button>
     <button type="button" role="menuitem" id="rs-am-support" class="rs-am-item"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.9"/><circle cx="12" cy="16.8" r=".6" fill="currentColor"/></svg><span>Support</span></button>
     <div class="rs-am-row" role="group" aria-label="Darstellung">
       <span class="rs-am-label">Darstellung</span>

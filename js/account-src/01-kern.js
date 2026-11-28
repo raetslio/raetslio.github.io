@@ -90,6 +90,8 @@
   /* ---------- Anmeldepflicht ---------- */
   var ON_LOGIN = /^\/login\/?(index\.html)?$/.test(location.pathname);
   var ON_KONTO = /^\/konto\/?(index\.html)?$/.test(location.pathname); /* eigene Konto-Seite */
+  var ON_SUPPORT = /^\/support\/?(index\.html)?$/.test(location.pathname); /* Support auch ohne Anmeldung */
+  function anonSupport(on) { try { document.documentElement.classList.toggle('rs-anon-support', !!on); } catch (e) {} }
   var GATE = true; /* true = ohne Anmeldung kein Zugriff auf die Rätselseiten */
   function nextUrl() {
     var n = '/sudoku/', q = null;
@@ -99,6 +101,7 @@
   }
   function toLogin() {
     if (!GATE || ON_LOGIN) return;
+    if (ON_SUPPORT) { anonSupport(true); reveal(); return; } /* Support bleibt ohne Anmeldung offen */
     location.replace('/login/?next=' + encodeURIComponent(location.pathname + location.search) + location.hash);
   }
   function toApp() { if (ON_LOGIN) { var n = nextUrl(); try { sessionStorage.removeItem('rs_next'); } catch (e) {} location.replace(n); } }
