@@ -68,9 +68,9 @@
   --ws-hl-9: #966a50;
 
   /* Fonts */
-  --font-headline: 'Outfit', sans-serif;
-  --font-body: 'Hanken Grotesk', sans-serif;
-  --font-label: 'Outfit', sans-serif;
+  --font-headline: 'Outfit', system-ui, sans-serif;
+  --font-body: 'Hanken Grotesk', system-ui, sans-serif;
+  --font-label: 'Outfit', system-ui, sans-serif;
 
   /* Type scale (Focused Tool) */
   --display-size: clamp(1.5rem, 1.25rem + 1vw, 2rem);

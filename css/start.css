@@ -97,3 +97,51 @@ body.rs-login .rs-bottomnav { display: none !important; }
 
 .rs-bottomnav .rs-bn-av { width: 24px; height: 24px; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; line-height: 1; }
 .rs-bottomnav .rs-bn-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+/* ======================================================================
+   Untere Leiste (Handy): schwebende, abgerundete „Glas“-Leiste
+   (überschreibt die Vollbreit-Leiste weiter oben; steht absichtlich am Dateiende)
+   ====================================================================== */
+@media (max-width: 640px) {
+  .rs-bottomnav,
+  html[data-theme="dark"] .rs-bottomnav {
+    left: 12px; right: 12px;
+    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
+    padding: 6px;
+    gap: 2px;
+    border-radius: 32px;
+    border: 1px solid rgba(255, 255, 255, .7);
+    background: var(--surface-container-low);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, .16), 0 1px 3px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .6);
+  }
+  html[data-theme="dark"] .rs-bottomnav {
+    border-color: rgba(255, 255, 255, .12);
+    box-shadow: 0 10px 32px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .08);
+  }
+  @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+    .rs-bottomnav {
+      background: color-mix(in srgb, var(--surface-container-low) 72%, transparent);
+      -webkit-backdrop-filter: blur(22px) saturate(1.7);
+      backdrop-filter: blur(22px) saturate(1.7);
+    }
+  }
+  .rs-bottomnav button {
+    min-height: 54px;
+    border-radius: 26px;
+    color: var(--on-surface-variant);
+  }
+  .rs-bottomnav button[aria-current="page"] {
+    color: var(--on-surface);
+    font-weight: 700;
+    background: color-mix(in srgb, var(--on-surface) 10%, transparent);
+  }
+  .rs-bottomnav button[aria-current="page"]::before { display: none; }
+  .rs-bottomnav button:focus-visible { outline-offset: -2px; }
+  .rs-bottomnav .rs-bn-av { background: var(--primary-container); color: var(--on-primary-container); }
+  /* Platz unter dem Inhalt, damit nichts hinter der schwebenden Leiste verschwindet */
+  body { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  body.rs-konto .rs-bottomnav { margin: 0 12px calc(10px + env(safe-area-inset-bottom, 0px)); }
+}
+@media (prefers-reduced-transparency: reduce) {
+  .rs-bottomnav { background: var(--surface-container-low) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}

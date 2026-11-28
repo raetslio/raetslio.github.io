@@ -23,10 +23,18 @@
       location.replace('/login/?next=' + encodeURIComponent(next) + location.hash);
       return;
     }
-    var st = document.createElement('style'); st.id = 'rs-gate-css'; st.textContent = 'html{visibility:hidden}';
-    document.head.appendChild(st);
-    window.__rsReveal = function () { var s = document.getElementById('rs-gate-css'); if (s) s.remove(); };
-    setTimeout(window.__rsReveal, 8000); /* Notausgang: gespeicherte Anmeldung vorhanden, aber Dienst nicht erreichbar */
+    /* Bis die Sitzung geprüft ist: Inhalt verbergen, aber Logo und Ladering zeigen (statt weißer Seite) */
+    var st = document.createElement('style'); st.id = 'rs-gate-css';
+    st.textContent = 'html.rs-gating body{visibility:hidden}'
+      + 'html.rs-gating::before{content:"";position:fixed;inset:0;z-index:2147483646;visibility:visible;background:#f5f6f5 url(/logo-icon.svg) center/56px 56px no-repeat}'
+      + 'html.rs-gating::after{content:"";position:fixed;top:50%;left:50%;width:84px;height:84px;margin:-42px 0 0 -42px;box-sizing:border-box;border:3px solid rgba(60,90,110,.18);border-top-color:#3c5a6e;border-radius:50%;z-index:2147483647;visibility:visible;animation:rs-gate-spin 1s linear infinite}'
+      + 'html[data-theme="dark"].rs-gating::before{background-color:#1c2023}'
+      + 'html[data-theme="dark"].rs-gating::after{border-color:rgba(157,184,204,.2);border-top-color:#9db8cc}'
+      + '@keyframes rs-gate-spin{to{transform:rotate(360deg)}}'
+      + '@media (prefers-reduced-motion:reduce){html.rs-gating::after{animation-duration:3s}}';
+    document.head.appendChild(st); document.documentElement.classList.add('rs-gating');
+    window.__rsReveal = function () { var s = document.getElementById('rs-gate-css'); if (s) s.remove(); document.documentElement.classList.remove('rs-gating'); };
+    setTimeout(window.__rsReveal, 5000); /* Notausgang: gespeicherte Anmeldung vorhanden, aber Dienst nicht erreichbar */
   })();
   </script>
   <title>Hitori — Rätslio?</title>
@@ -53,7 +61,9 @@
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-title" content="Rätslio?">
   <link rel="manifest" href="manifest.webmanifest">
-  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&family=Hanken+Grotesk:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+  <link rel="preload" href="fonts/outfit-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="fonts/hanken-grotesk-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="stylesheet" href="css/fonts.css">
   <link rel="stylesheet" href="css/tokens.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
@@ -66,11 +76,35 @@
   <script src="js/host-fallback.js"></script>
 </head>
 <body>
+  <noscript>
+    <div style="max-width:30rem;margin:15vh auto 0;padding:24px;text-align:center;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;line-height:1.55">
+      <h1 style="font-size:1.4rem;margin:0 0 10px">Rätslio? braucht JavaScript</h1>
+      <p style="margin:0">Bitte aktiviere JavaScript in deinem Browser (oder erlaube es für diese Seite) und lade die Seite neu. Ohne JavaScript lassen sich Rätsel, Anmeldung und Druck leider nicht nutzen.</p>
+    </div>
+  </noscript>
   <!-- Gemeinsames Markup und alle Skripte liegen einmalig in /app-body.html (Quelle der Wahrheit fuer die Oberflaeche). -->
   <script>
   (function () {
     try { var x = new XMLHttpRequest(); x.open('GET', '/app-body.html', false); x.send(); if (x.status < 200 || x.status >= 300) throw 0; document.write(x.responseText); }
-    catch (e) { document.write('<p style="padding:24px;font-family:sans-serif">Rätslio? konnte nicht geladen werden. <a href="">Seite neu laden</a></p>'); }
+    catch (e) {
+      /* Totalausfall: gestaltete Fehlerseite statt nacktem Absatz */
+      document.write('<style>body{margin:0;background:#f5f6f5;color:#23272a;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}'
+        + '@media (prefers-color-scheme:dark){body{background:#1c2023;color:#e6e9e7}.rs-err a{color:#9db8cc;border-color:#9db8cc}.rs-err button{background:#9db8cc;color:#1c2023}}'
+        + '.rs-err{max-width:28rem;margin:0 auto;padding:18vh 24px 24px;text-align:center;line-height:1.55}.rs-err img{width:64px;height:64px}'
+        + '.rs-err h1{font-size:1.4rem;margin:16px 0 8px}.rs-err p{margin:0 0 22px;opacity:.85}.rs-err .b{display:flex;gap:12px;justify-content:center;flex-wrap:wrap}'
+        + '.rs-err button,.rs-err a{min-height:44px;padding:0 20px;border-radius:12px;font:600 1rem inherit;font-family:inherit;display:inline-flex;align-items:center;text-decoration:none;box-sizing:border-box;cursor:pointer}'
+        + '.rs-err button{border:0;background:#3c5a6e;color:#fff}.rs-err a{border:2px solid #3c5a6e;color:#3c5a6e}</style>'
+        + '<div class="rs-err" role="alert"><img src="/logo-icon.svg" alt="">'
+        + '<h1>Rätslio? konnte nicht geladen werden</h1>'
+        + '<p id="rs-err-msg">Das ist meistens ein kurzes Verbindungsproblem. Bitte prüfe deine Internetverbindung und versuche es noch einmal.</p>'
+        + '<div class="b"><button type="button" onclick="location.reload()">Neu laden</button><a id="rs-err-off" href="" hidden>Offline weiterspielen</a></div></div>');
+      document.addEventListener('DOMContentLoaded', function () {
+        var m = document.getElementById('rs-err-msg'), o = document.getElementById('rs-err-off');
+        if (navigator.onLine === false && m) m.textContent = 'Du bist gerade offline. Sobald die Verbindung wieder da ist, kannst du neu laden.';
+        /* Nur anbieten, wenn die App schon einmal auf diesem Gerät zwischengespeichert wurde */
+        try { if (o && window.caches) caches.match('/app-body.html', { ignoreSearch: true }).then(function (r) { if (r) o.hidden = false; }); } catch (x) {}
+      });
+    }
   })();
   </script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

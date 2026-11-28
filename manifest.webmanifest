@@ -4,7 +4,7 @@
   "lang": "de",
   "display": "standalone",
   "id": "/",
-  "start_url": "/sudoku/",
+  "start_url": "/start/",
   "scope": "/",
   "background_color": "#f5f6f5",
   "theme_color": "#3c5a6e",
