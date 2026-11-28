@@ -197,3 +197,18 @@ body.rs-login #acct-modal .modal-card { max-width: 640px !important; }
 .rs-drawer .rs-account { min-height: 68px; gap: var(--space-md); padding: 0 var(--space-md); font-size: 1.15rem; font-weight: 600; }
 .rs-drawer .rs-account .icon-svg { width: 48px; height: 48px; padding: 9px; }
 .rs-drawer .rs-account img { width: 48px !important; height: 48px !important; }
+
+/* Lite-Modus (schwache Geräte): keine Unschärfe, dafür leicht deckendere Flächen; ruhigere Leiste */
+html.rs-lite header.site-header, html.rs-lite .rs-drawer, html.rs-lite .rs-appnav, html.rs-lite .rs-appmore, html.rs-lite .rs-backdrop {
+  -webkit-backdrop-filter: none !important; backdrop-filter: none !important;
+}
+html.rs-lite header.site-header { background: color-mix(in srgb, var(--background) 88%, transparent) !important; }
+html.rs-lite .rs-drawer { background: color-mix(in srgb, var(--surface-container-low) 94%, transparent) !important; }
+html.rs-lite .rs-appnav, html.rs-lite .rs-appmore { background: color-mix(in srgb, var(--surface-container-low) 92%, transparent) !important; }
+html.rs-lite .rs-appnav { will-change: auto; }
+html.rs-lite *, html.rs-lite *::before, html.rs-lite *::after { scroll-behavior: auto !important; }
+
+/* Profil im Menü: noch größer */
+.rs-drawer .rs-account { min-height: 84px; font-size: 1.3rem; }
+.rs-drawer .rs-account .icon-svg { width: 60px; height: 60px; padding: 12px; }
+.rs-drawer .rs-account img { width: 60px !important; height: 60px !important; }

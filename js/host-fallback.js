@@ -18,3 +18,11 @@
     }
   };
 })();
+
+/* Schwache Geräte (z. B. Meta Quest, wenig Speicher/Kerne): „Lite“-Modus ohne Glas-Unschärfe und mit weniger Animation */
+(function () {
+  try {
+    var ua = navigator.userAgent || '', weak = /OculusBrowser|Quest|Pico|Silk/i.test(ua) || (navigator.deviceMemory && navigator.deviceMemory <= 2) || (navigator.hardwareConcurrency && navigator.hardwareConcurrency <= 2);
+    if (weak) document.documentElement.classList.add('rs-lite');
+  } catch (e) {}
+})();

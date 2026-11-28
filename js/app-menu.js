@@ -74,7 +74,7 @@
       if (typeof fx === 'number') { var nr = nav.getBoundingClientRect(); left = Math.min(Math.max(fx - nr.left - w / 2, btns[0].offsetLeft), btns[btns.length - 1].offsetLeft); }
       pill.style.transition = instant || reduce ? 'none' : '';
       pill.style.opacity = '1'; pill.style.width = w + 'px'; pill.style.height = b.offsetHeight + 'px'; pill.style.top = b.offsetTop + 'px';
-      pill.style.transform = 'translateX(' + left + 'px)' + (drag && drag.moved ? ' scale(1.14,1.1)' : '');
+      pill.style.transform = 'translateX(' + left + 'px)' + (drag && (drag.moved || drag.dir === 'v') && !reduce ? ' translateY(' + (drag.ry || 0).toFixed(1) + 'px) scale(' + (drag.sx || 1.12).toFixed(3) + ',' + (drag.sy || 1.1).toFixed(3) + ')' : '');
     };
     var sync = function (instant) { if (!drag || !drag.moved) place(active(), undefined, instant); };
     var first = true;
@@ -89,17 +89,15 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { sync(true); });
     refresh();
 
-    /* Liquid-Glass-Gefühl: Leiste gibt beim Drücken nach, lässt sich beim Ziehen etwas nach außen dehnen und federt zurück */
-    var stretch = function (dx, dy) {
-      if (reduce) return;
-      var ax = Math.abs(dx), sx = dx < 0 ? -1 : 1, ay = Math.abs(dy), sy = dy < 0 ? -1 : 1;
-      var rx = sx * (1 - Math.exp(-ax / 90)) * 22, ry = sy * (1 - Math.exp(-ay / 70)) * 12; /* Gummiband: wird schwerer, je weiter man zieht */
-      var scx = 1 + (1 - Math.exp(-ax / 140)) * 0.07, scy = 1 + (1 - Math.exp(-ay / 90)) * 0.1;
-      nav.style.transition = 'none'; nav.style.transformOrigin = (dx > 0 ? 'left' : 'right') + ' ' + (dy < 0 ? 'bottom' : 'top');
-      nav.style.transform = 'translate(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px) scale(' + scx.toFixed(3) + ',' + scy.toFixed(3) + ')';
+    /* Liquid-Glass-Gefühl: der graue Wähler dehnt sich beim Ziehen und federt zurück */
+    var stretch = function (dx, dy) { /* nur der graue Wähler dehnt sich, die Leiste bleibt stehen */
+      if (reduce || !drag) return;
+      var ay = Math.abs(dy), ax = Math.abs(dx);
+      drag.ry = (dy < 0 ? -1 : 1) * (1 - Math.exp(-ay / 60)) * 10;
+      drag.sx = 1.1 + (1 - Math.exp(-ax / 120)) * 0.12; drag.sy = 1.08 + (1 - Math.exp(-ay / 60)) * 0.14;
     };
-    var release = function () { nav.classList.remove('rs-am-pressed'); nav.style.transition = ''; nav.style.transform = ''; };
-    var onStart = function (x, y) { drag = { x: x, y: y, moved: false, dir: '', b: under(x, y) }; nav.classList.add('rs-am-pressed'); };
+    var release = function () { nav.classList.remove('rs-am-pressed'); };
+    var onStart = function (x, y) { drag = { x: x, y: y, moved: false, dir: '', b: under(x, y) }; };
     var onMove = function (x, y) {
       if (!drag) return; var dx = x - drag.x, dy = y - drag.y;
       if (!drag.dir) {
@@ -107,7 +105,7 @@
         drag.dir = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h';
       }
       stretch(dx, dy);
-      if (drag.dir === 'v') { drag.dy = dy; return; }
+      if (drag.dir === 'v') { drag.dy = dy; place(drag.b || active(), undefined, true); return; }
       drag.moved = true; var b = under(x, y) || drag.b;
       if (b !== drag.b) { drag.b = b; buzz(8); }
       btns.forEach(function (q) { q.classList.toggle('rs-am-hover', q === drag.b); });

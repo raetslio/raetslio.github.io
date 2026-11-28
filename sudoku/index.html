@@ -87,7 +87,8 @@
   <!-- Gemeinsames Markup und alle Skripte liegen einmalig in /app-body.html (Quelle der Wahrheit fuer die Oberflaeche). -->
   <script>
   (function () {
-    try { var x = new XMLHttpRequest(); x.open('GET', '/app-body.html', false); x.send(); if (x.status < 200 || x.status >= 300) throw 0; document.write(x.responseText); }
+    try { var x = new XMLHttpRequest(); x.open('GET', '/app-body.html', false); x.send(); if (x.status < 200 || x.status >= 300) throw 0; try { var re = /<script[^>]+src="([^"]+)"/g, m, h = document.head; while ((m = re.exec(x.responseText))) { var l = document.createElement('link'); l.rel = 'preload'; l.as = 'script'; l.href = m[1]; h.appendChild(l); } } catch (e2) {} /* alle Skripte parallel vorladen (statt eins nach dem anderen) */
+      document.write(x.responseText); }
     catch (e) {
       /* Totalausfall: gestaltete Fehlerseite statt nacktem Absatz */
       document.write('<style>body{margin:0;background:#f5f6f5;color:#23272a;font-family:system-ui,-apple-system,"Segoe UI",sans-serif}'
