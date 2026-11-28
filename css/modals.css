@@ -302,7 +302,7 @@ body.rs-konto .app-shell { padding-bottom: 0; }
 body.rs-konto .app-shell > *:not(.site-header) { display: none !important; }
 body.rs-konto .site-header .header-controls { display: none; }
 body.rs-konto #acct-modal { position: static; inset: auto; z-index: auto; background: transparent; justify-content: center; align-items: flex-start; padding: 0 var(--space-lg) var(--space-2xl); }
-body.rs-konto #acct-modal .modal-card { max-width: 520px !important; margin: 0 auto; }
+body.rs-konto #acct-modal .modal-card { max-width: 760px !important; margin: 0 auto; }
 body.rs-konto .rs-drawer .rs-account { background: var(--primary-container); color: var(--on-primary-container); }
 
 /* Konto: einklappbarer Bereich „Sicherheit“ */

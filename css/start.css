@@ -99,9 +99,6 @@
   .rs-appnav button[aria-current="page"] .rs-bn-av { box-shadow: 0 0 0 2px #d9946e; }
   body { padding-bottom: calc(60px + env(safe-area-inset-bottom, 0px)); }
   body.rs-menu-open .rs-appnav, body.rs-menu-open .rs-appmore { display: none; }
-  body.rs-konto { padding-bottom: 0; }
-  body.rs-konto .rs-appnav { position: relative; flex: none; }
-  body.rs-konto #acct-modal { padding-bottom: var(--space-sm); }
 
   /* „Mehr“-Fenster über der Leiste */
   .rs-appmore {
@@ -136,7 +133,7 @@ body.rs-login .rs-appnav, body.rs-login .rs-appmore { display: none !important; 
 
 
 /* Web-App (iPhone, zum Home-Bildschirm hinzugefügt): schwebende Glas-Leiste */
-@media (display-mode: standalone), (min-width: 641px) {
+@media all {
   .rs-appnav {
     left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom, 0px));
     padding: 6px; gap: 2px; border-radius: 32px;
@@ -151,8 +148,6 @@ body.rs-login .rs-appnav, body.rs-login .rs-appmore { display: none !important; 
   .rs-appnav button:focus-visible { outline-offset: -2px; }
   .rs-appnav .rs-bn-av { background: var(--primary-container); color: var(--on-primary-container); }
   body { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
-  body.rs-konto { padding-bottom: 0; }
-  body.rs-konto .rs-appnav { margin: 0 12px calc(10px + env(safe-area-inset-bottom, 0px)); }
   .rs-appmore {
     right: 12px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); border-radius: 26px;
     border: 1px solid rgba(255, 255, 255, .7); transform-origin: bottom right;
@@ -167,7 +162,7 @@ body.rs-login .rs-appnav, body.rs-login .rs-appmore { display: none !important; 
     }
   }
 }
-@media ((display-mode: standalone) or (min-width: 641px)) and (prefers-reduced-transparency: reduce) {
+@media (prefers-reduced-transparency: reduce) {
   .rs-appnav, .rs-appmore { background: var(--surface-container-low) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 }
 
@@ -175,7 +170,6 @@ body.rs-login .rs-appnav, body.rs-login .rs-appmore { display: none !important; 
 @media (min-width: 641px) {
   .rs-appnav { left: 0; right: 0; margin: 0 auto; width: 520px; max-width: calc(100% - 24px); }
   .rs-appmore { right: calc((100vw - 520px) / 2 + 8px); }
-  body.rs-konto .rs-appnav { margin: 0 auto calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
 
 /* „Abmelden“ im Mehr-Fenster: rot wie der Abmelden-Knopf im Konto */
@@ -186,7 +180,7 @@ body.rs-login .rs-appnav, body.rs-login .rs-appmore { display: none !important; 
    Leiste: gleitende Markierung, Wisch-Rückmeldung und Animationen (js/app-menu.js)
    ====================================================================== */
 .rs-appnav { --rs-pill: rgba(255, 255, 255, .16); }
-@media (display-mode: standalone), (min-width: 641px) { .rs-appnav { --rs-pill: color-mix(in srgb, var(--on-surface) 10%, transparent); } }
+@media all { .rs-appnav { --rs-pill: color-mix(in srgb, var(--on-surface) 10%, transparent); } }
 .rs-am-pill {
   position: absolute; left: 0; top: 0; width: 0; height: 0; opacity: 0; pointer-events: none; z-index: 0;
   border-radius: inherit; border-radius: 26px; background: var(--rs-pill);
@@ -229,4 +223,4 @@ html.rs-anon-support .rs-appnav, html.rs-anon-support .rs-appmore { display: non
 html.rs-anon-support body { padding-bottom: 0; }
 
 /* Konto-Seite: Leiste liegt im Seitenfluss am unteren Rand; die Versätze der schwebenden Leiste (left/right/bottom) dürfen dort nicht wirken */
-body.rs-konto .rs-appnav { left: auto; right: auto; bottom: auto; top: auto; }
+

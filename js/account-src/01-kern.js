@@ -57,6 +57,8 @@
   var $ = function (id) { return document.getElementById(id); };
   /* Einladungslink erkannt? (muss vor dem Supabase-Start gelesen werden, der die Adresse bereinigt) */
   var INVITE = (/[#&?]type=(invite|recovery)/.exec(location.hash + location.search) || [])[1] || '', inviteShown = false, welcome = false;
+  /* Link abgelaufen oder schon benutzt (Supabase meldet das als #error_code=otp_expired o. ä.): Hinweis merken, bevor die Adresse bereinigt wird */
+  var LINKERR = (/[#&?]error(?:_code)?=([a-z_]+)/i.exec(location.hash + location.search) || [])[1] ? 1 : 0;
   /* Beim ersten Anmelden lädt die Seite einmal neu (Konto-Daten werden getrennt). Darum den Einladungs-Hinweis merken. */
   try { if (INVITE) sessionStorage.setItem('rs_welcome', INVITE); } catch (e) {}
   function pwKind() { try { return sessionStorage.getItem('rs_welcome') || ''; } catch (e) { return INVITE; } }

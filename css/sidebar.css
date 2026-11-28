@@ -152,25 +152,29 @@ body.rs-menu-open { overflow: hidden; }
 
 .rs-drawer-title .brand-mark { width: 1em; height: 1em; margin-left: 0.08em; vertical-align: -0.14em; flex: none; }
 
-/* Konto-Seite: Seite selbst bleibt stehen, nur im Kasten wird gescrollt */
-html:has(body.rs-konto) { height: 100%; overflow: hidden; overscroll-behavior: none; }
-body.rs-konto {
-  position: fixed; inset: 0;
-  display: flex; flex-direction: column;
-  overflow: hidden; overscroll-behavior: none;
-}
-body.rs-konto .app-shell { flex: none; width: 100%; padding-bottom: 0; }
-body.rs-konto #acct-modal {
-  flex: 1 1 auto; min-height: 0; width: 100%;
-  overflow: hidden;
-  padding: 0 var(--space-md) calc(var(--space-md) + env(safe-area-inset-bottom, 0px));
-}
-body.rs-konto #acct-modal .modal-card {
-  max-height: 100%;
-  overflow-y: auto; -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
+/* Konto-Seite: scrollt wie alle anderen Seiten; Inhalt läuft unter Kopfzeile und Leiste (Glas sichtbar) */
+body.rs-konto .app-shell { width: 100%; }
+body.rs-konto #acct-modal { width: 100%; overflow: visible; padding: 0 var(--space-lg) var(--space-lg); }
+body.rs-konto #acct-modal .modal-card { max-height: none; overflow: visible; width: 100%; }
+@media (max-width: 640px) { body.rs-konto #acct-modal { padding-left: var(--space-sm); padding-right: var(--space-sm); } }
 
-/* Konto-Seite: Karte passt sich der Resthöhe an und scrollt innen (unten bleibt der abgerundete Rand sichtbar) */
-body.rs-konto #acct-modal { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
-body.rs-konto #acct-modal .modal-card { flex: 0 1 auto; min-height: 0; max-height: none; width: 100%; }
+/* Logo in der Kopfzeile: feste Größe, unabhängig von Fensterbreite und Scrollbalken (kein Springen beim Seitenwechsel) */
+.site-header .headline { font-size: 2rem; }
+@media (max-width: 640px) { .site-header .headline { font-size: 1.35rem; } }
+html { scrollbar-gutter: stable; }
+
+/* Glas: Kopfzeile und Seitenmenü */
+@supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  header.site-header {
+    background: color-mix(in srgb, var(--background) 62%, transparent);
+    -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7);
+  }
+  .rs-drawer {
+    background: color-mix(in srgb, var(--surface-container-low) 72%, transparent);
+    -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7);
+  }
+}
+@media (prefers-reduced-transparency: reduce) {
+  header.site-header { background: var(--background) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .rs-drawer { background: var(--surface-container-low) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+}

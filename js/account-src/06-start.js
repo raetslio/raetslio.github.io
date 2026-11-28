@@ -38,7 +38,7 @@
         if (r.data && r.data.session && enforcePw(r.data.session)) { }
         else if (r.data && r.data.session && needWelcome() && !inviteShown) { showPw(r.data.session); }
         else if (r.data && r.data.session) { loggedIn(r.data.session); setTimeout(sync, 400); }
-        else { loggedIn(null); showNoPw(); showGone(); autoPasskey(); }
+        else { loggedIn(null); showNoPw(); showGone(); if (LINKERR && ON_LOGIN) { view = 'login'; render(); msg('Dieser Link ist abgelaufen oder wurde schon benutzt (manche E-Mail-Programme öffnen Links vorab). Bitte lass dir eine neue Einladung senden oder wähle „Passwort vergessen?“.', 'warning'); } else autoPasskey(); }
       });
     } catch (e) { sb = null; }
   }
