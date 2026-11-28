@@ -290,7 +290,7 @@
 
   /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
   /* Passkey nur anzeigen, wenn Browser UND Gerät ihn wirklich nutzen können (Face ID, Fingerabdruck, Geräte-PIN) */
-  var pkDev = false, mailStage = 'form', mailNew = '', profDraft = '', supDraft = '', secOpen = { sec: false, des: false, ab: false };
+  var pkDev = false, mailStage = 'form', mailNew = '', profDraft = '', secOpen = { sec: false, des: false, ab: false };
   function pkDetect() {
     try {
       if (!window.PublicKeyCredential || typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return;
@@ -443,10 +443,7 @@
         designSection() + abBlock() +
         details('sec', provIcon('key'), 'Sicherheit', mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock) +
         '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
-        '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt. Deine E-Mail-Adresse (' + esc(user.email || '') + ') wird mitgeschickt, damit wir dir antworten können.</p>' +
-        '<div class="field-group"><label class="field-label" for="acct-sup-topic">Worum geht es?</label><select id="acct-sup-topic" class="input-control"><option value="question">Frage</option><option value="bug">Fehler melden</option><option value="idea">Idee / Wunsch</option><option value="other">Sonstiges</option></select></div>' +
-        '<div class="field-group"><label class="field-label" for="acct-sup-msg">Nachricht</label><textarea id="acct-sup-msg" class="input-control" rows="5" maxlength="4000" placeholder="Beschreibe kurz, was du erlebt hast oder dir wünschst." style="resize:vertical">' + esc(supDraft) + '</textarea></div>' +
-        '<button type="button" class="btn btn-primary" onclick="RSAUTH.supportSend()">Nachricht senden</button></div>';
+        '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt.</p><button type="button" class="btn" onclick="switchMode(\'support\')">Support kontaktieren</button></div>';
       
       return;
     }
@@ -823,18 +820,16 @@
     secToggle: function (k, o) { secOpen[k] = !!o; },
     setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
     setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
-    supportSend: async function () {
-      var m = val('acct-sup-msg').trim(), t = val('acct-sup-topic') || 'question';
-      supDraft = m;
-      if (m.length < 5) { msg('Bitte schreibe eine Nachricht (mindestens 5 Zeichen).', 'warning'); return; }
-      msg('Nachricht wird gesendet …', 'info');
+    /* Support-Nachricht senden (für die Seite /support/). Gibt { ok, kind, text } zurück, zeigt selbst nichts an. */
+    supportPost: async function (topic, message, page) {
+      var m = String(message || '').trim(), t = topic || 'question';
+      if (m.length < 5) return { ok: false, kind: 'warning', text: 'Bitte schreibe eine Nachricht (mindestens 5 Zeichen).' };
       try {
-        var r = await sb.functions.invoke('support', { body: { topic: t, message: m, page: location.pathname, ua: navigator.userAgent } });
-        if (r.error) { var st = r.error.context && r.error.context.status; msg(st === 404 ? 'Der Support ist noch nicht eingerichtet (Funktion „support“ fehlt). Bitte versuche es später erneut.' : 'Die Nachricht konnte nicht gesendet werden (' + (st ? 'Fehler ' + st : 'keine Verbindung') + '). Bitte versuche es später erneut.', 'error'); return; }
-        if (!r.data || !r.data.ok) { msg(((r.data && r.data.error) || 'Die Nachricht konnte nicht gesendet werden.') + (r.data && r.data.code ? ' (' + r.data.code + ')' : ''), 'error'); return; }
-        supDraft = ''; var el = $('acct-sup-msg'); if (el) el.value = '';
-        msg('Danke! Deine Nachricht ist bei uns angekommen. Wir antworten dir per E-Mail.', 'success');
-      } catch (e) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); }
+        var r = await sb.functions.invoke('support', { body: { topic: t, message: m, page: page || location.pathname, ua: navigator.userAgent } });
+        if (r.error) { var st = r.error.context && r.error.context.status; return { ok: false, kind: 'error', text: st === 404 ? 'Der Support ist noch nicht eingerichtet (Funktion „support“ fehlt). Bitte versuche es später erneut.' : 'Die Nachricht konnte nicht gesendet werden (' + (st ? 'Fehler ' + st : 'keine Verbindung') + '). Bitte versuche es später erneut.' }; }
+        if (!r.data || !r.data.ok) return { ok: false, kind: 'error', text: ((r.data && r.data.error) || 'Die Nachricht konnte nicht gesendet werden.') + (r.data && r.data.code ? ' (' + r.data.code + ')' : '') };
+        return { ok: true, kind: 'success', text: 'Danke! Deine Nachricht ist bei uns angekommen. Wir antworten dir per E-Mail.' };
+      } catch (e) { return { ok: false, kind: 'error', text: 'Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.' }; }
     },
     invite: async function () {
       var e = val('acct-invite').trim(); if (!e) { msg('Bitte gib die E-Mail-Adresse der Person ein.', 'warning'); return; }

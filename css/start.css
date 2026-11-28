@@ -99,49 +99,79 @@ body.rs-login .rs-bottomnav { display: none !important; }
 .rs-bottomnav .rs-bn-av img { width: 100%; height: 100%; object-fit: cover; display: block; }
 
 /* ======================================================================
-   Untere Leiste (Handy): schwebende, abgerundete „Glas“-Leiste
-   (überschreibt die Vollbreit-Leiste weiter oben; steht absichtlich am Dateiende)
+   Web-App (iPhone, zum Home-Bildschirm hinzugefügt): schwebende Glas-Leiste
+   Im normalen Browser bleibt die klassische Leiste (.rs-bottomnav) unverändert.
    ====================================================================== */
-@media (max-width: 640px) {
-  .rs-bottomnav,
-  html[data-theme="dark"] .rs-bottomnav {
-    left: 12px; right: 12px;
-    bottom: calc(10px + env(safe-area-inset-bottom, 0px));
-    padding: 6px;
-    gap: 2px;
-    border-radius: 32px;
+.rs-appnav, .rs-appmore { display: none; }
+@media (display-mode: standalone) and (max-width: 640px) {
+  .rs-bottomnav { display: none !important; }
+  .rs-appnav {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 2px;
+    position: fixed; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); z-index: 40;
+    padding: 6px; border-radius: 32px;
     border: 1px solid rgba(255, 255, 255, .7);
     background: var(--surface-container-low);
     box-shadow: 0 10px 32px rgba(0, 0, 0, .16), 0 1px 3px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .6);
   }
-  html[data-theme="dark"] .rs-bottomnav {
-    border-color: rgba(255, 255, 255, .12);
-    box-shadow: 0 10px 32px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .08);
+  html[data-theme="dark"] .rs-appnav { border-color: rgba(255, 255, 255, .12); box-shadow: 0 10px 32px rgba(0, 0, 0, .5), 0 1px 3px rgba(0, 0, 0, .4), inset 0 1px 0 rgba(255, 255, 255, .08); }
+  .rs-appnav button {
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px;
+    min-height: 54px; padding: 6px 0; border: 0; border-radius: 26px; background: none; cursor: pointer;
+    color: var(--on-surface-variant); font-family: var(--font-label); font-size: .72rem;
+    -webkit-tap-highlight-color: transparent; transition: background-color .15s, color .15s;
   }
+  .rs-appnav .icon-svg { width: 22px; height: 22px; }
+  .rs-appnav button[aria-current="page"], .rs-appnav button.rs-am-on { color: var(--on-surface); font-weight: 700; background: color-mix(in srgb, var(--on-surface) 10%, transparent); }
+  .rs-appnav button[aria-current="page"] .icon-svg { stroke-width: 2.4; }
+  .rs-appnav button:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .rs-appnav .rs-bn-av { background: var(--primary-container); color: var(--on-primary-container); }
+  .rs-appnav button[aria-current="page"] .rs-bn-av { box-shadow: 0 0 0 2px #d9946e; }
+  body { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
+  body.rs-menu-open .rs-appnav, body.rs-menu-open .rs-appmore { display: none; }
+  body.rs-konto { padding-bottom: 0; }
+  body.rs-konto .rs-appnav { position: static; flex: none; margin: 0 12px calc(10px + env(safe-area-inset-bottom, 0px)); }
+
+  /* „Mehr“-Fenster über der Leiste */
+  .rs-appmore {
+    display: block; position: fixed; right: 12px; bottom: calc(86px + env(safe-area-inset-bottom, 0px)); z-index: 41;
+    width: min(264px, calc(100vw - 24px)); padding: 6px; border-radius: 26px;
+    border: 1px solid rgba(255, 255, 255, .7);
+    background: var(--surface-container-low);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, .2), 0 1px 3px rgba(0, 0, 0, .08), inset 0 1px 0 rgba(255, 255, 255, .6);
+    opacity: 0; visibility: hidden; transform: translateY(8px) scale(.97); transform-origin: bottom right;
+    transition: opacity .16s, transform .16s, visibility 0s linear .16s;
+  }
+  html[data-theme="dark"] .rs-appmore { border-color: rgba(255, 255, 255, .12); box-shadow: 0 14px 40px rgba(0, 0, 0, .55), inset 0 1px 0 rgba(255, 255, 255, .08); }
+  .rs-appmore.rs-open { opacity: 1; visibility: visible; transform: none; transition-delay: 0s; }
+  .rs-am-item {
+    width: 100%; min-height: 48px; display: flex; align-items: center; gap: 12px; padding: 0 14px;
+    border: 0; border-radius: 20px; background: none; color: var(--on-surface); font: 500 1rem var(--font-body); text-align: left; cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .rs-am-item:active { background: color-mix(in srgb, var(--on-surface) 10%, transparent); }
+  .rs-am-item .icon-svg { width: 20px; height: 20px; flex: none; }
+  .rs-am-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 4px 6px 4px 14px; min-height: 48px; }
+  .rs-am-label { font: 500 1rem var(--font-body); color: var(--on-surface); }
+  .rs-am-seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 999px; background: color-mix(in srgb, var(--on-surface) 8%, transparent); }
+  .rs-am-seg button { width: 38px; height: 34px; display: inline-flex; align-items: center; justify-content: center; border: 0; border-radius: 999px; background: none; color: var(--on-surface-variant); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+  .rs-am-seg button .icon-svg { width: 18px; height: 18px; }
+  .rs-am-seg button[aria-pressed="true"] { background: var(--surface-container-lowest, #fff); color: var(--on-surface); box-shadow: 0 1px 3px rgba(0, 0, 0, .18); }
+  html[data-theme="dark"] .rs-am-seg button[aria-pressed="true"] { background: var(--surface-container-high); }
   @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
-    .rs-bottomnav {
+    .rs-appnav, .rs-appmore {
       background: color-mix(in srgb, var(--surface-container-low) 72%, transparent);
-      -webkit-backdrop-filter: blur(22px) saturate(1.7);
-      backdrop-filter: blur(22px) saturate(1.7);
+      -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7);
     }
   }
-  .rs-bottomnav button {
-    min-height: 54px;
-    border-radius: 26px;
-    color: var(--on-surface-variant);
-  }
-  .rs-bottomnav button[aria-current="page"] {
-    color: var(--on-surface);
-    font-weight: 700;
-    background: color-mix(in srgb, var(--on-surface) 10%, transparent);
-  }
-  .rs-bottomnav button[aria-current="page"]::before { display: none; }
-  .rs-bottomnav button:focus-visible { outline-offset: -2px; }
-  .rs-bottomnav .rs-bn-av { background: var(--primary-container); color: var(--on-primary-container); }
-  /* Platz unter dem Inhalt, damit nichts hinter der schwebenden Leiste verschwindet */
-  body { padding-bottom: calc(88px + env(safe-area-inset-bottom, 0px)); }
-  body.rs-konto .rs-bottomnav { margin: 0 12px calc(10px + env(safe-area-inset-bottom, 0px)); }
 }
 @media (prefers-reduced-transparency: reduce) {
-  .rs-bottomnav { background: var(--surface-container-low) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
+  .rs-appnav, .rs-appmore { background: var(--surface-container-low) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 }
+@media (prefers-reduced-motion: reduce) { .rs-appmore { transition: none; } }
+@media print { .rs-appnav, .rs-appmore { display: none !important; } }
+body.rs-login .rs-appnav, body.rs-login .rs-appmore { display: none !important; }
+
+/* Support im Seitenmenü: ganz unten unter „Konto“ */
+.rs-drawer-foot .nav-tab { width: 100%; min-height: 44px; max-height: none; justify-content: flex-start; gap: var(--space-sm); padding: 0 var(--space-sm); border: 0; border-radius: var(--rounded-lg); font-size: .95rem; text-align: left; margin-top: 2px; }
+.rs-drawer-foot .nav-tab .icon-svg { width: 20px; height: 20px; flex: none; }
+.rs-drawer-foot .nav-tab[aria-selected="true"] { background: var(--primary-container); color: var(--on-primary-container); }

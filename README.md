@@ -9,6 +9,7 @@ Die App besteht aus **einer gemeinsamen Oberfläche `app-body.html`** (Markup un
 - Startseite: `/start/` (Kacheln der Rätselarten, Profil, Zähler für angefangene Rätsel, Verläufe und Hefte)
 - Rätselarten: `/sudoku/`, `/suchsel/`, `/binoxxo/`, `/labyrinth/`, `/hitori/`, `/zahlenmauer/`, `/magisches-quadrat/`
 - Rätselheft und Verläufe: `/heft/`, `/spiele/` (Spielverlauf), `/verlauf/` (Druckverlauf)
+- Support: `/support/` (Formular für eingeloggte Nutzer, nicht in der Sitemap, per `robots.txt` gesperrt)
 - Konto: `/login/`, `/konto/` (beide nicht indexierbar)
 - Support-Antworten: `/answer/<ID>/` (nur für den Admin, eigenständige Seite ohne `app-body.html`, nicht indexierbar; siehe „Support“)
 
@@ -92,6 +93,12 @@ Einrichten: `supabase/support_tickets.sql` im SQL-Editor ausführen, Geheimnisse
 
 **Wichtig:** Dateien, die nicht in der obigen Liste stehen (Unterseiten wie `sudoku/`, `start/`, `answer/`, `tools/`, `tests/`, `supabase/`, `app-body.html`, `404.html`, `sitemap.xml` …), werden nur überschrieben, aber nicht gelöscht. Entfernte Dateien dort bleiben im Repo und müssen von Hand gelöscht werden. Weil die README bei jedem Update ersetzt wird, muss eine README-Änderung immer **im ZIP** stehen, eine Änderung nur im Repo geht beim nächsten Update verloren.
 
+## Untere Leiste
+
+- **Im Browser (Handy):** klassische Vollbreit-Leiste `#rs-bottomnav` (Start, Weiter, Konto, Menü).
+- **Als Web-App auf dem iPhone** (zum Home-Bildschirm hinzugefügt, `display-mode: standalone`, höchstens 640 px breit): stattdessen die schwebende, abgerundete Glas-Leiste `#rs-appnav` mit **Start, Sudoku, Konto, Mehr**. „Mehr“ öffnet `#rs-appmore` mit **Abmelden, Support** und dem Umschalter **Hell / Dunkel / Gerät**. Beide Leisten stehen im Markup; welche sichtbar ist, entscheidet nur `css/start.css`. Logik in `js/app-menu.js`.
+- **Support-Seite `/support/`:** eigene Ansicht `#view-support` (Modus `support` in `js/modes-init.js`, Route in `tools/build-routes.py`), im Seitenmenü ganz unten unter „Konto“. Versand über `RSAUTH.supportPost` (aus `js/account-src/05-api.js`) und die Edge Function `support`. Der Modus wird nie als „zuletzt geöffnet“ gespeichert. In „Mein Konto“ steht nur noch ein Link zur Support-Seite.
+
 ## Ladezustand und Fehlerfälle
 
 - **Anmeldeprüfung:** Ist eine gespeicherte Anmeldung vorhanden, bleibt der Inhalt bis zur Prüfung verborgen. Dabei zeigt die Seite Logo und Ladering (Klasse `rs-gating`, Stile im Kopf-Skript). Antwortet der Dienst nicht, wird die Seite nach spätestens 5 Sekunden freigegeben.
@@ -102,7 +109,7 @@ Einrichten: `supabase/support_tickets.sql` im SQL-Editor ausführen, Geheimnisse
 ## Hinweise
 
 - Offline-Nutzung und Installation als App funktionieren nur über `https://` (oder `localhost`).
-- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v83`), sonst bleibt der alte Zwischenspeicher aktiv.
+- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v84`), sonst bleibt der alte Zwischenspeicher aktiv.
 
 ## Leitlinie
 

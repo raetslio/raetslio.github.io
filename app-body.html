@@ -30,6 +30,7 @@
           <svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg>
           <span id="account-label">Anmelden</span>
         </button>
+        <button type="button" id="tab-support" class="nav-tab" aria-selected="false" onclick="switchMode('support')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.9"/><circle cx="12" cy="16.8" r=".6" fill="currentColor"/></svg>Support</button>
     </div>
   </aside>
   <div class="app-shell">
@@ -621,6 +622,18 @@
 
     <!-- RÄTSELHEFT VIEW -->
     <!-- SPIELVERLAUF VIEW -->
+    <main id="view-support" class="page-grid rs-single hidden">
+      <div class="main-column">
+        <section class="panel panel-stack">
+          <h2 class="section-title">Sup<strong>port</strong></h2>
+          <p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt. Die E-Mail-Adresse deines Kontos wird mitgeschickt, damit wir dir antworten können.</p>
+          <div id="sup-msg" class="feedback-banner info hidden" role="status" aria-live="polite"></div>
+          <div class="field-group"><label class="field-label" for="sup-topic">Worum geht es?</label><select id="sup-topic" class="input-control"><option value="question">Frage</option><option value="bug">Fehler melden</option><option value="idea">Idee / Wunsch</option><option value="other">Sonstiges</option></select></div>
+          <div class="field-group"><label class="field-label" for="sup-text">Nachricht</label><textarea id="sup-text" class="input-control" rows="7" maxlength="4000" placeholder="Beschreibe kurz, was du erlebt hast oder dir wünschst." style="resize:vertical"></textarea></div>
+          <button type="button" id="sup-send" class="btn btn-primary">Nachricht senden</button>
+        </section>
+      </div>
+    </main>
     <main id="view-spiele" class="page-grid hidden">
       <div class="main-column">
         <section class="panel panel-stack">
@@ -1021,7 +1034,26 @@
     <button type="button" data-tab="konto" onclick="RSAUTH.open()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg><span>Konto</span></button>
     <button type="button" data-tab="menu" onclick="document.getElementById('rs-menu-btn').click()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg><span>Menü</span></button>
   </nav>
+  <nav id="rs-appnav" class="rs-appnav" aria-label="Schnellzugriff (App)">
+    <button type="button" data-tab="start" onclick="switchMode('start')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 11l8-7 8 7v9h-5v-6H9v6H4z"/></svg><span>Start</span></button>
+    <button type="button" data-tab="sudoku" onclick="switchMode('sudoku')"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18M15 3v18M3 9h18M3 15h18"/></svg><span>Sudoku</span></button>
+    <button type="button" data-tab="konto" onclick="RSAUTH.open()"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/></svg><span>Konto</span></button>
+    <button type="button" id="rs-am-btn" data-tab="more" aria-haspopup="true" aria-expanded="false" aria-controls="rs-appmore" aria-label="Mehr"><svg class="icon-svg" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="5" cy="12" r="1.9"/><circle cx="12" cy="12" r="1.9"/><circle cx="19" cy="12" r="1.9"/></svg><span>Mehr</span></button>
+  </nav>
+  <div id="rs-appmore" class="rs-appmore" role="menu" aria-label="Mehr" aria-hidden="true">
+    <button type="button" role="menuitem" id="rs-am-logout" class="rs-am-item"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 4H5v16h4"/><path d="M16 8l4 4-4 4M20 12H9"/></svg><span>Abmelden</span></button>
+    <button type="button" role="menuitem" id="rs-am-support" class="rs-am-item"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.6 2.2c-.8.4-1.2 1-1.2 1.9"/><circle cx="12" cy="16.8" r=".6" fill="currentColor"/></svg><span>Support</span></button>
+    <div class="rs-am-row" role="group" aria-label="Darstellung">
+      <span class="rs-am-label">Darstellung</span>
+      <div class="rs-am-seg">
+        <button type="button" data-theme-set="light" aria-pressed="false" aria-label="Hell" title="Hell"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg></button>
+        <button type="button" data-theme-set="dark" aria-pressed="false" aria-label="Dunkel" title="Dunkel"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z"/></svg></button>
+        <button type="button" data-theme-set="system" aria-pressed="false" aria-label="Wie das Gerät" title="Wie das Gerät"><svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="7" y="2.5" width="10" height="19" rx="2.5"/><path d="M11 18.5h2"/></svg></button>
+      </div>
+    </div>
+  </div>
   <script src="js/sidebar.js"></script>
   <script src="js/pwa.js"></script>
   <script src="js/rs-home.js"></script>
   <script src="js/start.js"></script>
+  <script src="js/app-menu.js"></script>

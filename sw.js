@@ -1,13 +1,13 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v83';
+const VERSION = 'raetslio-v84';
 
 /* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
 const APP_FILES = [
   './',
   'index.html',
-  'start/', 'sudoku/', 'suchsel/', 'binoxxo/', 'labyrinth/', 'hitori/', 'zahlenmauer/', 'magisches-quadrat/', 'heft/', 'spiele/', 'verlauf/', 'login/', 'konto/',
+  'start/', 'sudoku/', 'suchsel/', 'binoxxo/', 'labyrinth/', 'hitori/', 'zahlenmauer/', 'magisches-quadrat/', 'heft/', 'spiele/', 'verlauf/', 'support/', 'login/', 'konto/',
   'app-body.html', 'manifest.webmanifest',
   'favicon.ico', 'icons/rl.ico', 'icons/rl-32.png', 'icons/rl-180.png', 'icons/rl-192.png', 'icons/rl-512.png', 'icons/icon.svg', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/icon-maskable-512.png', 'icons/apple-touch-icon.png',
   'css/tokens.css', 'css/base.css', 'css/components.css', 'css/board.css', 'css/modals.css', 'css/extensions.css', 'css/fonts.css', 'css/sidebar.css', 'css/start.css', 'css/heft-polish.css',
@@ -20,7 +20,7 @@ const APP_FILES = [
   'js/print/print-extra.js', 'js/puzzles/sudoku-notes.js', 'js/print/pdf-export.js',
   'js/history/print-history.js', 'js/history/play-history.js', 'js/history/share.js', 'js/history/extras.js',
   'js/puzzles/new-puzzles-logic.js', 'js/puzzles/new-puzzles-online.js', 'js/puzzles/new-puzzles-print.js', 'js/puzzles/new-puzzles-registry.js',
-  'js/modes-init.js', 'js/pwa.js', 'js/rs-home.js', 'js/start.js', 'js/account-utils.js', 'js/account.js'
+  'js/modes-init.js', 'js/pwa.js', 'js/rs-home.js', 'js/start.js', 'js/app-menu.js', 'js/account-utils.js', 'js/account.js'
 ];
 
 self.addEventListener('install', (event) => {

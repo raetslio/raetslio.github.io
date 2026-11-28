@@ -26,7 +26,9 @@
   }
   /* Untere Leiste: Konto-Symbol durch Profilbild bzw. Anfangsbuchstaben ersetzen */
   function navAvatar(signed, src, name) {
-    var b = document.querySelector('#rs-bottomnav button[data-tab="konto"]'); if (!b) return;
+    Array.prototype.forEach.call(document.querySelectorAll('#rs-bottomnav button[data-tab="konto"], #rs-appnav button[data-tab="konto"]'), function (b) { navAvatarOne(b, signed, src, name); });
+  }
+  function navAvatarOne(b, signed, src, name) {
     var cur = b.querySelector('.rs-bn-av'), ico = b.querySelector('svg.icon-svg');
     if (!signed) { if (cur) cur.remove(); if (ico) ico.style.display = ''; return; }
     if (ico) ico.style.display = 'none';
@@ -61,8 +63,8 @@
   /* Untere Leiste (Handy): aktuelle Seite markieren */
   function navSync() {
     var sel = document.querySelector('#rs-drawer .nav-tab[aria-selected="true"]'), cur = document.body.classList.contains('rs-konto') ? 'konto' : sel ? sel.id.replace('tab-', '') : 'start';
-    document.querySelectorAll('#rs-bottomnav button[data-tab]').forEach(function (b) {
-      var on = b.getAttribute('data-tab') === cur; if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
+    document.querySelectorAll('#rs-bottomnav button[data-tab], #rs-appnav button[data-tab]').forEach(function (b) {
+      var t = b.getAttribute('data-tab'), on = t === cur || (t === 'more' && cur === 'support'); if (on) b.setAttribute('aria-current', 'page'); else b.removeAttribute('aria-current');
     });
   }
   function render() { profile(); counts(); resumeCard(); navSync(); }

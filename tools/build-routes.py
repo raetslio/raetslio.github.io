@@ -16,6 +16,7 @@ ROUTES = {
  'heft': ('Rätselheft', 'Stelle dein eigenes Rätselheft aus Sudoku, Suchsel, Binoxxo und mehr zusammen – mit Lösungen und PDF-Export.'),
  'spiele': ('Spielverlauf', 'Dein Spielverlauf bei Rätslio?: angefangene Rätsel öffnen und weiterspielen.'),
  'verlauf': ('Druckverlauf', 'Dein Druckverlauf bei Rätslio?: zuletzt gedruckte Rätsel noch einmal öffnen oder drucken.'),
+ 'support': ('Support', 'Support bei Rätslio?: Frage, Fehler oder Idee? Schreib uns direkt.'),
 }
 src = pathlib.Path('sudoku/index.html').read_text(encoding='utf-8')
 def build(slug, name, desc):
@@ -51,6 +52,6 @@ pathlib.Path('konto').mkdir(exist_ok=True); pathlib.Path('konto/index.html').wri
 for slug, (name, desc) in ROUTES.items():
     d = pathlib.Path(slug); d.mkdir(exist_ok=True); (d/'index.html').write_text(build(slug, name, desc), encoding='utf-8')
 # sitemap.xml
-urls = ''.join(f'  <url><loc>{BASE}/{s}/</loc></url>\n' for s in ROUTES if s not in ('spiele', 'verlauf'))
+urls = ''.join(f'  <url><loc>{BASE}/{s}/</loc></url>\n' for s in ROUTES if s not in ('spiele', 'verlauf', 'support'))
 pathlib.Path('sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n' + f'  <url><loc>{BASE}/</loc></url>\n' + urls + '</urlset>\n', encoding='utf-8')
 print('ok', len(ROUTES))

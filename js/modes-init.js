@@ -4,14 +4,14 @@
    ====================================================================== */
 'use strict';
 
-var NEW_MODES = { start: 'view-start', binoxxo: 'view-binoxxo', labyrinth: 'view-labyrinth', hitori: 'view-hitori', mauer: 'view-mauer', magic: 'view-magic', heft: 'view-heft', verlauf: 'view-verlauf', spiele: 'view-spiele' };
+var NEW_MODES = { start: 'view-start', binoxxo: 'view-binoxxo', labyrinth: 'view-labyrinth', hitori: 'view-hitori', mauer: 'view-mauer', magic: 'view-magic', heft: 'view-heft', verlauf: 'view-verlauf', spiele: 'view-spiele', support: 'view-support' };
 var origSwitch = window.switchMode;
 window.switchMode = function (m) {
   var isNew = !!NEW_MODES[m];
   Object.keys(NEW_MODES).forEach(function (k) { $(NEW_MODES[k]).classList.toggle('hidden', k !== m); $('tab-' + k).setAttribute('aria-selected', k === m ? 'true' : 'false'); });
-  var pb = $('btn-open-print'); if (pb) pb.classList.toggle('hidden', m === 'heft' || m === 'verlauf' || m === 'spiele' || m === 'start');
+  var pb = $('btn-open-print'); if (pb) pb.classList.toggle('hidden', m === 'heft' || m === 'verlauf' || m === 'spiele' || m === 'support' || m === 'start');
   if (!isNew) { origSwitch(m); return; }
-  window.appState.mode = m;
+  window.appState.mode = (m === 'support' ? 'start' : m); /* Support wird nie als „zuletzt geöffnet“ gemerkt */
   ['sudoku', 'wortsuche'].forEach(function (k) { $('view-' + k).classList.add('hidden'); $('tab-' + k).setAttribute('aria-selected', 'false'); });
   if (m === 'heft') refreshUI();
   if (m === 'verlauf') hvRender();
@@ -71,7 +71,7 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
    Eigene Adresse für jede Unterseite (/sudoku/, /suchsel/, …)
    ====================================================================== */
 (function () {
-  var ROUTES = { start: 'start', sudoku: 'sudoku', wortsuche: 'suchsel', binoxxo: 'binoxxo', labyrinth: 'labyrinth', hitori: 'hitori', mauer: 'zahlenmauer', magic: 'magisches-quadrat', heft: 'heft', spiele: 'spiele', verlauf: 'verlauf' };
+  var ROUTES = { start: 'start', sudoku: 'sudoku', wortsuche: 'suchsel', binoxxo: 'binoxxo', labyrinth: 'labyrinth', hitori: 'hitori', mauer: 'zahlenmauer', magic: 'magisches-quadrat', heft: 'heft', spiele: 'spiele', verlauf: 'verlauf', support: 'support' };
   var SLUGS = {}; Object.keys(ROUTES).forEach(function (m) { SLUGS[ROUTES[m]] = m; });
   var META = {
     start: ["Startseite", "Alle Rätselarten, Spielverlauf, Druckverlauf und Rätselhefte von Rätslio? auf einen Blick."],
@@ -84,7 +84,8 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
     magic: ["Magisches Quadrat", "Magische Quadrate online lösen und drucken: Alle Zeilen, Spalten und Diagonalen ergeben dieselbe Summe."],
     heft: ["Rätselheft", "Stelle dein eigenes Rätselheft aus Sudoku, Suchsel, Binoxxo und mehr zusammen – mit Lösungen und PDF-Export."],
     spiele: ["Spielverlauf", "Dein Spielverlauf bei Rätslio?: angefangene Rätsel öffnen und weiterspielen."],
-    verlauf: ["Druckverlauf", "Dein Druckverlauf bei Rätslio?: zuletzt gedruckte Rätsel noch einmal öffnen oder drucken."]
+    verlauf: ["Druckverlauf", "Dein Druckverlauf bei Rätslio?: zuletzt gedruckte Rätsel noch einmal öffnen oder drucken."],
+    support: ["Support", "Support bei Rätslio?: Frage, Fehler oder Idee? Schreib uns direkt."]
   };
   function setMeta(sel, attr, val) { var el = document.querySelector(sel); if (el) el.setAttribute(attr, val); }
   function updateMeta(m) {
