@@ -1,7 +1,7 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v94';
+const VERSION = 'raetslio-v96';
 
 /* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
 const APP_FILES = [
@@ -49,17 +49,25 @@ self.addEventListener('fetch', (event) => {
   if (url.origin === self.location.origin && url.pathname.indexOf('/answer/') === 0) return; /* Antwortseite nie zwischenspeichern */
   if (url.hostname.endsWith('supabase.co') || url.hostname.endsWith('google.com')) return;
 
-  /* Eigene Dateien (Seite, Skripte, Stile): erst Netzwerk, damit immer eine zusammenpassende Version geladen wird.
-     Ohne Verbindung kommen sie aus dem Zwischenspeicher. */
+  /* Eigene Dateien */
   if (url.origin === self.location.origin) {
+    const store = (res) => { if (res && res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); } return res; };
+    const fallback = () => caches.match(req, { ignoreSearch: true })
+      .then((r) => r || (req.mode === 'navigate' ? caches.match(url.pathname).then((r2) => r2 || caches.match('sudoku/')) : undefined));
+    if (req.mode === 'navigate') {
+      /* Seiten (klein): Netzwerk zuerst, aber nach 3 s auf den Zwischenspeicher ausweichen (langsame Verbindung) */
+      event.respondWith(new Promise((resolve) => {
+        let done = false;
+        const t = setTimeout(() => { fallback().then((r) => { if (r && !done) { done = true; resolve(r); } }); }, 3000);
+        fetch(req).then((res) => { if (!done) { done = true; clearTimeout(t); resolve(store(res)); } else store(res); })
+          .catch(() => { clearTimeout(t); if (!done) fallback().then((r) => { done = true; resolve(r || Response.error()); }); });
+      }));
+      return;
+    }
+    /* Skripte, Stile, Schriften, Symbole, Seitenkörper: sofort aus dem Zwischenspeicher (kein Warten auf das Netz).
+       Neue Versionen kommen mit einer erhöhten VERSION (Installation lädt alles frisch). */
     event.respondWith(
-      fetch(req).then((res) => {
-        if (res && res.ok) { const copy = res.clone(); caches.open(VERSION).then((c) => c.put(req, copy)); }
-        return res;
-      }).catch(() =>
-        caches.match(req, { ignoreSearch: true })
-          .then((r) => r || (req.mode === 'navigate' ? caches.match(url.pathname).then((r) => r || caches.match('sudoku/')) : undefined))
-      )
+      caches.match(req, { ignoreSearch: true }).then((r) => r || fetch(req).then(store))
     );
     return;
   }

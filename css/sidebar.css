@@ -166,11 +166,11 @@ html { scrollbar-gutter: stable; }
 /* Glas: Kopfzeile und Seitenmenü */
 @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   header.site-header {
-    background: color-mix(in srgb, var(--background) 62%, transparent);
+    background: color-mix(in srgb, var(--background) 38%, transparent);
     -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7);
   }
   .rs-drawer {
-    background: color-mix(in srgb, var(--surface-container-low) 72%, transparent);
+    background: color-mix(in srgb, var(--surface-container-low) 46%, transparent);
     -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7);
   }
 }
@@ -178,3 +178,17 @@ html { scrollbar-gutter: stable; }
   header.site-header { background: var(--background) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
   .rs-drawer { background: var(--surface-container-low) !important; -webkit-backdrop-filter: none !important; backdrop-filter: none !important; }
 }
+
+/* Konto: Kopfzeile bleibt oben haften (Seitenhülle löst sich auf), damit Position und Größe des Logos wie auf den anderen Seiten sind */
+body.rs-konto { padding-top: var(--space-md); }
+body.rs-konto .app-shell { display: contents; }
+body.rs-konto .site-header {
+  margin-left: max(var(--space-lg), calc((100% - 1240px) / 2 + var(--space-lg)));
+  margin-right: max(var(--space-lg), calc((100% - 1240px) / 2 + var(--space-lg)));
+}
+@media (max-width: 640px) {
+  body.rs-konto { padding-top: var(--space-sm); }
+  body.rs-konto .site-header { margin-left: var(--space-sm); margin-right: var(--space-sm); }
+}
+/* Anmeldeseite: breiter auf Computern */
+body.rs-login #acct-modal .modal-card { max-width: 640px !important; }

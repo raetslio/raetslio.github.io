@@ -157,7 +157,7 @@ body.rs-login .rs-appnav, body.rs-login .rs-appmore { display: none !important; 
   .rs-am-item { border-radius: 20px; }
   @supports ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
     .rs-appnav, .rs-appmore {
-      background: color-mix(in srgb, var(--surface-container-low) 72%, transparent);
+      background: color-mix(in srgb, var(--surface-container-low) 46%, transparent);
       -webkit-backdrop-filter: blur(22px) saturate(1.7); backdrop-filter: blur(22px) saturate(1.7);
     }
   }
