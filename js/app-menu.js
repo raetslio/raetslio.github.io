@@ -83,7 +83,7 @@
       raf = 0; if (!S || !S.lift) return;
       var bd = bounds(), t = S.target;
       var over = t < bd.min ? bd.min - t : t > bd.max ? t - bd.max : 0; /* Gummiband am Rand */
-      var tt = over ? (t < bd.min ? bd.min - Math.sqrt(over) * 3 : bd.max + Math.sqrt(over) * 3) : t;
+      var cap = o.maxOver == null ? 12 : o.maxOver, pull = Math.min(Math.sqrt(over) * 3, cap); var tt = over ? (t < bd.min ? bd.min - pull : bd.max + pull) : t;
       var prev = S.pos; S.pos += (tt - S.pos) * 0.32; var v = S.pos - prev; S.v += (v - S.v) * 0.4;
       var av = Math.abs(S.v), g = geo(S.cur || btns[0]);
       var sx = 1.16 + Math.min(av / 36, 0.34), sy = 1.16 - Math.min(av / 120, 0.07);
@@ -157,7 +157,7 @@
   var seg = more && more.querySelector('.rs-am-seg');
   if (seg) {
     var sbtns = Array.prototype.slice.call(seg.querySelectorAll('button'));
-    var sl = liquid(seg, { cls: 'rs-seg-pill', buttons: function () { return sbtns; }, active: function () { return seg.querySelector('button[aria-pressed="true"]'); } });
+    var sl = liquid(seg, { cls: 'rs-seg-pill', maxOver: 3, buttons: function () { return sbtns; }, active: function () { return seg.querySelector('button[aria-pressed="true"]'); } });
     if (window.MutationObserver) new MutationObserver(function () { sl.sync(true); }).observe(more, { attributes: true, attributeFilter: ['class'] });
     sl.refresh();
   }

@@ -215,3 +215,9 @@ html.rs-lite *, html.rs-lite *::before, html.rs-lite *::after { scroll-behavior:
 
 body.rs-konto #acct-close { display: none; }
 .rs-drawer .rs-account img { box-shadow: 0 0 0 2px var(--primary); }
+
+/* Menüpunkte links: kräftig schwarz (Dunkelmodus: weiß) statt grau */
+.rs-drawer .nav-tab { color: #000; font-weight: 600; }
+.rs-drawer .nav-tab .icon-svg { color: #000; }
+html[data-theme="dark"] .rs-drawer .nav-tab, html[data-theme="dark"] .rs-drawer .nav-tab .icon-svg { color: #fff; }
+.rs-drawer .nav-tab[aria-selected="true"], .rs-drawer .nav-tab[aria-selected="true"] .icon-svg { color: var(--on-primary-container); }
