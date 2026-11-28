@@ -463,9 +463,9 @@
         ['profil', 'Profil', ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>'), 'Konto'],
         ['sec', 'Sicherheit', provIcon('key'), 'Konto'],
         ['invite', 'Einladen', ico('<path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/>'), 'Konto'],
-        ['design', 'Design', IC_DS, 'App'],
-        ['ab', 'Arbeitsblätter', IC_AB, 'App'],
-        ['support', 'Support', ico('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>'), 'App']
+        ['design', 'Design', IC_DS, 'Website &amp; Design'],
+        ['ab', 'Arbeitsblätter', IC_AB, 'Website &amp; Design'],
+        ['support', 'Support', ico('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>'), 'Website &amp; Design']
       ];
       var desk = !!(window.matchMedia && matchMedia('(min-width: 760px)').matches);
       if (acctTab && !panes[acctTab]) acctTab = '';
@@ -478,15 +478,15 @@
       var navHtml = '', lastG = '';
       secs.forEach(function (s2) {
         if (s2[3] !== lastG) { if (lastG) navHtml += '</div>'; navHtml += '<span class="acct-nav-group">' + s2[3] + '</span><div class="acct-nav-card">'; lastG = s2[3]; }
-        navHtml += '<button type="button" class="acct-nav-btn" aria-current="' + (s2[0] === acctTab) + '" onclick="RSAUTH.tab(\'' + s2[0] + '\')">' + s2[2] + '<span class="acct-nav-lbl">' + s2[1] + '</span>' + chev + '</button>';
+        navHtml += '<button type="button" class="acct-nav-btn" aria-current="' + (s2[0] === acctTab) + '" onclick="' + (s2[0] === 'support' ? 'switchMode(\'support\')' : 'RSAUTH.tab(\'' + s2[0] + '\')') + '">' + s2[2] + '<span class="acct-nav-lbl">' + s2[1] + '</span>' + chev + '</button>';
       });
-      navHtml += '</div><div class="acct-nav-card acct-nav-out"><button type="button" class="acct-nav-btn" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span class="acct-nav-lbl">Abmelden</span></button></div>';
+      navHtml += '</div><div class="acct-nav-out"><button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button></div>';
       var topbar = '<div class="acct-topbar">' +
         (acctTab ? '<button type="button" class="acct-round" aria-label="Zurück" onclick="RSAUTH.tab(\'\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></button>'
                  : '<button type="button" class="acct-round" aria-label="Schließen" onclick="RSAUTH.leave()"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>') +
         '<span class="acct-topbar-title">' + (acctTab ? ttl : 'Einstellungen') + '</span>' +
         (acctTab ? '<span class="acct-round acct-round-ghost" aria-hidden="true"></span>'
-                 : '<button type="button" class="acct-round" aria-label="Hilfe und Support" onclick="switchMode(\'support\')"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5M12 7.8h.01"/></svg></button>') +
+                 : '<span class="acct-round acct-round-ghost" aria-hidden="true"></span>') +
         '</div>';
       body.innerHTML = '<div class="acct-layout" data-tab="' + acctTab + '">' + topbar + pcard + '<nav class="acct-nav" aria-label="Kontobereiche">' + navHtml + '</nav>' +
         '<div class="acct-pane"><h3 class="acct-pane-title">' + ttl + '</h3>' + (panes[acctTab] || '') + '</div></div>';
@@ -871,7 +871,7 @@
     secToggle: function (k, o) { secOpen[k] = !!o; },
     tab: function (k) { acctTab = k; render(); try { window.scrollTo(0, 0); } catch (e) {} },
     tabReset: function () { acctTab = ''; },
-    leave: function () { if (typeof window.switchMode === 'function') window.switchMode('start'); },
+    leave: function () { if (typeof window.rsKontoLeave === 'function') window.rsKontoLeave(); else if (typeof window.switchMode === 'function') window.switchMode('start'); },
     setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
     setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
     /* Support-Nachricht senden (für die Seite /support/). Gibt { ok, kind, text } zurück, zeigt selbst nichts an. */

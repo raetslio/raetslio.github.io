@@ -105,6 +105,11 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
   function bodyKonto() { return document.body.classList.contains('rs-konto'); }
   function showKonto(fromPop) {
     if (!window.RSAUTH || !RSAUTH.show) return false;
+    if (!bodyKonto()) { /* merken, woher man kommt: Seite, Scrollstand und ob das Menü offen war */
+      var sel = document.querySelector('#rs-drawer .nav-tab[aria-selected="true"]');
+      var cm = sel ? sel.id.replace('tab-', '') : (window.appState && appState.mode) || 'start';
+      window.__rsKontoFrom = { mode: ROUTES[cm] ? cm : 'start', menu: document.body.classList.contains('rs-menu-open'), y: window.pageYOffset || 0 };
+    }
     document.body.classList.add('rs-konto');
     Array.prototype.forEach.call(document.querySelectorAll('.nav-tab'), function (t) { t.setAttribute('aria-selected', 'false'); });
     if (RSAUTH.tabReset) RSAUTH.tabReset();
@@ -122,6 +127,14 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
     var m = document.getElementById('acct-modal'); if (m && !/^\/login\/?/.test(location.pathname)) m.setAttribute('data-open', 'false');
   }
   window.rsShowKonto = function () { return showKonto(false); };
+  window.rsKontoLeave = function () { /* X im Konto: exakt zurück (gleiche Seite, Scrollstand, Menü wieder offen) */
+    var f = window.__rsKontoFrom || { mode: 'start', menu: false, y: 0 }; window.__rsKontoFrom = null;
+    window.switchMode(f.mode);
+    setTimeout(function () {
+      try { window.scrollTo(0, f.y || 0); } catch (e) {}
+      if (f.menu) { var b = document.getElementById('rs-menu-btn'); if (b) b.click(); }
+    }, 60);
+  };
   window.switchMode = function (m) {
     if (started && bodyKonto() && ROUTES[m]) hideKonto(); /* Konto verlassen: Seite bleibt, nur die Ansicht wechselt */
     if (!window.__rsInit && routeMode) m = routeMode;

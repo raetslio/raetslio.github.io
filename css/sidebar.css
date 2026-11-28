@@ -280,3 +280,5 @@ body.rs-konto #acct-modal .modal-card::before, body.rs-konto #acct-modal .modal-
   .acct-pane .panel-subblock { background: var(--surface-container-low); border-radius: 22px; padding: var(--space-md); border: 0; }
 }
 @media (min-width: 760px) { .acct-nav-group { display: block; margin: var(--space-md) 0 4px 14px; color: var(--on-surface-variant); font-size: .85rem; } .acct-nav-card { display: flex; flex-direction: column; } }
+.acct-nav-out { background: none !important; border-radius: 0 !important; overflow: visible !important; }
+.acct-nav-out .btn-logout { width: 100%; min-height: 52px; }
