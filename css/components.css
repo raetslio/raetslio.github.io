@@ -90,7 +90,7 @@
 .section-title {
   font-family: var(--font-headline);
   font-size: var(--headline-size);
-  font-weight: 400;
+  font-weight: 600;
   letter-spacing: -0.02em;
   line-height: 1.15;
   margin: 0 0 var(--space-sm) 0;

@@ -5,9 +5,10 @@
       if (ON_SUPPORT && !user) { location.href = '/login/?next=' + encodeURIComponent('/support/'); return; }
       if (GATE && !ON_LOGIN && !user) { toLogin(); return; }
       /* Eingeloggt: „Mein Konto“ ist eine eigene Seite. Einrichtungs-Schritte (Passkey, Passwort) bleiben Fenster. */
+      if (user && !ON_LOGIN && view === 'login' && typeof window.rsShowKonto === 'function' && window.rsShowKonto()) return; /* Konto ohne Neuladen */
       if (user && !ON_KONTO && !ON_LOGIN && view === 'login') { try { sessionStorage.setItem('rs_konto_back', location.pathname + location.search); } catch (e) {} location.href = '/konto/'; return; }
        m.setAttribute('data-open', 'true'); msg(''); render(); var f = m.querySelector('input'); if (f) f.focus(); },
-    close: function () { if (ON_LOGIN) return; if (ON_KONTO && view === 'login') { location.href = backUrl(); return; } clearWelcome(); welcome = false; var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'false'); },
+    close: function () { if (ON_LOGIN) return; if (document.body.classList.contains('rs-konto') && view === 'login') return; clearWelcome(); welcome = false; var m = $('acct-modal'); if (m) m.setAttribute('data-open', 'false'); },
     show: function (v) { view = v; msg(''); render(); },
     login: async function () {
       var e = val('acct-email').trim(), p = val('acct-pw'); if (!e || !p) { msg('Bitte E-Mail und Passwort eingeben.', 'warning'); return; }

@@ -96,23 +96,45 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
     setMeta('meta[property="og:description"]', 'content', x[1]);
     if (slug) { var u = 'https://raetslio.github.io/' + slug + '/'; setMeta('link[rel="canonical"]', 'href', u); setMeta('meta[property="og:url"]', 'content', u); }
   }
-  var web = /^https?:$/.test(location.protocol) && !/^\/(login|konto)\/?/.test(location.pathname);
+  var web = /^https?:$/.test(location.protocol) && !/^\/login\/?/.test(location.pathname);
   function pathMode() { var p = location.pathname.replace(/index\.html$/, '').split('/').filter(Boolean); return p.length ? (SLUGS[p[p.length - 1]] || null) : null; }
   var routeMode = pathMode(), inner = window.switchMode, fromPop = false;
   var onKonto = /^\/konto\/?(index\.html)?$/.test(location.pathname), started = false;
+  /* Konto als Ansicht in der Seite (kein Neuladen): gleiche Technik wie der Wechsel zwischen Start und Sudoku */
+  var KONTO_TITLE = 'Mein Konto - Rätslio?';
+  function bodyKonto() { return document.body.classList.contains('rs-konto'); }
+  function showKonto(fromPop) {
+    if (!window.RSAUTH || !RSAUTH.show) return false;
+    document.body.classList.add('rs-konto');
+    Array.prototype.forEach.call(document.querySelectorAll('.nav-tab'), function (t) { t.setAttribute('aria-selected', 'false'); });
+    RSAUTH.show('login');
+    var m = document.getElementById('acct-modal'); if (m) m.setAttribute('data-open', 'true');
+    document.title = KONTO_TITLE;
+    if (!fromPop && web && !/^\/konto\/?/.test(location.pathname)) { try { history.pushState({ m: 'konto' }, '', '/konto/' + location.search); } catch (e) {} }
+    window.scrollTo(0, 0);
+    if (window.RSSTART && RSSTART.render) RSSTART.render();
+    return true;
+  }
+  function hideKonto() {
+    if (!bodyKonto()) return;
+    document.body.classList.remove('rs-konto');
+    var m = document.getElementById('acct-modal'); if (m && !/^\/login\/?/.test(location.pathname)) m.setAttribute('data-open', 'false');
+  }
+  window.rsShowKonto = function () { return showKonto(false); };
   window.switchMode = function (m) {
-    if (onKonto && started && ROUTES[m]) { location.href = '/' + ROUTES[m] + '/'; return; } /* Konto-Seite: Menü führt zur gewählten Seite */
+    if (started && bodyKonto() && ROUTES[m]) hideKonto(); /* Konto verlassen: Seite bleibt, nur die Ansicht wechselt */
     if (!window.__rsInit && routeMode) m = routeMode;
     inner(m);
     updateMeta(m);
+    if (bodyKonto()) { document.title = KONTO_TITLE; return; }
     if (!web || !ROUTES[m] || fromPop) return;
     var url = '/' + ROUTES[m] + '/';
     if (location.pathname === url) return;
     try { (window.__rsInit ? history.pushState : history.replaceState).call(history, { m: m }, '', url + location.search); } catch (e) {}
   };
   window.addEventListener('popstate', function () {
-    var m = pathMode() || 'sudoku'; fromPop = true;
-    try { window.switchMode(m); } finally { fromPop = false; }
+    fromPop = true;
+    try { if (/^\/konto\/?/.test(location.pathname)) { if (!showKonto(true)) location.reload(); } else window.switchMode(pathMode() || 'sudoku'); } finally { fromPop = false; }
   });
   /* Start: Adresse hat Vorrang vor dem zuletzt gespeicherten Modus */
   if (window.__rsInit) window.switchMode(routeMode || window.appState.mode || 'sudoku');

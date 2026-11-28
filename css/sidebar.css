@@ -212,3 +212,6 @@ html.rs-lite *, html.rs-lite *::before, html.rs-lite *::after { scroll-behavior:
 .rs-drawer .rs-account { min-height: 84px; font-size: 1.3rem; }
 .rs-drawer .rs-account .icon-svg { width: 60px; height: 60px; padding: 12px; }
 .rs-drawer .rs-account img { width: 60px !important; height: 60px !important; }
+
+body.rs-konto #acct-close { display: none; }
+.rs-drawer .rs-account img { box-shadow: 0 0 0 2px var(--primary); }

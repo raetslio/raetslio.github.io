@@ -228,3 +228,36 @@ html.rs-anon-support body { padding-bottom: 0; }
 /* Leiste: Liquid-Glass-Federung (Dehnen beim Ziehen, Eindrücken beim Drücken; Steuerung in js/app-menu.js) */
 .rs-appnav { touch-action: none; -webkit-user-select: none; user-select: none; }
 .rs-am-pill { box-shadow: 0 2px 10px rgba(0, 0, 0, .12), inset 0 1px 0 rgba(255, 255, 255, .35); }
+
+/* Liquid-Glass-Wähler: angehoben beim Drücken (Leiste und Darstellung) */
+.rs-am-pill { transform-origin: 50% 50%; backdrop-filter: none; transition: transform .55s cubic-bezier(.34, 1.56, .5, 1), width .3s ease, height .3s ease, top .3s ease, opacity .2s ease, background-color .25s, box-shadow .25s; }
+.rs-am-pill.rs-lift { background: color-mix(in srgb, var(--on-surface) 15%, transparent); box-shadow: 0 8px 24px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .55), inset 0 -1px 0 rgba(255, 255, 255, .18); }
+html[data-theme="dark"] .rs-am-pill.rs-lift { background: color-mix(in srgb, #fff 20%, transparent); box-shadow: 0 8px 24px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .3); }
+.rs-am-seg { position: relative; touch-action: none; -webkit-user-select: none; user-select: none; }
+.rs-am-seg button { position: relative; z-index: 1; }
+.rs-am-pill.rs-seg-pill { z-index: 0; background: var(--surface-container-lowest, #fff); box-shadow: 0 1px 3px rgba(0, 0, 0, .18); }
+html[data-theme="dark"] .rs-am-pill.rs-seg-pill { background: var(--surface-container-high); }
+.rs-am-pill.rs-seg-pill.rs-lift { background: var(--surface-container-lowest, #fff); box-shadow: 0 8px 22px rgba(0, 0, 0, .26); }
+html[data-theme="dark"] .rs-am-pill.rs-seg-pill.rs-lift { background: color-mix(in srgb, var(--surface-container-high) 70%, #fff 30%); }
+.rs-am-seg button[aria-pressed="true"], html[data-theme="dark"] .rs-am-seg button[aria-pressed="true"] { background: none; box-shadow: none; }
+.rs-am-seg { border-radius: 999px; }
+.rs-am-seg .rs-am-pill { border-radius: 999px; }
+
+/* Startseite: alle Kacheln gleich groß */
+.st-grid { grid-auto-rows: 1fr; }
+.st-grid .st-tile { height: 100%; box-sizing: border-box; }
+
+/* Darstellung im Mehr-Fenster: Auswahl im Dunkelmodus gut erkennbar */
+html[data-theme="dark"] .rs-am-seg { background: color-mix(in srgb, #fff 9%, transparent); }
+html[data-theme="dark"] .rs-am-pill.rs-seg-pill { background: color-mix(in srgb, #fff 30%, transparent); box-shadow: 0 1px 4px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .35); }
+html[data-theme="dark"] .rs-am-pill.rs-seg-pill.rs-lift { background: color-mix(in srgb, #fff 40%, transparent); }
+html[data-theme="dark"] .rs-am-seg button { color: color-mix(in srgb, #fff 55%, transparent); }
+html[data-theme="dark"] .rs-am-seg button[aria-pressed="true"] { color: #fff; }
+
+/* Konto in der Leiste: Ring in der gewählten Akzentfarbe, Hüpfen wie die anderen Symbole */
+.rs-appnav button[aria-current="page"] .rs-bn-av { box-shadow: 0 0 0 2px var(--primary); }
+.rs-appnav button.rs-am-pop .rs-bn-av { animation: rs-am-bounce .5s cubic-bezier(.34, 1.56, .64, 1); }
+@media (prefers-reduced-motion: reduce) { .rs-appnav button.rs-am-pop .rs-bn-av { animation: none !important; } }
+/* „Mehr“-Punkte: kräftig schwarz (bzw. hell im Dunkelmodus) statt grau */
+.rs-appnav #rs-am-btn .icon-svg { color: var(--on-surface); }
+.rs-appnav #rs-am-btn .icon-svg circle { r: 2.3px; }

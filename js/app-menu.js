@@ -54,89 +54,112 @@
     var drawer = $('rs-drawer'); if (drawer && window.MutationObserver) new MutationObserver(function () { if (isOpen()) setOpen(false); }).observe(drawer, { attributes: true, attributeFilter: ['aria-selected'], subtree: true });
   }
 
-  /* ---- Leiste: gleitende Markierung, Wischgesten, kleine Rückmeldungen ----
-     - Eine Markierung („Pille“) gleitet zum aktuellen Eintrag und folgt beim Wischen dem Finger.
-     - Seitlich wischen: Eintrag unter dem Finger wird beim Loslassen geöffnet.
-     - Nach oben wischen: „Mehr“ öffnet sich; nach unten wischen (Leiste oder Fenster): „Mehr“ schließt sich. */
-  var nav = $('rs-appnav');
-  if (nav) {
-    var btns = Array.prototype.slice.call(nav.querySelectorAll('button')), drag = null, quietUntil = 0, lastCur = null;
-    var pill = document.createElement('span'); pill.className = 'rs-am-pill'; pill.setAttribute('aria-hidden', 'true'); nav.insertBefore(pill, nav.firstChild);
-    var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var buzz = function (ms) { try { if (!reduce && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
-    var under = function (x, y) { var el = document.elementFromPoint(x, y); return el && el.closest ? el.closest('#rs-appnav button') : null; };
-    var clearHover = function () { btns.forEach(function (b) { b.classList.remove('rs-am-hover'); }); };
-    var active = function () { return nav.querySelector('button.rs-am-on') || nav.querySelector('button[aria-current="page"]'); };
-    /* Markierung unter einen Eintrag setzen; bei x (Finger) folgt sie frei, sonst rastet sie am Eintrag ein */
-    var place = function (b, fx, instant) {
-      if (!b || !nav.offsetWidth) { pill.style.opacity = '0'; return; }
-      var w = b.offsetWidth, left = b.offsetLeft;
-      if (typeof fx === 'number') { var nr = nav.getBoundingClientRect(); left = Math.min(Math.max(fx - nr.left - w / 2, btns[0].offsetLeft), btns[btns.length - 1].offsetLeft); }
-      pill.style.transition = instant || reduce ? 'none' : '';
-      pill.style.opacity = '1'; pill.style.width = w + 'px'; pill.style.height = b.offsetHeight + 'px'; pill.style.top = b.offsetTop + 'px';
-      pill.style.transform = 'translateX(' + left + 'px)' + (drag && (drag.moved || drag.dir === 'v') && !reduce ? ' translateY(' + (drag.ry || 0).toFixed(1) + 'px) scale(' + (drag.sx || 1.12).toFixed(3) + ',' + (drag.sy || 1.1).toFixed(3) + ')' : '');
+  /* ---- Liquid-Glass-Wähler (Leiste unten und „Darstellung“ im Mehr-Fenster) ----
+     Wie bei Apple: Der Wähler gleitet zum aktiven Eintrag. Wer ihn drückt, hebt ihn an (größer, heller). Beim Ziehen folgt er dem Finger
+     mit leichter Verzögerung und dehnt sich in Bewegungsrichtung; am Rand gibt er gummiartig nach. Beim Loslassen federt er zum nächsten Eintrag. */
+  var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
+  var buzz = function (ms) { try { if (!reduce && navigator.vibrate) navigator.vibrate(ms); } catch (e) {} };
+  function liquid(box, o) {
+    var pill = document.createElement('span'); pill.className = 'rs-am-pill ' + (o.cls || ''); pill.setAttribute('aria-hidden', 'true'); box.insertBefore(pill, box.firstChild);
+    var btns = o.buttons(), S = null, quietUntil = 0, raf = 0, first = true;
+    var geo = function (b) { return { l: b.offsetLeft, w: b.offsetWidth, t: b.offsetTop, h: b.offsetHeight }; };
+    var bounds = function () { return { min: btns[0].offsetLeft, max: btns[btns.length - 1].offsetLeft }; };
+    var paint = function (left, w, h, top, sx, sy, ty, instant) {
+      pill.style.transition = instant ? 'none' : '';
+      pill.style.opacity = '1'; pill.style.width = w + 'px'; pill.style.height = h + 'px'; pill.style.top = top + 'px';
+      pill.style.transform = 'translate(' + left.toFixed(1) + 'px,' + (ty || 0).toFixed(1) + 'px) scale(' + (sx || 1).toFixed(3) + ',' + (sy || 1).toFixed(3) + ')';
     };
-    var sync = function (instant) { if (!drag || !drag.moved) place(active(), undefined, instant); };
-    var first = true;
-    var refresh = function () {
-      sync(first); first = false;
-      var cur = active(); if (cur && cur !== lastCur) { if (lastCur && !reduce) { cur.classList.remove('rs-am-pop'); void cur.offsetWidth; cur.classList.add('rs-am-pop'); } lastCur = cur; }
+    var rest = function (instant) {
+      if (S && S.lift) return;
+      var b = o.active(); if (!b || !box.offsetWidth) { pill.style.opacity = '0'; return; }
+      var g = geo(b); if (pill.classList.contains('rs-lift')) pill.classList.remove('rs-lift'); paint(g.l, g.w, g.h, g.t, 1, 1, 0, instant || reduce);
     };
-    if (window.MutationObserver) new MutationObserver(refresh).observe(nav, { attributes: true, attributeFilter: ['aria-current', 'class'], subtree: true });
+    var nearest = function (x) { /* Eintrag, der zur Mitte des Wählers (x) am nächsten liegt */
+      var r = box.getBoundingClientRect(), best = btns[0], d = 1e9;
+      btns.forEach(function (b) { var c = r.left + b.offsetLeft + b.offsetWidth / 2, k = Math.abs(c - x); if (k < d) { d = k; best = b; } });
+      return best;
+    };
+    var frame = function () {
+      raf = 0; if (!S || !S.lift) return;
+      var bd = bounds(), t = S.target;
+      var over = t < bd.min ? bd.min - t : t > bd.max ? t - bd.max : 0; /* Gummiband am Rand */
+      var tt = over ? (t < bd.min ? bd.min - Math.sqrt(over) * 3 : bd.max + Math.sqrt(over) * 3) : t;
+      var prev = S.pos; S.pos += (tt - S.pos) * 0.32; var v = S.pos - prev; S.v += (v - S.v) * 0.4;
+      var av = Math.abs(S.v), g = geo(S.cur || btns[0]);
+      var sx = 1.16 + Math.min(av / 36, 0.34), sy = 1.16 - Math.min(av / 120, 0.07);
+      paint(S.pos, g.w, g.h, g.t, sx, sy, S.ty || 0, true);
+      if (Math.abs(tt - S.pos) > 0.3 || av > 0.3 || S.down) raf = requestAnimationFrame(frame);
+    };
+    var go = function () { if (!raf) raf = requestAnimationFrame(frame); };
+    var lift = function () {
+      if (S.lift || reduce) { S.lift = true; return; }
+      S.lift = true; if (!pill.classList.contains('rs-lift')) pill.classList.add('rs-lift'); var b = o.active() || S.b || btns[0]; S.pos = b.offsetLeft; S.target = S.pos; S.v = 0; S.cur = b; go();
+    };
+    var down = function (x, y) {
+      var r = box.getBoundingClientRect();
+      S = { down: true, x: x, y: y, dir: '', moved: false, lift: false, pos: 0, target: 0, v: 0, ty: 0, b: nearest(x), cur: null, dy: 0, left: r.left };
+      if (S.b === o.active()) lift();
+    };
+    var move = function (x, y) {
+      if (!S || !S.down) return; var dx = x - S.x, dy = y - S.y;
+      if (!S.dir) { if (Math.abs(dx) < 5 && Math.abs(dy) < 5) return; S.dir = (o.vertical && Math.abs(dy) > Math.abs(dx)) ? 'v' : 'h'; lift(); try { if (S.pid !== undefined) box.setPointerCapture(S.pid); } catch (x) {} } /* Erfassen erst beim Ziehen, sonst gehen normale Tipps an die Leiste statt an den Knopf */
+      if (S.dir === 'v') { S.dy = dy; S.ty = (dy < 0 ? -1 : 1) * (1 - Math.exp(-Math.abs(dy) / 60)) * 10; go(); return; }
+      S.moved = true; var w = (S.cur || btns[0]).offsetWidth;
+      S.target = x - S.left - w / 2; go();
+      var n = nearest(x); if (n !== S.cur) { S.cur = n; buzz(8); }
+      btns.forEach(function (b) { var on = b === S.cur; if (b.classList.contains('rs-am-hover') !== on) b.classList.toggle('rs-am-hover', on); });
+    };
+    var up = function () {
+      if (!S) return; var d = S; S = null; if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      btns.forEach(function (b) { if (b.classList.contains('rs-am-hover')) b.classList.remove('rs-am-hover'); });
+      var cur = o.active();
+      if (d.dir === 'v' && Math.abs(d.dy) > 24 && o.vertical) { quietUntil = Date.now() + 600; o.vertical(d.dy); }
+      else if (d.moved && d.cur) { quietUntil = Date.now() + 600; buzz(12); if (d.cur !== cur) { var g = geo(d.cur); paint(g.l, g.w, g.h, g.t, 1, 1, 0, false); d.cur.click(); } }
+      if (pill.classList.contains('rs-lift')) pill.classList.remove('rs-lift'); setTimeout(function () { rest(false); }, 0);
+    };
+    box.addEventListener('pointerdown', function (e) { if (e.pointerType === 'mouse' && e.button !== 0) return; down(e.clientX, e.clientY); S && (S.pid = e.pointerId); });
+    box.addEventListener('pointermove', function (e) { move(e.clientX, e.clientY); });
+    box.addEventListener('pointerup', up);
+    box.addEventListener('pointercancel', function () { S = null; if (raf) { cancelAnimationFrame(raf); raf = 0; } btns.forEach(function (b) { if (b.classList.contains('rs-am-hover')) b.classList.remove('rs-am-hover'); }); if (pill.classList.contains('rs-lift')) pill.classList.remove('rs-lift'); rest(false); });
+    /* Klick nach dem Ziehen verwerfen (sonst doppelt) */
+    box.addEventListener('click', function (e) { if (e.isTrusted && Date.now() < quietUntil) { e.stopPropagation(); e.preventDefault(); } }, true);
+    var sync = function (instant) { rest(instant); };
+    var refresh = function () { sync(first); first = false; if (o.onChange) o.onChange(); };
+    if (window.MutationObserver) new MutationObserver(refresh).observe(box, { attributes: true, attributeFilter: ['aria-current', 'aria-pressed', 'class'], subtree: true });
     window.addEventListener('resize', function () { sync(true); });
-    if (window.ResizeObserver) new ResizeObserver(function () { sync(true); }).observe(nav);
+    if (window.ResizeObserver) new ResizeObserver(function () { sync(true); }).observe(box);
     window.addEventListener('load', function () { sync(true); });
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { sync(true); });
-    refresh();
+    return { sync: sync, refresh: refresh };
+  }
 
-    /* Liquid-Glass-Gefühl: der graue Wähler dehnt sich beim Ziehen und federt zurück */
-    var stretch = function (dx, dy) { /* nur der graue Wähler dehnt sich, die Leiste bleibt stehen */
-      if (reduce || !drag) return;
-      var ay = Math.abs(dy), ax = Math.abs(dx);
-      drag.ry = (dy < 0 ? -1 : 1) * (1 - Math.exp(-ay / 60)) * 10;
-      drag.sx = 1.1 + (1 - Math.exp(-ax / 120)) * 0.12; drag.sy = 1.08 + (1 - Math.exp(-ay / 60)) * 0.14;
-    };
-    var release = function () { nav.classList.remove('rs-am-pressed'); };
-    var onStart = function (x, y) { drag = { x: x, y: y, moved: false, dir: '', b: under(x, y) }; };
-    var onMove = function (x, y) {
-      if (!drag) return; var dx = x - drag.x, dy = y - drag.y;
-      if (!drag.dir) {
-        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
-        drag.dir = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h';
+  var nav = $('rs-appnav');
+  if (nav) {
+    var nbtns = Array.prototype.slice.call(nav.querySelectorAll('button')), lastCur = null;
+    var nlq = liquid(nav, {
+      buttons: function () { return nbtns; },
+      active: function () { return nav.querySelector('button.rs-am-on') || nav.querySelector('button[aria-current="page"]'); },
+      vertical: function (dy) { if (dy < 0 && !isOpen()) { buzz(12); setOpen(true); } else if (dy > 0 && isOpen()) setOpen(false); },
+      onChange: function () {
+        var cur = nav.querySelector('button.rs-am-on') || nav.querySelector('button[aria-current="page"]');
+        if (cur && cur !== lastCur) { if (lastCur && !reduce) { cur.classList.remove('rs-am-pop'); void cur.offsetWidth; cur.classList.add('rs-am-pop'); } lastCur = cur; }
       }
-      stretch(dx, dy);
-      if (drag.dir === 'v') { drag.dy = dy; place(drag.b || active(), undefined, true); return; }
-      drag.moved = true; var b = under(x, y) || drag.b;
-      if (b !== drag.b) { drag.b = b; buzz(8); }
-      btns.forEach(function (q) { q.classList.toggle('rs-am-hover', q === drag.b); });
-      nav.classList.add('rs-am-dragging'); place(drag.b, x, true);
-    };
-    var onEnd = function () {
-      var d = drag; drag = null; clearHover(); nav.classList.remove('rs-am-dragging'); release();
-      if (!d) return;
-      if (d.dir === 'v' && Math.abs(d.dy || 0) > 24) {
-        quietUntil = Date.now() + 600;
-        if (d.dy < 0 && !isOpen()) { buzz(12); setOpen(true); } else if (d.dy > 0 && isOpen()) setOpen(false);
-        sync(); return;
-      }
-      if (d.moved && d.b) { quietUntil = Date.now() + 600; buzz(12); place(d.b); d.b.click(); setTimeout(sync, 60); } else sync();
-    };
-    nav.addEventListener('touchstart', function (e) { if (e.touches.length !== 1) { drag = null; release(); return; } onStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-    nav.addEventListener('touchmove', function (e) { onMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
-    nav.addEventListener('touchend', onEnd, { passive: true });
-    nav.addEventListener('touchcancel', function () { drag = null; clearHover(); nav.classList.remove('rs-am-dragging'); release(); sync(); }, { passive: true });
-    /* Maus (Computer): gleiches Verhalten */
-    nav.addEventListener('mousedown', function (e) { if (e.button === 0) onStart(e.clientX, e.clientY); });
-    window.addEventListener('mousemove', function (e) { if (drag && e.buttons) onMove(e.clientX, e.clientY); });
-    window.addEventListener('mouseup', function () { if (drag) onEnd(); });
-    /* Das Klick-Ereignis, das der Browser nach dem Wischen selbst erzeugt, wird verworfen (sonst doppelt) */
-    nav.addEventListener('click', function (e) { if (e.isTrusted && Date.now() < quietUntil) { e.stopPropagation(); e.preventDefault(); } }, true);
+    });
+    nlq.refresh();
     /* Nach unten wischen schließt das „Mehr“-Fenster */
     if (more) {
       var md = null;
       more.addEventListener('touchstart', function (e) { var t = e.touches[0]; md = { x: t.clientX, y: t.clientY }; }, { passive: true });
       more.addEventListener('touchend', function (e) { var t = e.changedTouches[0]; if (md && t.clientY - md.y > 40 && Math.abs(t.clientX - md.x) < 40) setOpen(false); md = null; }, { passive: true });
     }
+  }
+  /* „Darstellung“ im Mehr-Fenster: gleicher Wähler wie die Leiste */
+  var seg = more && more.querySelector('.rs-am-seg');
+  if (seg) {
+    var sbtns = Array.prototype.slice.call(seg.querySelectorAll('button'));
+    var sl = liquid(seg, { cls: 'rs-seg-pill', buttons: function () { return sbtns; }, active: function () { return seg.querySelector('button[aria-pressed="true"]'); } });
+    if (window.MutationObserver) new MutationObserver(function () { sl.sync(true); }).observe(more, { attributes: true, attributeFilter: ['class'] });
+    sl.refresh();
   }
 
   /* ---- Support-Seite ---- */
