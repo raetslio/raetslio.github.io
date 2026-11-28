@@ -295,7 +295,7 @@
 
   /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
   /* Passkey nur anzeigen, wenn Browser UND Gerät ihn wirklich nutzen können (Face ID, Fingerabdruck, Geräte-PIN) */
-  var pkDev = false, mailStage = 'form', mailNew = '', profDraft = '', secOpen = { sec: false, des: false, ab: false };
+  var flatMode = false, acctTab = 'profil', pkDev = false, mailStage = 'form', mailNew = '', profDraft = '', secOpen = { sec: false, des: false, ab: false };
   function pkDetect() {
     try {
       if (!window.PublicKeyCredential || typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return;
@@ -446,14 +446,33 @@
         }
         mailBlock += '</div>';
       }
-      body.innerHTML = mailNotice + profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
-        '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
-        '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
-        designSection() + abBlock() +
-        details('sec', provIcon('key'), 'Sicherheit', mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock) +
-        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
-        '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt.</p><button type="button" class="btn" onclick="switchMode(\'support\')">Support kontaktieren</button></div>';
-      
+      var inviteBlock = '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>';
+      var supportBlock = '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt.</p><button type="button" class="btn" onclick="switchMode(\'support\')">Support kontaktieren</button></div>';
+      flatMode = true;
+      var panes = {
+        profil: mailNotice + profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p><button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>',
+        design: designSection(),
+        ab: abBlock(),
+        sec: mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock,
+        invite: inviteBlock,
+        support: supportBlock
+      };
+      flatMode = false;
+      var ico = function (d) { return '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; };
+      var secs = [
+        ['profil', 'Profil', ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>')],
+        ['design', 'Design', IC_DS],
+        ['ab', 'Arbeitsblätter', IC_AB],
+        ['sec', 'Sicherheit', provIcon('key')],
+        ['invite', 'Einladen', ico('<path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/>')],
+        ['support', 'Support', ico('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>')]
+      ];
+      if (!panes[acctTab]) acctTab = 'profil';
+      var ttl = ''; secs.forEach(function (s2) { if (s2[0] === acctTab) ttl = s2[1]; });
+      body.innerHTML = '<div class="acct-layout"><nav class="acct-nav" aria-label="Kontobereiche">' + secs.map(function (s2) {
+        return '<button type="button" class="acct-nav-btn" aria-current="' + (s2[0] === acctTab) + '" onclick="RSAUTH.tab(\'' + s2[0] + '\')">' + s2[2] + '<span>' + s2[1] + '</span></button>';
+      }).join('') + '<button type="button" class="acct-nav-btn acct-nav-out" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button></nav>' +
+        '<div class="acct-pane"><h3 class="acct-pane-title">' + ttl + '</h3>' + panes[acctTab] + '</div></div>';
       return;
     }
     if (view === 'otp') {
@@ -577,6 +596,7 @@
   var IC_AB = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>';
   var IC_DS = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7" r="1"/></svg>';
   function details(key, icon, title, inner) {
+    if (flatMode) return '<div class="acct-flat">' + inner + '</div>';
     return '<details class="acct-sec" id="acct-sec-' + key + '"' + (secOpen[key] ? ' open' : '') + ' ontoggle="RSAUTH.secToggle(\'' + key + '\',this.open)"><summary>' + icon + '<span>' + title + '</span></summary>' + inner + '</details>';
   }
   function accentBlock() {
@@ -805,7 +825,7 @@
       try { c = await sb.auth.signInWithPassword({ email: user.email, password: pw, options: capOpt() }); } catch (x) { c = { error: x }; } finally { otpGate = false; }
       capReset();
       if (c.error) { msg(err(c.error), 'error'); return; }
-      mailNew = e; mailStage = 'send'; secOpen.sec = true; render(); msg('');
+      mailNew = e; mailStage = 'send'; secOpen.sec = true; acctTab = 'sec'; render(); msg('');
       if (!capOn()) RSAUTH.mailSendCode();
     },
     mailSendCode: async function () {
@@ -832,6 +852,7 @@
     mailRestart: function () { try { localStorage.removeItem('rs_mail_pending'); } catch (x) {} if (user) user.new_email = ''; mailStage = 'form'; msg(''); render(); },
     mailNoticeClose: function () { try { localStorage.removeItem('rs_mail_notice'); } catch (x) {} render(); },
     secToggle: function (k, o) { secOpen[k] = !!o; },
+    tab: function (k) { acctTab = k; render(); try { window.scrollTo(0, 0); } catch (e) {} },
     setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
     setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
     /* Support-Nachricht senden (für die Seite /support/). Gibt { ok, kind, text } zurück, zeigt selbst nichts an. */

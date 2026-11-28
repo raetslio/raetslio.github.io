@@ -221,3 +221,27 @@ body.rs-konto #acct-close { display: none; }
 .rs-drawer .nav-tab .icon-svg { color: #000; }
 html[data-theme="dark"] .rs-drawer .nav-tab, html[data-theme="dark"] .rs-drawer .nav-tab .icon-svg { color: #fff; }
 .rs-drawer .nav-tab[aria-selected="true"], .rs-drawer .nav-tab[aria-selected="true"] .icon-svg { color: var(--on-primary-container); }
+
+/* Kontobereich im Stil der Claude-Einstellungen: Bereiche links, Inhalt rechts (Handy: Bereiche als Leiste oben) */
+.acct-layout { display: flex; flex-direction: column; gap: var(--space-md); }
+.acct-nav { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.acct-nav::-webkit-scrollbar { display: none; }
+.acct-nav-btn { display: inline-flex; align-items: center; gap: 10px; flex: none; border: 0; background: none; color: var(--on-surface); padding: 10px 14px; border-radius: 12px; font: inherit; font-weight: 500; cursor: pointer; text-align: left; -webkit-tap-highlight-color: transparent; }
+.acct-nav-btn .icon-svg { width: 20px; height: 20px; flex: none; }
+.acct-nav-btn:hover { background: var(--surface-container); }
+.acct-nav-btn[aria-current="true"] { background: var(--surface-container-high); font-weight: 600; }
+.acct-nav-out { color: var(--on-surface-variant); }
+.acct-pane-title { font-family: var(--font-headline); font-size: 1.5rem; font-weight: 600; margin: 0 0 var(--space-md); }
+.acct-pane { min-width: 0; display: flex; flex-direction: column; gap: var(--space-md); }
+.acct-pane > .acct-pane-title { margin-bottom: 0; }
+.acct-flat { display: flex; flex-direction: column; gap: var(--space-md); }
+@media (min-width: 760px) {
+  body.rs-konto #acct-modal .modal-card { max-width: 1000px !important; background: transparent; border: 0; box-shadow: none; }
+  body.rs-konto .acct-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: var(--space-2xl); align-items: start; }
+  body.rs-konto .acct-nav { flex-direction: column; overflow: visible; position: sticky; top: 88px; padding: 0; }
+  body.rs-konto .acct-nav-btn { width: 100%; }
+  body.rs-konto .acct-nav-out { margin-top: var(--space-md); }
+  body.rs-konto .acct-pane { max-width: 640px; }
+}
+body.rs-konto #acct-modal .modal-card { background: transparent; border: 0; box-shadow: none; border-radius: 0; padding-left: 0; padding-right: 0; }
+body.rs-konto #acct-modal .modal-card::before, body.rs-konto #acct-modal .modal-card::after { display: none; }

@@ -87,6 +87,7 @@
   var IC_AB = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>';
   var IC_DS = '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M12 3a9 9 0 1 0 0 18c1.1 0 1.8-.8 1.8-1.7 0-.5-.2-.9-.5-1.2-.3-.3-.5-.7-.5-1.2 0-.9.7-1.6 1.6-1.6H17a4 4 0 0 0 4-4C21 6.6 17 3 12 3z"/><circle cx="7.5" cy="11" r="1"/><circle cx="10" cy="7" r="1"/><circle cx="15" cy="7" r="1"/></svg>';
   function details(key, icon, title, inner) {
+    if (flatMode) return '<div class="acct-flat">' + inner + '</div>';
     return '<details class="acct-sec" id="acct-sec-' + key + '"' + (secOpen[key] ? ' open' : '') + ' ontoggle="RSAUTH.secToggle(\'' + key + '\',this.open)"><summary>' + icon + '<span>' + title + '</span></summary>' + inner + '</details>';
   }
   function accentBlock() {

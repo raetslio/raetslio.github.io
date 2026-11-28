@@ -69,7 +69,7 @@
       try { c = await sb.auth.signInWithPassword({ email: user.email, password: pw, options: capOpt() }); } catch (x) { c = { error: x }; } finally { otpGate = false; }
       capReset();
       if (c.error) { msg(err(c.error), 'error'); return; }
-      mailNew = e; mailStage = 'send'; secOpen.sec = true; render(); msg('');
+      mailNew = e; mailStage = 'send'; secOpen.sec = true; acctTab = 'sec'; render(); msg('');
       if (!capOn()) RSAUTH.mailSendCode();
     },
     mailSendCode: async function () {
@@ -96,6 +96,7 @@
     mailRestart: function () { try { localStorage.removeItem('rs_mail_pending'); } catch (x) {} if (user) user.new_email = ''; mailStage = 'form'; msg(''); render(); },
     mailNoticeClose: function () { try { localStorage.removeItem('rs_mail_notice'); } catch (x) {} render(); },
     secToggle: function (k, o) { secOpen[k] = !!o; },
+    tab: function (k) { acctTab = k; render(); try { window.scrollTo(0, 0); } catch (e) {} },
     setAccent: function (k) { if (typeof applyAccent !== 'function') return; applyAccent(k); if (typeof schedulePersist === 'function') schedulePersist(); render(); },
     setLink: function (on) { if (typeof appState === 'undefined' || !appState.print) return; appState.print.showLink = !!on; if (typeof renderPrintPreview === 'function') { try { renderPrintPreview(); } catch (e) {} } if (typeof schedulePersist === 'function') schedulePersist(); },
     /* Support-Nachricht senden (für die Seite /support/). Gibt { ok, kind, text } zurück, zeigt selbst nichts an. */

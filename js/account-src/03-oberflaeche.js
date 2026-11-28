@@ -17,7 +17,7 @@
 
   /* ---------- Face ID / Fingerabdruck (Passkeys) ---------- */
   /* Passkey nur anzeigen, wenn Browser UND Gerät ihn wirklich nutzen können (Face ID, Fingerabdruck, Geräte-PIN) */
-  var pkDev = false, mailStage = 'form', mailNew = '', profDraft = '', secOpen = { sec: false, des: false, ab: false };
+  var flatMode = false, acctTab = 'profil', pkDev = false, mailStage = 'form', mailNew = '', profDraft = '', secOpen = { sec: false, des: false, ab: false };
   function pkDetect() {
     try {
       if (!window.PublicKeyCredential || typeof PublicKeyCredential.isUserVerifyingPlatformAuthenticatorAvailable !== 'function') return;
@@ -168,14 +168,33 @@
         }
         mailBlock += '</div>';
       }
-      body.innerHTML = mailNotice + profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p>' +
-        '<button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>' +
-        '<button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button>' +
-        designSection() + abBlock() +
-        details('sec', provIcon('key'), 'Sicherheit', mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock) +
-        '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>' +
-        '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt.</p><button type="button" class="btn" onclick="switchMode(\'support\')">Support kontaktieren</button></div>';
-      
+      var inviteBlock = '<div class="panel-subblock"><span class="label">Jemanden einladen</span><p class="muted-note">Wir senden eine E-Mail mit einem Link zur Anmeldung bei Rätslio?.</p>' + field('acct-invite', 'E-Mail der eingeladenen Person', 'email', 'off') + '<button type="button" class="btn" onclick="RSAUTH.invite()">Einladung senden</button></div>';
+      var supportBlock = '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt.</p><button type="button" class="btn" onclick="switchMode(\'support\')">Support kontaktieren</button></div>';
+      flatMode = true;
+      var panes = {
+        profil: mailNotice + profileBlock() + '<p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p><button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button>',
+        design: designSection(),
+        ab: abBlock(),
+        sec: mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock,
+        invite: inviteBlock,
+        support: supportBlock
+      };
+      flatMode = false;
+      var ico = function (d) { return '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; };
+      var secs = [
+        ['profil', 'Profil', ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>')],
+        ['design', 'Design', IC_DS],
+        ['ab', 'Arbeitsblätter', IC_AB],
+        ['sec', 'Sicherheit', provIcon('key')],
+        ['invite', 'Einladen', ico('<path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/>')],
+        ['support', 'Support', ico('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>')]
+      ];
+      if (!panes[acctTab]) acctTab = 'profil';
+      var ttl = ''; secs.forEach(function (s2) { if (s2[0] === acctTab) ttl = s2[1]; });
+      body.innerHTML = '<div class="acct-layout"><nav class="acct-nav" aria-label="Kontobereiche">' + secs.map(function (s2) {
+        return '<button type="button" class="acct-nav-btn" aria-current="' + (s2[0] === acctTab) + '" onclick="RSAUTH.tab(\'' + s2[0] + '\')">' + s2[2] + '<span>' + s2[1] + '</span></button>';
+      }).join('') + '<button type="button" class="acct-nav-btn acct-nav-out" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button></nav>' +
+        '<div class="acct-pane"><h3 class="acct-pane-title">' + ttl + '</h3>' + panes[acctTab] + '</div></div>';
       return;
     }
     if (view === 'otp') {
