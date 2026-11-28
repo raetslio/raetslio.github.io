@@ -90,9 +90,9 @@ else if (window.appState.mode && NEW_MODES[window.appState.mode]) window.switchM
   function setMeta(sel, attr, val) { var el = document.querySelector(sel); if (el) el.setAttribute(attr, val); }
   function updateMeta(m) {
     var x = META[m], slug = ROUTES[m]; if (!x) return;
-    document.title = x[0] + ' — Rätslio?';
+    document.title = x[0] + ' - Rätslio?';
     setMeta('meta[name="description"]', 'content', x[1]);
-    setMeta('meta[property="og:title"]', 'content', x[0] + ' — Rätslio?');
+    setMeta('meta[property="og:title"]', 'content', x[0] + ' - Rätslio?');
     setMeta('meta[property="og:description"]', 'content', x[1]);
     if (slug) { var u = 'https://raetslio.github.io/' + slug + '/'; setMeta('link[rel="canonical"]', 'href', u); setMeta('meta[property="og:url"]', 'content', u); }
   }

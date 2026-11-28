@@ -224,3 +224,9 @@ html.rs-anon-support body { padding-bottom: 0; }
 
 /* Konto-Seite: Leiste liegt im Seitenfluss am unteren Rand; die Versätze der schwebenden Leiste (left/right/bottom) dürfen dort nicht wirken */
 
+
+/* Leiste: Liquid-Glass-Federung (Dehnen beim Ziehen, Eindrücken beim Drücken; Steuerung in js/app-menu.js) */
+.rs-appnav { transition: transform .6s cubic-bezier(.34, 1.7, .5, 1); will-change: transform; touch-action: none; -webkit-user-select: none; user-select: none; }
+.rs-appnav.rs-am-pressed { transform: scale(1.03); transition: transform .25s cubic-bezier(.22, 1, .36, 1); }
+.rs-am-pill { box-shadow: 0 2px 10px rgba(0, 0, 0, .12), inset 0 1px 0 rgba(255, 255, 255, .35); }
+@media (prefers-reduced-motion: reduce) { .rs-appnav, .rs-appnav.rs-am-pressed { transition: none; transform: none; } }

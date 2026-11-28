@@ -192,3 +192,8 @@ body.rs-konto .site-header {
 }
 /* Anmeldeseite: breiter auf Computern */
 body.rs-login #acct-modal .modal-card { max-width: 640px !important; }
+
+/* Profil im Menü: größer */
+.rs-drawer .rs-account { min-height: 68px; gap: var(--space-md); padding: 0 var(--space-md); font-size: 1.15rem; font-weight: 600; }
+.rs-drawer .rs-account .icon-svg { width: 48px; height: 48px; padding: 9px; }
+.rs-drawer .rs-account img { width: 48px !important; height: 48px !important; }

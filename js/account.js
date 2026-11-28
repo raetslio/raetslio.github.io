@@ -476,7 +476,7 @@
     t.textContent = reg ? 'Registrieren' : 'Anmelden';
     body.innerHTML = '<p class="muted-note">' + (GATE ? 'Bitte melde dich an oder registriere dich, um Rätslio? zu nutzen. Deine Rätselstände, Hefte und Arbeitsblätter sind dann auf allen Geräten verfügbar.' : 'Freiwillig: Mit Konto sind deine Rätselstände, Hefte und Arbeitsblätter auf allen Geräten verfügbar.') + '</p>' + field('acct-email', 'E-Mail', 'email', 'email') + field('acct-pw', 'Passwort' + (reg ? ' (min. 8 Zeichen)' : ''), 'password', reg ? 'new-password' : 'current-password') + capHtml() +
       '<button type="button" class="btn btn-primary" onclick="RSAUTH.' + (reg ? 'register' : 'login') + '()">' + (reg ? 'Konto erstellen' : 'Anmelden') + '</button>' +
-      '<div class="muted-note" style="text-align:center;margin:2px 0">oder</div>' +
+      '<div class="muted-note" style="display:flex;align-items:center;gap:12px;width:100%;max-width:none;margin:2px 0;font-size:1rem"><span style="flex:1;height:1px;background:currentColor;opacity:.25"></span>oder<span style="flex:1;height:1px;background:currentColor;opacity:.25"></span></div>' +
       (pkOk() ? (reg ? '' : '<button type="button" class="btn" onclick="RSAUTH.passkeyLogin()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('key') + 'Mit Passkey anmelden</button>') : '') +
       '<button type="button" class="btn" onclick="RSAUTH.google()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('google') + 'Mit Google fortfahren</button>' +
       '<button type="button" class="btn" onclick="RSAUTH.github()" style="display:flex;align-items:center;justify-content:center;gap:8px">' + provIcon('github') + 'Mit GitHub fortfahren</button>' +

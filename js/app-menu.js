@@ -74,7 +74,7 @@
       if (typeof fx === 'number') { var nr = nav.getBoundingClientRect(); left = Math.min(Math.max(fx - nr.left - w / 2, btns[0].offsetLeft), btns[btns.length - 1].offsetLeft); }
       pill.style.transition = instant || reduce ? 'none' : '';
       pill.style.opacity = '1'; pill.style.width = w + 'px'; pill.style.height = b.offsetHeight + 'px'; pill.style.top = b.offsetTop + 'px';
-      pill.style.transform = 'translateX(' + left + 'px)';
+      pill.style.transform = 'translateX(' + left + 'px)' + (drag && drag.moved ? ' scale(1.14,1.1)' : '');
     };
     var sync = function (instant) { if (!drag || !drag.moved) place(active(), undefined, instant); };
     var first = true;
@@ -89,24 +89,32 @@
     if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { sync(true); });
     refresh();
 
-    nav.addEventListener('touchstart', function (e) {
-      if (e.touches.length !== 1) { drag = null; return; }
-      var t = e.touches[0]; drag = { x: t.clientX, y: t.clientY, moved: false, dir: '', b: under(t.clientX, t.clientY) };
-    }, { passive: true });
-    nav.addEventListener('touchmove', function (e) {
-      if (!drag) return; var t = e.touches[0], dx = t.clientX - drag.x, dy = t.clientY - drag.y;
+    /* Liquid-Glass-Gefühl: Leiste gibt beim Drücken nach, lässt sich beim Ziehen etwas nach außen dehnen und federt zurück */
+    var stretch = function (dx, dy) {
+      if (reduce) return;
+      var ax = Math.abs(dx), sx = dx < 0 ? -1 : 1, ay = Math.abs(dy), sy = dy < 0 ? -1 : 1;
+      var rx = sx * (1 - Math.exp(-ax / 90)) * 22, ry = sy * (1 - Math.exp(-ay / 70)) * 12; /* Gummiband: wird schwerer, je weiter man zieht */
+      var scx = 1 + (1 - Math.exp(-ax / 140)) * 0.07, scy = 1 + (1 - Math.exp(-ay / 90)) * 0.1;
+      nav.style.transition = 'none'; nav.style.transformOrigin = (dx > 0 ? 'left' : 'right') + ' ' + (dy < 0 ? 'bottom' : 'top');
+      nav.style.transform = 'translate(' + rx.toFixed(1) + 'px,' + ry.toFixed(1) + 'px) scale(' + scx.toFixed(3) + ',' + scy.toFixed(3) + ')';
+    };
+    var release = function () { nav.classList.remove('rs-am-pressed'); nav.style.transition = ''; nav.style.transform = ''; };
+    var onStart = function (x, y) { drag = { x: x, y: y, moved: false, dir: '', b: under(x, y) }; nav.classList.add('rs-am-pressed'); };
+    var onMove = function (x, y) {
+      if (!drag) return; var dx = x - drag.x, dy = y - drag.y;
       if (!drag.dir) {
-        if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+        if (Math.abs(dx) < 6 && Math.abs(dy) < 6) return;
         drag.dir = Math.abs(dy) > Math.abs(dx) ? 'v' : 'h';
       }
+      stretch(dx, dy);
       if (drag.dir === 'v') { drag.dy = dy; return; }
-      drag.moved = true; var b = under(t.clientX, t.clientY) || drag.b;
+      drag.moved = true; var b = under(x, y) || drag.b;
       if (b !== drag.b) { drag.b = b; buzz(8); }
-      btns.forEach(function (x) { x.classList.toggle('rs-am-hover', x === drag.b); });
-      nav.classList.add('rs-am-dragging'); place(drag.b, t.clientX, true);
-    }, { passive: true });
-    nav.addEventListener('touchend', function () {
-      var d = drag; drag = null; clearHover(); nav.classList.remove('rs-am-dragging');
+      btns.forEach(function (q) { q.classList.toggle('rs-am-hover', q === drag.b); });
+      nav.classList.add('rs-am-dragging'); place(drag.b, x, true);
+    };
+    var onEnd = function () {
+      var d = drag; drag = null; clearHover(); nav.classList.remove('rs-am-dragging'); release();
       if (!d) return;
       if (d.dir === 'v' && Math.abs(d.dy || 0) > 24) {
         quietUntil = Date.now() + 600;
@@ -114,8 +122,15 @@
         sync(); return;
       }
       if (d.moved && d.b) { quietUntil = Date.now() + 600; buzz(12); place(d.b); d.b.click(); setTimeout(sync, 60); } else sync();
-    }, { passive: true });
-    nav.addEventListener('touchcancel', function () { drag = null; clearHover(); nav.classList.remove('rs-am-dragging'); sync(); }, { passive: true });
+    };
+    nav.addEventListener('touchstart', function (e) { if (e.touches.length !== 1) { drag = null; release(); return; } onStart(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    nav.addEventListener('touchmove', function (e) { onMove(e.touches[0].clientX, e.touches[0].clientY); }, { passive: true });
+    nav.addEventListener('touchend', onEnd, { passive: true });
+    nav.addEventListener('touchcancel', function () { drag = null; clearHover(); nav.classList.remove('rs-am-dragging'); release(); sync(); }, { passive: true });
+    /* Maus (Computer): gleiches Verhalten */
+    nav.addEventListener('mousedown', function (e) { if (e.button === 0) onStart(e.clientX, e.clientY); });
+    window.addEventListener('mousemove', function (e) { if (drag && e.buttons) onMove(e.clientX, e.clientY); });
+    window.addEventListener('mouseup', function () { if (drag) onEnd(); });
     /* Das Klick-Ereignis, das der Browser nach dem Wischen selbst erzeugt, wird verworfen (sonst doppelt) */
     nav.addEventListener('click', function (e) { if (e.isTrusted && Date.now() < quietUntil) { e.stopPropagation(); e.preventDefault(); } }, true);
     /* Nach unten wischen schließt das „Mehr“-Fenster */
