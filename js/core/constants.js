@@ -88,6 +88,12 @@ var appState = {
     nameMode: 'line',   /* 'line' = Schreiblinie, 'account' = Name aus dem Konto */
     showLink: true,     /* Webseiten-Link unten auf dem Blatt */
     dateMode: 'today',  /* 'today' = Datum des Tages, 'line' = Schreiblinie */
+    showTitleField: false, /* Titel-Feld im Druckfenster anzeigen */
+    title: '',          /* Titel für dieses Blatt (aus dem Druckfenster); leer = Standard */
+    titleDefault: '',   /* eigener Standardtitel (Konto); leer = Name des Rätsels */
+    subtitle: '',       /* Untertitel / Kopfzeile unter dem Titel */
+    showInstr: true,    /* Anleitung auf dem Blatt anzeigen */
+    footerText: '',     /* eigene Fußzeile statt „Arbeitsblatt · raetslio.github.io“ */
     marginMm: 15,
     instrPt: 9.5,
     multiPrint: 1,

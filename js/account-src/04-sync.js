@@ -106,10 +106,18 @@
         return '<button type="button" class="btn btn-sm' + (cur === o[0] ? ' btn-primary' : '') + '" aria-pressed="' + (cur === o[0]) + '" onclick="RSAUTH.setAb(\'' + key + '\',\'' + o[0] + '\')">' + o[1] + '</button>';
       }).join('') + '</div></div>';
     }
+    function txt(key, label, cur, ph) {
+      return '<div class="field-group"><label class="field-label">' + label + '</label><input class="input-control" type="text" maxlength="80" value="' + esc(cur || '') + '" placeholder="' + esc(ph) + '" onchange="RSAUTH.setAb(\'' + key + '\',this.value)"></div>';
+    }
     var inner = '<div class="panel-subblock">' +
       row('nameMode', 'Name vorausfüllen', nm, [['line', 'Schreiblinie'], ['account', 'Name des Kontos']]) +
       row('dateMode', 'Datum vorausfüllen', dm, [['today', 'Datum des Tages'], ['line', 'Schreiblinie']]) +
       '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="checkbox" style="margin-top:3px"' + (sl ? ' checked' : '') + ' onchange="RSAUTH.setLink(this.checked)"><span>Webseiten-Link unten auf dem Blatt anzeigen<span class="muted-note" style="display:block">„Arbeitsblatt · raetslio.github.io“ in der Fußzeile.</span></span></label>' +
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="checkbox" style="margin-top:3px"' + (p.showTitleField ? ' checked' : '') + ' onchange="RSAUTH.setAb(\'showTitleField\',this.checked)"><span>Titel-Feld im Druckfenster anzeigen<span class="muted-note" style="display:block">Damit kannst du das Arbeitsblatt vor dem Drucken umbenennen.</span></span></label>' +
+      txt('titleDefault', 'Eigener Standardtitel', p.titleDefault, 'z. B. Rätselspaß (leer = Name des Rätsels)') +
+      txt('subtitle', 'Untertitel / Kopfzeile', p.subtitle, 'z. B. Klasse 5b oder Hausaufgabe') +
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="checkbox" style="margin-top:3px"' + (p.showInstr !== false ? ' checked' : '') + ' onchange="RSAUTH.setAb(\'showInstr\',this.checked)"><span>Anleitung / Spielregeln auf dem Blatt anzeigen</span></label>' +
+      txt('footerText', 'Eigene Fußzeile', p.footerText, 'z. B. Erstellt von Frau Müller (ersetzt den Webseiten-Link)') +
       '<p class="muted-note">Gilt für das Druckfenster. Name und Datum kannst du dort weiterhin von Hand ändern.</p></div>';
     return details('ab', IC_AB, 'Arbeitsblätter', inner);
   }

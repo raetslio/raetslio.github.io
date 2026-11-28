@@ -53,11 +53,13 @@ function updateMultiPrintWarning() {
 function onPrintSettingChange() {
   var nameIn = document.getElementById('print-name');
   var dateIn = document.getElementById('print-date');
+  var titleIn = document.getElementById('print-title');
   var marginIn = document.getElementById('print-margin');
   var instrIn = document.getElementById('print-instr-size');
 
   if (nameIn) { if (nameIn.value !== appState.print.name) rsAbTouched.name = true; appState.print.name = nameIn.value; }
   if (dateIn) { if (dateIn.value !== appState.print.date) rsAbTouched.date = true; appState.print.date = dateIn.value; }
+  if (titleIn) appState.print.title = titleIn.value;
   if (marginIn) appState.print.marginMm = parseFloat(marginIn.value);
   if (instrIn) appState.print.instrPt = parseFloat(instrIn.value);
 
@@ -214,16 +216,17 @@ function buildA4SvgString(sheetType, includeGhostGuides) {
   var metaTag = '';
   if (appState.mode === 'sudoku') {
     var s = appState.sudoku;
-    titleText = sheetType === 'sheet2' ? `Sudoku ${s.size}×${s.size} — Lösungsblatt` : `Sudoku ${s.size}×${s.size}`;
+    titleText = rsSheetTitle(sheetType === 'sheet2' ? `Sudoku ${s.size}×${s.size} — Lösungsblatt` : `Sudoku ${s.size}×${s.size}`, sheetType === 'sheet2');
     metaTag = `Schwierigkeit: ${(DIFF_CONFIG[s.difficulty] || DIFF_CONFIG.leicht).label}`;
   } else {
     var ws = appState.ws;
-    titleText = sheetType === 'sheet2' ? `Suchsel ${ws.size}×${ws.size} — Lösungsblatt` : `Suchsel ${ws.size}×${ws.size}`;
+    titleText = rsSheetTitle(sheetType === 'sheet2' ? `Suchsel ${ws.size}×${ws.size} — Lösungsblatt` : `Suchsel ${ws.size}×${ws.size}`, sheetType === 'sheet2');
     metaTag = `${ws.placements.length} versteckte Wörter`;
   }
 
   var nameStr = p.name.trim();
   var dateStr = p.date.trim();
+  var subStr = String(p.subtitle || '').trim(), subExtra = subStr ? 5 : 0;
 
   if (drawBaseElements || drawGhost) {
     var hStroke = drawGhost ? PRINT_PALETTE.ghostBold : PRINT_PALETTE.ink;
@@ -235,6 +238,7 @@ function buildA4SvgString(sheetType, includeGhostGuides) {
     svgParts.push(`<text x="${margin}" y="${curY}" font-size="6.2" font-weight="600" fill="${hStroke}">${escapeXml(titleText)}</text>`);
     svgParts.push(`<text x="${pageW - margin}" y="${curY}" font-size="3.6" font-weight="500" fill="${hSub}" text-anchor="end">${escapeXml(metaTag)}</text>`);
 
+    if (subStr) { svgParts.push(`<text x="${margin}" y="${(curY + 5).toFixed(2)}" font-size="3.8" font-weight="500" fill="${hSub}">${escapeXml(subStr)}</text>`); curY += subExtra; }
     curY += 6.5;
     /* Name & Datum row */
     svgParts.push(`<text x="${margin}" y="${curY}" font-size="3.4" font-weight="500" fill="${hSub}">Name:</text>`);
@@ -256,7 +260,7 @@ function buildA4SvgString(sheetType, includeGhostGuides) {
     svgParts.push(`</g>`);
   } else {
     /* Overprint without ghost still advances identical vertical coordinates! */
-    curY += 10;
+    curY += 10 + subExtra;
   }
 
   curY += 5.0;
@@ -279,6 +283,7 @@ function buildA4SvgString(sheetType, includeGhostGuides) {
     }
   }
 
+  if (p.showInstr === false) instrLinesAll = [];
   if (drawBaseElements || drawGhost) {
     var iFill = drawGhost ? PRINT_PALETTE.ghostGrid : PRINT_PALETTE.muted;
     var iOp = drawGhost ? ' opacity="0.65"' : '';
@@ -289,7 +294,7 @@ function buildA4SvgString(sheetType, includeGhostGuides) {
     svgParts.push(`</g>`);
   }
 
-  curY += instrLinesAll.length * lineStep + 4.5;
+  if (instrLinesAll.length) curY += instrLinesAll.length * lineStep + 4.5;
 
   /* Available Puzzle Area */
   var footerReserve = 7;
@@ -375,7 +380,7 @@ function buildA4SvgString(sheetType, includeGhostGuides) {
   /* Footer line */
   if (drawBaseElements) {
     var footLabel = sheetType === 'sheet2' ? 'Lösungsblatt' : 'Arbeitsblatt';
-    svgParts.push(`<text x="${pageW / 2}" y="${(pageH - margin + 2).toFixed(2)}" font-family="Outfit, sans-serif" font-size="2.7" fill="${PRINT_PALETTE.muted}" text-anchor="middle">${footLabel}${appState.print.showLink === false ? '' : ' · raetslio.github.io'}</text>`);
+    svgParts.push(`<text x="${pageW / 2}" y="${(pageH - margin + 2).toFixed(2)}" font-family="Outfit, sans-serif" font-size="2.7" fill="${PRINT_PALETTE.muted}" text-anchor="middle">${escapeXml(rsSheetFooter(footLabel))}</text>`);
   }
 
   svgParts.push(`</svg>`);

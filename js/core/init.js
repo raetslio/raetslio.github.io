@@ -127,12 +127,27 @@ function rsTodayStr() {
 function rsAccountName() {
   try { return (window.RSAUTH && typeof RSAUTH.printName === 'function' && RSAUTH.printName()) || ''; } catch (e) { return ''; }
 }
+/* Titel des Blatts: eigener Titel (Druckfenster) vor Standardtitel (Konto) vor Rätselname */
+function rsSheetTitle(defTitle, isSol) {
+  var p = (window.appState && appState.print) || {}, c = String((p.showTitleField && p.title) || '').trim() || String(p.titleDefault || '').trim();
+  return c ? c + (isSol ? ' — Lösungsblatt' : '') : defTitle;
+}
+function rsSheetFooter(label) {
+  var p = (window.appState && appState.print) || {}, f = String(p.footerText || '').trim();
+  return f || (label + (p.showLink === false ? '' : ' · raetslio.github.io'));
+}
 function rsApplyAbDefaults(force) {
   if (typeof appState === 'undefined' || !appState.print) return;
   var p = appState.print;
   if (force) { rsAbTouched.name = false; rsAbTouched.date = false; }
   if (p.nameMode !== 'account') p.nameMode = 'line';
   if (p.dateMode !== 'line') p.dateMode = 'today';
+  ['title', 'titleDefault', 'subtitle', 'footerText'].forEach(function (k) { if (typeof p[k] !== 'string') p[k] = ''; });
+  p.showTitleField = p.showTitleField === true;
+  p.showInstr = p.showInstr !== false;
+  var tg = document.getElementById('print-title-group'), ti = document.getElementById('print-title');
+  if (tg) tg.classList.toggle('hidden', !p.showTitleField);
+  if (ti && ti.value !== p.title) ti.value = p.title;
   if (!rsAbTouched.name) p.name = p.nameMode === 'account' ? rsAccountName() : '';
   if (!rsAbTouched.date) p.date = p.dateMode === 'today' ? rsTodayStr() : '';
   var ni = document.getElementById('print-name'), di = document.getElementById('print-date');

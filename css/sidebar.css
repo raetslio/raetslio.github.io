@@ -238,7 +238,7 @@ html[data-theme="dark"] .rs-drawer .nav-tab, html[data-theme="dark"] .rs-drawer 
 @media (min-width: 760px) {
   body.rs-konto #acct-modal .modal-card { max-width: 1000px !important; background: transparent; border: 0; box-shadow: none; }
   body.rs-konto .acct-layout { display: grid; grid-template-columns: 230px minmax(0, 1fr); gap: var(--space-2xl); align-items: start; }
-  body.rs-konto .acct-nav { flex-direction: column; overflow: visible; position: sticky; top: 88px; padding: 0; }
+  body.rs-konto .acct-nav { flex-direction: column; overflow-x: hidden; overflow-y: auto; position: sticky; top: 88px; max-height: calc(100vh - 104px); padding: 0; }
   body.rs-konto .acct-nav-btn { width: 100%; }
   body.rs-konto .acct-nav-out { margin-top: var(--space-md); }
   body.rs-konto .acct-pane { max-width: 640px; }

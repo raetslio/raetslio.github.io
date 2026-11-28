@@ -29,7 +29,7 @@ function buildNewSheet(sheetType, ghost) {
   if (!over) o.push('<rect width="' + W + '" height="' + Hh + '" fill="#fff"/>');
   var n = type === 'binoxxo' ? bx.n : mz.n, dl = type === 'binoxxo' ? bx.diff : mazeDiff(mz.n, mz.hard);
   var NI = NXT[type] ? NXT[type].sheetInfo() : null;
-  var title = (NI ? NI.title : (type === 'binoxxo' ? 'Binoxxo ' : 'Labyrinth ') + n + '×' + n) + (sheetType === 'sheet2' ? ' — Lösungsblatt' : ''), meta = 'Schwierigkeit: ' + DIFFS[NI ? NI.diff : dl];
+  var title = rsSheetTitle((NI ? NI.title : (type === 'binoxxo' ? 'Binoxxo ' : 'Labyrinth ') + n + '×' + n) + (sheetType === 'sheet2' ? ' — Lösungsblatt' : ''), sheetType === 'sheet2'), meta = 'Schwierigkeit: ' + DIFFS[NI ? NI.diff : dl];
   var y = m + 4.5;
   if (base || gh) {
     var hs = gh ? PP.ghostBold : PP.ink, sb = gh ? PP.ghostGrid : PP.muted, op = gh ? ' opacity="0.65"' : '';
@@ -37,15 +37,17 @@ function buildNewSheet(sheetType, ghost) {
     y += 6.5;
     o.push('<text x="' + m + '" y="' + y + '" font-size="3.4" font-weight="500" fill="' + sb + '">Name:</text>' + (p.name.trim() ? '<text x="' + (m + 12) + '" y="' + y + '" font-size="3.6" font-weight="600" fill="' + hs + '">' + esc(p.name.trim()) + '</text>' : '<line x1="' + (m + 12) + '" y1="' + (y + 0.5) + '" x2="' + (m + 88) + '" y2="' + (y + 0.5) + '" stroke="' + sb + '" stroke-width="0.4"/>'));
     o.push('<text x="' + (W - m - 46) + '" y="' + y + '" font-size="3.4" font-weight="500" fill="' + sb + '">Datum:</text>' + (p.date.trim() ? '<text x="' + (W - m - 32) + '" y="' + y + '" font-size="3.6" font-weight="600" fill="' + hs + '">' + esc(p.date.trim()) + '</text>' : '<line x1="' + (W - m - 32) + '" y1="' + (y + 0.5) + '" x2="' + (W - m) + '" y2="' + (y + 0.5) + '" stroke="' + sb + '" stroke-width="0.4"/>'));
+    var subS = String(p.subtitle || '').trim(); if (subS) { o.push('<text x="' + m + '" y="' + (y + 5.2).toFixed(2) + '" font-family="Outfit, Hanken Grotesk, sans-serif" font-size="3.8" font-weight="500" fill="' + sb + '">' + esc(subS) + '</text>'); y += 5; }
     y += 3.5; o.push('<line x1="' + m + '" y1="' + y + '" x2="' + (W - m) + '" y2="' + y + '" stroke="' + hs + '" stroke-width="0.35"/></g>');
-  } else y += 10;
+  } else y += 10 + (String(p.subtitle || '').trim() ? 5 : 0);
   y += 5;
   var instr = RULES[type], im = p.instrPt * 0.3528, ls = im * 1.38, cpl = Math.floor(cw / (im * 0.48)), lines = [];
   instr.forEach(function (t, i) { window.wrapTextLines((i + 1) + '. ' + t, cpl).forEach(function (l) { lines.push(l); }); });
   if (base || gh) {
     o.push('<g' + (gh ? ' opacity="0.65"' : '') + ' font-family="Hanken Grotesk, sans-serif" font-size="' + im.toFixed(2) + '" fill="' + (gh ? PP.ghostGrid : PP.muted) + '">' + lines.map(function (l, i) { return '<text x="' + m + '" y="' + (y + i * ls).toFixed(2) + '">' + esc(l) + '</text>'; }).join('') + '</g>');
   }
-  y += lines.length * ls + 4.5;
+  if (p.showInstr === false) lines = [];
+  if (lines.length) y += lines.length * ls + 4.5;
   var avail = Hh - m - 7 - y, multi = p.multiPrint || 1, cols = multi === 1 ? 1 : 2, rows = multi === 4 ? 2 : 1, gap = multi === 1 ? 0 : 8;
   var sw = (cw - (cols - 1) * gap) / cols, sh = (avail - (rows - 1) * gap) / rows, lr = multi > 1 ? 5.5 : 0, pad = type === 'maze' ? 9 : 0, bs = Math.min(sw, sh - lr - pad);
   var list = NXT[type] ? NXT[type].extras(multi) : extPuzzles(type, multi);
@@ -67,7 +69,7 @@ function buildNewSheet(sheetType, ghost) {
       else o.push(mazeSvg(sx, gy, bs, d, sol));
     }
   }
-  if (base) o.push('<text x="' + (W / 2) + '" y="' + (Hh - m + 2).toFixed(2) + '" font-family="Outfit, sans-serif" font-size="2.7" fill="' + PP.muted + '" text-anchor="middle">' + (sheetType === 'sheet2' ? 'Lösungsblatt' : 'Arbeitsblatt') + (appState.print.showLink === false ? '' : ' · raetslio.github.io') + '</text>');
+  if (base) o.push('<text x="' + (W / 2) + '" y="' + (Hh - m + 2).toFixed(2) + '" font-family="Outfit, sans-serif" font-size="2.7" fill="' + PP.muted + '" text-anchor="middle">' + esc(rsSheetFooter(sheetType === 'sheet2' ? 'Lösungsblatt' : 'Arbeitsblatt')) + '</text>');
   o.push('</svg>'); return o.join('');
 }
 var origBuildA4 = window.buildA4SvgString;

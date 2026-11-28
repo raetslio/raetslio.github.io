@@ -450,8 +450,7 @@
       var supportBlock = '<div class="panel-subblock" id="acct-support"><span class="label">Support</span><p class="muted-note">Frage, Fehler oder Idee? Schreib uns direkt.</p><button type="button" class="btn" onclick="switchMode(\'support\')">Support kontaktieren</button></div>';
       flatMode = true;
       var panes = {
-        profil: mailNotice + '<div class="panel-subblock">' + profileBlock() + '</div><div class="panel-subblock"><p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p><button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button></div>',
-        design: designSection(),
+        profil: mailNotice + '<div class="panel-subblock">' + profileBlock() + '</div>' + designSection() + '<div class="panel-subblock"><p id="acct-sync" class="muted-note">' + esc(lastMsg || 'Deine Rätselstände, Hefte und Arbeitsblatt-Einstellungen werden auf allen Geräten synchronisiert.') + '</p><button type="button" class="btn btn-primary" onclick="RSAUTH.syncNow()">Jetzt synchronisieren</button></div>',
         ab: abBlock(),
         sec: mailBlock + pwBlock + methodsBlock() + '<div id="acct-otpbox"></div>' + sessBlock + delBlock,
         invite: inviteBlock,
@@ -460,12 +459,11 @@
       flatMode = false;
       var ico = function (d) { return '<svg class="icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + d + '</svg>'; };
       var secs = [
-        ['profil', 'Profil', ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>'), 'Konto'],
-        ['sec', 'Sicherheit', provIcon('key'), 'Konto'],
-        ['invite', 'Einladen', ico('<path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/>'), 'Konto'],
-        ['design', 'Design', IC_DS, 'Website &amp; Design'],
-        ['ab', 'Arbeitsblätter', IC_AB, 'Website &amp; Design'],
-        ['support', 'Support', ico('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>'), 'Website &amp; Design']
+        ['profil', 'Profil &amp; Design', ico('<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>'), ''],
+        ['sec', 'Sicherheit', provIcon('key'), ''],
+        ['invite', 'Einladen', ico('<path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/>'), ''],
+        ['ab', 'Arbeitsblätter', IC_AB, ''],
+        ['support', 'Support', ico('<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17h.01"/>'), '']
       ];
       var desk = !!(window.matchMedia && matchMedia('(min-width: 760px)').matches);
       if (acctTab && !panes[acctTab]) acctTab = '';
@@ -477,7 +475,7 @@
       var pcard = '<div class="acct-profilecard"><span class="acct-pc-av">' + (av0 ? '<img src="' + esc(av0) + '" alt="" referrerpolicy="no-referrer">' : esc(ini)) + '</span><span class="acct-pc-txt"><b>' + esc(nm0) + '</b><small>' + esc(user.email || '') + '</small></span></div>';
       var navHtml = '', lastG = '';
       secs.forEach(function (s2) {
-        if (s2[3] !== lastG) { if (lastG) navHtml += '</div>'; navHtml += '<span class="acct-nav-group">' + s2[3] + '</span><div class="acct-nav-card">'; lastG = s2[3]; }
+        if (lastG === '') { navHtml += '<div class="acct-nav-card">'; lastG = '1'; }
         navHtml += '<button type="button" class="acct-nav-btn" aria-current="' + (s2[0] === acctTab) + '" onclick="' + (s2[0] === 'support' ? 'switchMode(\'support\')' : 'RSAUTH.tab(\'' + s2[0] + '\')') + '">' + s2[2] + '<span class="acct-nav-lbl">' + s2[1] + '</span>' + chev + '</button>';
       });
       navHtml += '</div><div class="acct-nav-out"><button type="button" class="btn btn-logout" onclick="RSAUTH.logout()">' + provIcon('logout') + '<span>Abmelden</span></button></div>';
@@ -632,10 +630,18 @@
         return '<button type="button" class="btn btn-sm' + (cur === o[0] ? ' btn-primary' : '') + '" aria-pressed="' + (cur === o[0]) + '" onclick="RSAUTH.setAb(\'' + key + '\',\'' + o[0] + '\')">' + o[1] + '</button>';
       }).join('') + '</div></div>';
     }
+    function txt(key, label, cur, ph) {
+      return '<div class="field-group"><label class="field-label">' + label + '</label><input class="input-control" type="text" maxlength="80" value="' + esc(cur || '') + '" placeholder="' + esc(ph) + '" onchange="RSAUTH.setAb(\'' + key + '\',this.value)"></div>';
+    }
     var inner = '<div class="panel-subblock">' +
       row('nameMode', 'Name vorausfüllen', nm, [['line', 'Schreiblinie'], ['account', 'Name des Kontos']]) +
       row('dateMode', 'Datum vorausfüllen', dm, [['today', 'Datum des Tages'], ['line', 'Schreiblinie']]) +
       '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="checkbox" style="margin-top:3px"' + (sl ? ' checked' : '') + ' onchange="RSAUTH.setLink(this.checked)"><span>Webseiten-Link unten auf dem Blatt anzeigen<span class="muted-note" style="display:block">„Arbeitsblatt · raetslio.github.io“ in der Fußzeile.</span></span></label>' +
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="checkbox" style="margin-top:3px"' + (p.showTitleField ? ' checked' : '') + ' onchange="RSAUTH.setAb(\'showTitleField\',this.checked)"><span>Titel-Feld im Druckfenster anzeigen<span class="muted-note" style="display:block">Damit kannst du das Arbeitsblatt vor dem Drucken umbenennen.</span></span></label>' +
+      txt('titleDefault', 'Eigener Standardtitel', p.titleDefault, 'z. B. Rätselspaß (leer = Name des Rätsels)') +
+      txt('subtitle', 'Untertitel / Kopfzeile', p.subtitle, 'z. B. Klasse 5b oder Hausaufgabe') +
+      '<label style="display:flex;gap:8px;align-items:flex-start;margin:6px 0"><input type="checkbox" style="margin-top:3px"' + (p.showInstr !== false ? ' checked' : '') + ' onchange="RSAUTH.setAb(\'showInstr\',this.checked)"><span>Anleitung / Spielregeln auf dem Blatt anzeigen</span></label>' +
+      txt('footerText', 'Eigene Fußzeile', p.footerText, 'z. B. Erstellt von Frau Müller (ersetzt den Webseiten-Link)') +
       '<p class="muted-note">Gilt für das Druckfenster. Name und Datum kannst du dort weiterhin von Hand ändern.</p></div>';
     return details('ab', IC_AB, 'Arbeitsblätter', inner);
   }
