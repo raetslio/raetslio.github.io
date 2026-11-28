@@ -105,7 +105,7 @@
         if (r.error) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); return; }
         if (!r.data || !r.data.ok) { msg((r.data && r.data.error) || 'Die Nachricht konnte nicht gesendet werden.', 'error'); return; }
         supDraft = ''; var el = $('acct-sup-msg'); if (el) el.value = '';
-        msg('Danke! Deine Nachricht ist angekommen. Ich antworte dir per E-Mail.', 'success');
+        msg('Danke! Deine Nachricht ist bei uns angekommen. Wir antworten dir per E-Mail.', 'success');
       } catch (e) { msg('Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.', 'error'); }
     },
     invite: async function () {

@@ -1,7 +1,7 @@
 /* Rätslio? – Service Worker (Offline-Nutzung)
    Diese Datei muss im Hauptordner neben index.html liegen und "sw.js" heißen.
    Bei Änderungen an der App die Versionsnummer erhöhen, dann wird der Zwischenspeicher erneuert. */
-const VERSION = 'raetslio-v78';
+const VERSION = 'raetslio-v79';
 
 /* Alle Dateien der App: werden bei der Installation geladen, damit sie offline bereitstehen. */
 const APP_FILES = [
@@ -46,6 +46,7 @@ self.addEventListener('fetch', (event) => {
   const url = new URL(req.url);
 
   /* Anmeldung und Datenbank (Supabase, Google) nie zwischenspeichern */
+  if (url.origin === self.location.origin && url.pathname.indexOf('/answer/') === 0) return; /* Antwortseite nie zwischenspeichern */
   if (url.hostname.endsWith('supabase.co') || url.hostname.endsWith('google.com')) return;
 
   /* Eigene Dateien (Seite, Skripte, Stile): erst Netzwerk, damit immer eine zusammenpassende Version geladen wird.

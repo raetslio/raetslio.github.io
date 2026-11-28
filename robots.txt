@@ -4,5 +4,6 @@ Disallow: /spiele/
 Disallow: /verlauf/
 Disallow: /login/
 Disallow: /konto/
+Disallow: /answer/
 
 Sitemap: https://raetslio.github.io/sitemap.xml

@@ -2,11 +2,14 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <meta name="robots" content="noindex">
   <title>Weiterleitung...</title>
   <script>
-    window.location.replace("/sudoku/");
+    /* Antwortseite: /answer/ID-xxxx/ gibt es nicht als Datei, die ID wandert in den Parameter ?id= von /answer/ */
+    var m = /^\/answer\/(ID-[A-Za-z0-9]+)\/?$/.exec(location.pathname);
+    window.location.replace(m ? "/answer/?id=" + encodeURIComponent(m[1]) : "/sudoku/");
   </script>
-  <meta http-equiv="refresh" content="0; url=/sudoku/" />
+  <noscript><meta http-equiv="refresh" content="0; url=/sudoku/" /></noscript>
 </head>
 <body>
   <p>Du wirst weitergeleitet. Falls nicht, <a href="/sudoku/">klicke hier</a>.</p>

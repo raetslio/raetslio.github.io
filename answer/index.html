@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Antworten – Rätslio? Support</title>
+  <link rel="icon" href="/favicon.ico">
+  <style>
+    :root { --bg:#f4f6f5; --card:#fff; --ink:#23272a; --muted:#6b7378; --line:#dde2df; --primary:#3c5a6e; --on:#fff; --accent:#d9946e; --quote:#f6f2ee; --err:#a63d32; --ok:#3f6e49; }
+    @media (prefers-color-scheme: dark) { :root { --bg:#1c2023; --card:#24292d; --ink:#e6e9e7; --muted:#a9b2b6; --line:#343b40; --primary:#9db8cc; --on:#1c2023; --quote:#2c2a28; --err:#e07f74; --ok:#88be91; } }
+    * { box-sizing: border-box; }
+    body { margin:0; background:var(--bg); color:var(--ink); font:16px/1.55 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif; padding:24px 16px 48px; }
+    main { max-width:680px; margin:0 auto; }
+    header { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+    header img { width:44px; height:44px; border-radius:10px; }
+    h1 { font-size:1.3rem; margin:0; } .sub { color:var(--muted); font-size:.9rem; }
+    .card { background:var(--card); border:1px solid var(--line); border-radius:14px; padding:18px; margin-bottom:16px; }
+    .meta { display:grid; grid-template-columns:auto 1fr; gap:4px 14px; font-size:.95rem; margin:0 0 12px; }
+    .meta dt { color:var(--muted); } .meta dd { margin:0; overflow-wrap:anywhere; }
+    .quote { border-left:4px solid var(--accent); background:var(--quote); border-radius:6px; padding:12px 14px; white-space:pre-wrap; overflow-wrap:anywhere; }
+    label { display:block; font-weight:600; margin-bottom:6px; }
+    textarea { width:100%; min-height:200px; resize:vertical; font:inherit; color:inherit; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:12px; }
+    textarea:focus-visible, button:focus-visible, a:focus-visible { outline:2px solid var(--primary); outline-offset:2px; }
+    .btn { display:inline-block; font:inherit; font-weight:600; background:var(--primary); color:var(--on); border:0; border-radius:10px; padding:12px 20px; cursor:pointer; text-decoration:none; white-space:nowrap; }
+    .btn[disabled] { opacity:.6; cursor:default; }
+    .msg { margin:12px 0 0; font-size:.95rem; } .msg.err { color:var(--err); } .msg.ok { color:var(--ok); }
+    .reply { border-top:1px solid var(--line); padding-top:10px; margin-top:10px; font-size:.95rem; white-space:pre-wrap; overflow-wrap:anywhere; }
+    .reply small { display:block; color:var(--muted); margin-bottom:2px; }
+    h2 { font-size:1rem; margin:0 0 8px; }
+  </style>
+</head>
+<body>
+<main>
+  <header><img src="/apple-touch-icon.png" alt=""><div><h1>Support antworten</h1><div class="sub">Rätslio?</div></div></header>
+  <div id="app"><div class="card">Wird geladen …</div></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  var URL_ = 'https://dnhjzlnbuqmyqgjxxygx.supabase.co', KEY = 'sb_publishable_BrUErzbAbLbrL2LXEPBiuQ_1ijwQtWQ';
+  var app = document.getElementById('app');
+  function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]; }); }
+  function card(h) { app.innerHTML = '<div class="card">' + h + '</div>'; }
+  function fmt(d) { try { return new Date(d).toLocaleString('de-DE', { dateStyle: 'medium', timeStyle: 'short' }); } catch (e) { return d; } }
+
+  /* Answer-ID aus dem Link: /answer/ID-xxxx/ (die 404-Seite leitet auf ?id= um) */
+  var id = (new URLSearchParams(location.search).get('id') || (/\/answer\/(ID-[A-Za-z0-9]+)/.exec(location.pathname) || [])[1] || '').trim();
+  if (!id) { card('<p style="margin:0"><b>Du brauchst eine Answer-ID.</b> Gib sie oben im Link an (/ID-hierdieid/).</p>'); return; }
+  try { history.replaceState(null, '', '/answer/' + encodeURIComponent(id) + '/'); } catch (e) {}
+
+  var sb = window.supabase && window.supabase.createClient(URL_, KEY, { auth: { persistSession: true, autoRefreshToken: true } });
+  if (!sb) { card('Der Dienst konnte nicht geladen werden. Bitte lade die Seite neu.'); return; }
+
+  async function call(body) {
+    var r = await sb.functions.invoke('support-admin', { body: Object.assign({ id: id }, body) });
+    if (r.error) return { ok: false, error: 'Die Anfrage ist fehlgeschlagen. Bitte versuche es erneut.' };
+    return r.data || { ok: false, error: 'Keine Antwort erhalten.' };
+  }
+
+  function render(t) {
+    var h = '<dl class="meta"><dt>Von</dt><dd>' + esc(t.email) + (t.name ? ' (' + esc(t.name) + ')' : '') + '</dd><dt>Thema</dt><dd>' + esc(t.topic || '') + '</dd><dt>Gesendet</dt><dd>' + esc(fmt(t.created_at)) + '</dd></dl>' +
+      '<div class="quote">' + esc(t.message) + '</div>';
+    var rep = (t.replies || []).map(function (x) { return '<div class="reply"><small>Gesendet am ' + esc(fmt(x.at)) + '</small>' + esc(x.text) + '</div>'; }).join('');
+    app.innerHTML = '<div class="card">' + h + '</div>' +
+      (rep ? '<div class="card"><h2>Bisherige Antworten</h2>' + rep + '</div>' : '') +
+      '<div class="card"><label for="txt">Deine Antwort an ' + esc(t.name || t.email) + '</label><textarea id="txt" maxlength="5000" placeholder="Schreibe hier. Anrede, Gruß und die ursprüngliche Nachricht ergänzt die Mail automatisch."></textarea>' +
+      '<p style="margin:14px 0 0"><button class="btn" id="send" type="button">Antwort senden</button></p><p class="msg" id="msg" role="status"></p></div>';
+    var btn = document.getElementById('send'), txt = document.getElementById('txt'), msg = document.getElementById('msg');
+    btn.onclick = async function () {
+      var v = txt.value.trim(); if (v.length < 2) { msg.className = 'msg err'; msg.textContent = 'Bitte schreibe eine Antwort.'; return; }
+      if (!confirm('Antwort jetzt an ' + t.email + ' senden?')) return;
+      btn.disabled = true; msg.className = 'msg'; msg.textContent = 'Wird gesendet …';
+      var r = await call({ action: 'send', text: v });
+      if (!r.ok) { btn.disabled = false; msg.className = 'msg err'; msg.textContent = r.error || 'Senden fehlgeschlagen.'; return; }
+      t.replies = r.replies; render(t);
+      var m2 = document.getElementById('msg'); m2.className = 'msg ok'; m2.textContent = 'Gesendet an ' + t.email + '.';
+    };
+  }
+
+  (async function () {
+    var s = await sb.auth.getSession();
+    if (!s.data || !s.data.session) {
+      card('<p style="margin:0 0 14px">Zum Antworten musst du angemeldet sein.</p><a class="btn" href="/login/?next=' + encodeURIComponent('/answer/' + id + '/') + '">Anmelden</a>');
+      return;
+    }
+    var r = await call({ action: 'get' });
+    if (!r.ok) { card('<p style="margin:0">' + esc(r.error || 'Kein Zugriff.') + '</p>'); return; }
+    render(r.ticket);
+  })();
+})();
+</script>
+</body>
+</html>

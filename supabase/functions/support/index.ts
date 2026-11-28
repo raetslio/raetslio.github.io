@@ -1,7 +1,9 @@
 // Supabase Edge Function: support
 // Eingeloggte Nutzer schreiben dem Support direkt aus der Website. Versand über Gmail (App-Passwort).
-// Die E-Mail-Adresse des Nutzers kommt aus der geprüften Anmeldung (nicht aus dem Formular) und steht im Inhalt der Mail;
-// als Antwort-Adresse (Reply-To) ist sie ebenfalls gesetzt.
+// Die E-Mail-Adresse des Nutzers kommt aus der geprüften Anmeldung (nicht aus dem Formular) und steht im Inhalt der Mail.
+// Jede Nachricht bekommt eine zufällige Answer-ID und wird in der Tabelle support_tickets gespeichert (supabase/support_tickets.sql).
+// Die Mail an dich enthält den Link https://raetslio.github.io/answer/<ID>/ – dort antwortest du (Edge Function support-admin).
+// Der Nutzer erfährt die ID nie.
 //
 // Einrichten:
 //   1) Google-Konto: Bestätigung in zwei Schritten aktivieren, unter https://myaccount.google.com/apppasswords ein App-Passwort erzeugen.
@@ -16,12 +18,18 @@ const CORS = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
+const SITE = 'https://raetslio.github.io';
 const MAX_PER_DAY = 5;        // Nachrichten pro Nutzer und Tag
 const MAX_LEN = 4000;         // Zeichen pro Nachricht
 const TOPICS: Record<string, string> = { question: 'Frage', bug: 'Fehler melden', idea: 'Idee / Wunsch', other: 'Sonstiges' };
 
 const reply = (body: unknown) =>
   new Response(JSON.stringify(body), { headers: { ...CORS, 'Content-Type': 'application/json' } });
+const newId = () => {
+  const b = crypto.getRandomValues(new Uint8Array(12));
+  return 'ID-' + Array.from(b, (x) => 'abcdefghjkmnpqrstuvwxyz23456789'[x % 31]).join('');
+};
+const esc = (t: string) => t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 const oneLine = (s: unknown, n: number) => String(s ?? '').replace(/[\r\n\t]+/g, ' ').trim().slice(0, n);
 
 Deno.serve(async (req) => {
@@ -50,19 +58,34 @@ Deno.serve(async (req) => {
     const email = u.user.email;
     const name = oneLine((u.user.user_metadata as any)?.name ?? '', 60);
 
+    const id = newId();
+    const page = oneLine(body.page, 200), ua = oneLine(body.ua, 300);
+    const { error: ie } = await admin.from('support_tickets').insert({ id, user_id: u.user.id, email, name: name || null, topic, message });
+    if (ie) return reply({ ok: false, error: 'Die Nachricht konnte nicht gesendet werden. Bitte versuche es später erneut.' });
+    const link = `${SITE}/answer/${id}/`;
+
     const text = [
+      `Neue Support-Nachricht`,
+      ``,
       `Von: ${email}${name ? ` (${name})` : ''}`,
       `Thema: ${topic}`,
-      `Konto-ID: ${u.user.id}`,
-      `Seite: ${oneLine(body.page, 200)}`,
-      `Browser: ${oneLine(body.ua, 300)}`,
-      '',
+      `Seite: ${page}`,
+      `Browser: ${ua}`,
+      ``,
       message,
+      ``,
+      `Antworten: ${link}`,
     ].join('\n');
+    const html = `<div style="font-family:Arial,sans-serif;font-size:15px;color:#23272a;max-width:560px">
+<p style="margin:0 0 12px"><b>Neue Support-Nachricht</b></p>
+<p style="margin:0 0 12px;color:#555">Von <b>${esc(email)}</b>${name ? ` (${esc(name)})` : ''}<br>Thema: ${esc(topic)}<br>Seite: ${esc(page)}</p>
+<div style="border-left:4px solid #d9946e;background:#f6f2ee;padding:12px 14px;border-radius:6px;white-space:pre-wrap">${esc(message)}</div>
+<p style="margin:18px 0"><a href="${link}" style="background:#3c5a6e;color:#fff;text-decoration:none;padding:11px 18px;border-radius:8px;display:inline-block">Jetzt antworten</a></p>
+<p style="margin:0;color:#888;font-size:12px">Browser: ${esc(ua)}</p></div>`;
 
     const client = new SMTPClient({ connection: { hostname: 'smtp.gmail.com', port: 465, tls: true, auth: { username: gmail, password: pass } } });
     try {
-      await client.send({ from: gmail, to, replyTo: email, subject: `[Rätslio Support] ${topic} – ${email}`, content: text });
+      await client.send({ from: gmail, to, replyTo: email, subject: `[Rätslio? Support] ${topic} – ${email}`, content: text, html });
     } finally {
       try { await client.close(); } catch (_e) { /* egal */ }
     }
