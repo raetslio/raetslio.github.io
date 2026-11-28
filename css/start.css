@@ -202,9 +202,7 @@ body.rs-login .rs-appnav, body.rs-login .rs-appmore { display: none !important; 
 .rs-appnav button.rs-am-hover .icon-svg { transform: translateY(-2px) scale(1.18); }
 .rs-appnav button.rs-am-pop .icon-svg { animation: rs-am-bounce .5s cubic-bezier(.34, 1.56, .64, 1); }
 @keyframes rs-am-bounce { 0% { transform: scale(.7) translateY(2px); } 55% { transform: scale(1.22) translateY(-3px); } 100% { transform: none; } }
-.rs-appnav { animation: rs-am-rise .55s cubic-bezier(.22, 1, .36, 1) both; }
-@keyframes rs-am-rise { from { transform: translateY(120%); opacity: 0; } to { transform: none; opacity: 1; } }
-body.rs-konto .rs-appnav { animation: none; }
+/* Keine Einblend-Animation beim Laden: Seitenwechsel (z. B. von Konto) laden die Seite neu, die Leiste soll dabei ruhig stehen bleiben */
 
 /* „Mehr“-Fenster: federnd einblenden, Einträge nacheinander */
 .rs-appmore { transform: translateY(14px) scale(.92); transition: opacity .2s ease, transform .38s cubic-bezier(.34, 1.45, .5, 1), visibility 0s linear .38s; }
@@ -220,7 +218,7 @@ body.rs-konto .rs-appnav { animation: none; }
 .rs-am-seg button:active { transform: scale(.88); }
 @media (prefers-reduced-motion: reduce) {
   .rs-am-pill, .rs-appnav button .icon-svg, .rs-appnav button span, .rs-appmore, .rs-am-item, .rs-am-seg button { transition: none !important; }
-  .rs-appnav, .rs-appnav button.rs-am-pop .icon-svg, .rs-appmore.rs-open > * { animation: none !important; }
+  .rs-appnav button.rs-am-pop .icon-svg, .rs-appmore.rs-open > * { animation: none !important; }
 }
 
 /* Support ohne Anmeldung: nur die Support-Seite, ohne Menü, Leiste und Druckknopf */

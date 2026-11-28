@@ -110,7 +110,7 @@ Einrichten: `supabase/support_tickets.sql` im SQL-Editor ausführen, Geheimnisse
 ## Hinweise
 
 - Offline-Nutzung und Installation als App funktionieren nur über `https://` (oder `localhost`).
-- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v90`), sonst bleibt der alte Zwischenspeicher aktiv.
+- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v92`), sonst bleibt der alte Zwischenspeicher aktiv.
 
 ## Leitlinie
 

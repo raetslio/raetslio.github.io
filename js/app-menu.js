@@ -35,6 +35,10 @@
       if (o) refreshTheme();
     };
     btn.addEventListener('click', function (e) { e.stopPropagation(); setOpen(!isOpen()); });
+    /* Scrollen auf der Seite schließt das „Mehr“-Fenster (kurz nach dem Öffnen und Scrollen im Fenster selbst zählen nicht) */
+    var openedAt = 0, openBase = setOpen;
+    setOpen = function (o) { if (o) openedAt = Date.now(); openBase(o); };
+    document.addEventListener('scroll', function (e) { if (isOpen() && Date.now() - openedAt > 250 && !(e.target && e.target.nodeType === 1 && more.contains(e.target))) setOpen(false); }, { capture: true, passive: true });
     document.addEventListener('click', function (e) { if (isOpen() && !more.contains(e.target)) setOpen(false); });
     document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && isOpen()) { setOpen(false); try { btn.focus(); } catch (x) {} } });
     $('rs-am-support').addEventListener('click', function () { setOpen(false); window.switchMode('support'); });
