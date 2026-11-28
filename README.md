@@ -95,8 +95,9 @@ Einrichten: `supabase/support_tickets.sql` im SQL-Editor ausführen, Geheimnisse
 
 ## Untere Leiste
 
-- **Im Browser (Handy):** klassische Vollbreit-Leiste `#rs-bottomnav` (Start, Weiter, Konto, Menü).
-- **Als Web-App auf dem iPhone** (zum Home-Bildschirm hinzugefügt, `display-mode: standalone`, höchstens 640 px breit): stattdessen die schwebende, abgerundete Glas-Leiste `#rs-appnav` mit **Start, Sudoku, Konto, Mehr**. „Mehr“ öffnet `#rs-appmore` mit **Abmelden, Support** und dem Umschalter **Hell / Dunkel / Gerät**. Beide Leisten stehen im Markup; welche sichtbar ist, entscheidet nur `css/start.css`. Logik in `js/app-menu.js`.
+- **Eine Leiste für Handy-Bildschirme (bis 640 px):** `#rs-appnav` mit **Start, Sudoku, Konto, Mehr**. „Mehr“ öffnet `#rs-appmore` mit **Abmelden, Support** und dem Umschalter **Hell / Dunkel / Gerät**.
+- **Im Browser:** klassisch, volle Breite am unteren Rand.
+- **Als Web-App auf dem iPhone** (zum Home-Bildschirm hinzugefügt, `display-mode: standalone`): schwebend, abgerundet, als Glas. Welche Optik gilt, entscheidet nur `css/start.css`. Man kann mit dem Finger über die Leiste wischen: Der Eintrag unter dem Finger wird beim Loslassen geöffnet. Logik in `js/app-menu.js`.
 - **Support-Seite `/support/`:** eigene Ansicht `#view-support` (Modus `support` in `js/modes-init.js`, Route in `tools/build-routes.py`), im Seitenmenü ganz unten unter „Konto“. Versand über `RSAUTH.supportPost` (aus `js/account-src/05-api.js`) und die Edge Function `support`. Der Modus wird nie als „zuletzt geöffnet“ gespeichert. In „Mein Konto“ steht nur noch ein Link zur Support-Seite.
 
 ## Ladezustand und Fehlerfälle
@@ -109,7 +110,7 @@ Einrichten: `supabase/support_tickets.sql` im SQL-Editor ausführen, Geheimnisse
 ## Hinweise
 
 - Offline-Nutzung und Installation als App funktionieren nur über `https://` (oder `localhost`).
-- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v84`), sonst bleibt der alte Zwischenspeicher aktiv.
+- Nach jeder Änderung an der App in `sw.js` die Zahl bei `VERSION` erhöhen (aktuell `raetslio-v86`), sonst bleibt der alte Zwischenspeicher aktiv.
 
 ## Leitlinie
 

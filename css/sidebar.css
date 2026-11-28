@@ -170,3 +170,7 @@ body.rs-konto #acct-modal .modal-card {
   overflow-y: auto; -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
 }
+
+/* Konto-Seite: Karte passt sich der Resthöhe an und scrollt innen (unten bleibt der abgerundete Rand sichtbar) */
+body.rs-konto #acct-modal { display: flex; flex-direction: column; align-items: center; justify-content: flex-start; }
+body.rs-konto #acct-modal .modal-card { flex: 0 1 auto; min-height: 0; max-height: none; width: 100%; }
